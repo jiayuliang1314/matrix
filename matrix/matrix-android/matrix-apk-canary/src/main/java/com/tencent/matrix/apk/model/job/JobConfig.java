@@ -30,18 +30,18 @@ import java.util.Map;
 public final class JobConfig {
 
     private String inputDir;
-    private String apkPath;
-    private String unzipPath;
-    private String outputPath;
-    private String mappingFilePath;
-    private String resMappingFilePath;
-    private JsonArray outputConfig;
+    private String apkPath;//ok
+    private String unzipPath;//ok
+    private String outputPath;//ok
+    private String mappingFilePath;//ok
+    private String resMappingFilePath;//ok
+    private JsonArray outputConfig;//ok countMethod
 
-    private List<String> outputFormatList;
-    private Map<String, String> proguardClassMap;
-    private Map<String, String> resguardMap;
-    private Map<String, Pair<Long, Long>> entrySizeMap;
-    private Map<String, String> entryNameMap;
+    private List<String> outputFormatList;//ok
+    private Map<String, String> proguardClassMap;//ok
+    private Map<String, String> resguardMap;//ok
+    private Map<String, Pair<Long, Long>> entrySizeMap;//ok
+    private Map<String, String> entryNameMap;//ok
 
     public String getInputDir() {
         return inputDir;
@@ -102,6 +102,7 @@ public final class JobConfig {
     public Map<String, String> getProguardClassMap() {
         return proguardClassMap;
     }
+
 
     public void setProguardClassMap(Map<String, String> proguardClassMap) {
         this.proguardClassMap = proguardClassMap;

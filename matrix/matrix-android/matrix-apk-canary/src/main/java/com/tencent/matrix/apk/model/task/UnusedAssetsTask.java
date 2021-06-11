@@ -99,6 +99,11 @@ public class UnusedAssetsTask extends ApkTask {
         }
     }
 
+    /**
+     * 1.将assets下的文件的绝对路径保存到assetsPathSet
+     * @param dir
+     * @throws IOException
+     */
     private void findAssetsFile(File dir) throws IOException {
         if (dir != null && dir.exists() && dir.isDirectory()) {
             File[] files = dir.listFiles();
@@ -113,6 +118,10 @@ public class UnusedAssetsTask extends ApkTask {
         }
     }
 
+    /**
+     * 3.从加载ClassDef变成readSmaliLines
+     * @throws IOException
+     */
     private void decodeCode() throws IOException {
         for (String dexFileName : dexFileNameList) {
             DexBackedDexFile dexFile = DexFileFactory.loadDexFile(new File(inputFile, dexFileName), Opcodes.forApi(15));
@@ -130,12 +139,19 @@ public class UnusedAssetsTask extends ApkTask {
         }
     }
 
+
+    /**
+     * 3.1 todo 具体的，需要调试看看
+     * @throws IOException
+     */
     private void readSmaliLines(String[] lines) {
+
         if (lines == null) {
             return;
         }
         for (String line : lines) {
             line = line.trim();
+//            const-string v4, " daemon"
             if (!Util.isNullOrNil(line) && line.startsWith("const-string")) {
                 String[] columns = line.split(",");
                 if (columns.length == 2) {
@@ -153,6 +169,10 @@ public class UnusedAssetsTask extends ApkTask {
         }
     }
 
+    /**
+     * 2.1 判断是否ignore文件
+     * @param name
+     */
     private boolean ignoreAsset(String name) {
         for (String pattern : ignoreSet) {
             Log.d(TAG, "pattern %s", pattern);
@@ -163,6 +183,10 @@ public class UnusedAssetsTask extends ApkTask {
         return false;
     }
 
+    /**
+     * 2.将assets下的资源assetsPathSet保存的路径改成相对路径
+     * @param rootPath
+     */
     private void generateAssetsSet(String rootPath) {
         HashSet<String> relativeAssetsSet = new HashSet<String>();
         for (String path : assetsPathSet) {

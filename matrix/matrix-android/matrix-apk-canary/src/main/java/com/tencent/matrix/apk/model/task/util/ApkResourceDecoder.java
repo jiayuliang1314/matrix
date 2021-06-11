@@ -56,6 +56,7 @@ import brut.androlib.res.xml.ResValuesXmlSerializable;
  *  Copyright (C) 2017 Connor Tumbleson <connor.tumbleson@gmail.com>
  * <p>
  * to decode binary resources (xml files and resources.arsc).
+ * todo 不太明白
  */
 @SuppressWarnings("PMD")
 public class ApkResourceDecoder {

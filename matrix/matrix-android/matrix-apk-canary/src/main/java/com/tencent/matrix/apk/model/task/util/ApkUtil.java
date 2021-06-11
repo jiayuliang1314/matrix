@@ -42,6 +42,7 @@ public class ApkUtil {
 
     /*
      *  parse the descriptor of class to normal dot-split class name (XXX.XXX.XXX)
+     *
      */
     public static String getNormalClassName(String name) {
         if (!Util.isNullOrNil(name)) {
@@ -97,6 +98,13 @@ public class ApkUtil {
     }
 
 
+    /**
+     * 拆卸; 拆开; 反汇编(将计算机编码译成普通语言); 散开; 分散;
+     * @param classDef
+     * @param options
+     * @return
+     * todo 干哈的
+     */
     public static String[] disassembleClass(ClassDef classDef, BaksmaliOptions options) {
         /**
          * The path for the disassembly file is based on the package name

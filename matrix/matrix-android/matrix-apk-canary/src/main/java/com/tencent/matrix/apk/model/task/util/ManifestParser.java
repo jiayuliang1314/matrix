@@ -35,7 +35,7 @@ import java.util.Stack;
 public class ManifestParser {
 
     private static final String ROOTTAG = "manifest";
-    private final AXmlResourceParser resourceParser;
+    private final AXmlResourceParser resourceParser;//todo
     private File manifestFile;
     private boolean isParseStarted;
     private final Stack<JsonObject> jsonStack = new Stack<>();

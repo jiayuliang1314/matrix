@@ -44,6 +44,9 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_UNSTRIPPED
 
 /**
  * Created by jinqiuchen on 17/6/29.
+ * todo
+ * UnStrippedSoCheckTask 可以检测出apk中未经裁剪的动态库文件
+ * 实现方法：使用nm工具读取动态库文件的符号表，若输出结果中包含no symbols字样则表示该动态库已经过裁剪
  */
 
 public class UnStrippedSoCheckTask extends ApkTask {

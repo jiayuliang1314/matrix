@@ -44,6 +44,9 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_CHECK_MULT
 
 /**
  * Created by jinqiuchen on 17/6/29.
+ *
+ * CheckMultiSTLTask 可以检测apk中的so是否静态链接STL
+ * 实现方法：通过nm工具来读取so的符号表，如果出现 std:: 即表示so静态链接了STL。
  */
 
 public class MultiSTLCheckTask extends ApkTask {
