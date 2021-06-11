@@ -46,6 +46,14 @@ import java.util.Set;
 
 /**
  * Created by jinqiuchen on 17/7/11.
+ *
+ * UnusedAssetsTask 可以检测出apk中未使用的assets文件
+ * 实现方法：搜索smali文件中引用字符串常量的指令，判断引用的字符串常量是否某个assets文件的名称
+ *
+ *     {
+ *       "name":"-unusedAssets",
+ *       "--ignoreAssets":["*.so" ]
+ *     }
  */
 
 public class UnusedAssetsTask extends ApkTask {

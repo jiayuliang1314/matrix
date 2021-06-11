@@ -48,6 +48,9 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_UNZIP;
 
 /**
  * Created by jinqiuchen on 17/5/23.
+ *
+ * 1.输入的Apk文件首先会经过UnzipTask处理，解压到指定目录，在这一步还会做一些全局的准备工作，
+ * 包括反混淆类名（读取mapping.txt）、反混淆资源(读取resMapping.txt)、统计文件大小等。
  */
 
 public class UnzipTask extends ApkTask {
@@ -304,8 +307,10 @@ public class UnzipTask extends ApkTask {
             ((TaskJsonResult) taskResult).add("total-size", inputFile.length());
 
             readMappingTxtFile();
+//            com.newbilling.view.activity.VipActivity -> com.newbilling.view.activity.VipActivity
             config.setProguardClassMap(proguardClassMap);
             readResMappingTxtFile();
+//            R.animator.e -> R.animator.mtrl_chip_state_list_anim
             config.setResguardMap(resguardMap);
 
             Enumeration entries = zipFile.entries();
@@ -324,8 +329,17 @@ public class UnzipTask extends ApkTask {
                 }
             }
 
+//            "res/color/abc_primary_text_material_light.xml" -> {Pair@1161} "Pair [first=464, second=229]"
+//            key = "res/color/abc_primary_text_material_light.xml"
+//            value = {Pair@1161} "Pair [first=464, second=229]"
             config.setEntrySizeMap(entrySizeMap);
+//            r/n/btn_normal.webp -> res/drawable-xhdpi-v4/btn_normal.webp
             config.setEntryNameMap(entryNameMap);
+//            elements = {ArrayList@1692}  size = 1910
+//            0 = {JsonObject@1694} "{"entry-name":"firebase-measurement-connector.properties","entry-size":61}"
+//            members = {LinkedTreeMap@1894}  size = 2
+//            "entry-name" -> {JsonPrimitive@1900} ""firebase-measurement-connector.properties""
+//            "entry-size" -> {JsonPrimitive@1902} "61"
             ((TaskJsonResult) taskResult).add("entries", jsonArray);
             taskResult.setStartTime(startTime);
             taskResult.setEndTime(System.currentTimeMillis());

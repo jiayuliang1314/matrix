@@ -29,6 +29,7 @@ import java.util.concurrent.Callable;
 
 /**
  * Created by jinqiuchen on 17/5/23.
+ * ok
  */
 
 public abstract class ApkTask implements Callable<TaskResult> {

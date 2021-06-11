@@ -16,6 +16,8 @@
 
 package com.tencent.matrix.apk.model.task.util;
 
+//import com.tencent.matrix.javalib.util.Log;
+import com.tencent.matrix.javalib.util.Log;
 import com.tencent.matrix.javalib.util.Util;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -32,6 +34,22 @@ import brut.androlib.res.decoder.ResStreamDecoder;
 
 /**
  * Created by jinqiuchen on 17/8/28.
+ * 遍历xml得到资源的引用名字set
+ * this.resourceRefSet = {HashSet@2647}  size = 14
+ *  0 = "R.string.js"
+ *  1 = "R.string.k5"
+ *  2 = "R.string.jr"
+ *  3 = "R.array.c"
+ *  4 = "R.array.d"
+ *  5 = "R.array.b"
+ *  6 = "R.array.e"
+ *  7 = "R.string.jc"
+ *  8 = "R.string.pg"
+ *  9 = "R.string.ph"
+ *  10 = "R.string.qn"
+ *  11 = "R.string.pe"
+ *  12 = "R.string.pf"
+ *  13 = "R.string.pd"
  */
 
 public class XmlPullResourceRefDecoder implements ResStreamDecoder {
@@ -117,8 +135,6 @@ public class XmlPullResourceRefDecoder implements ResStreamDecoder {
             }
         }
     }
-
-
 
     public Set<String> getResourceRefSet() {
         return resourceRefSet;

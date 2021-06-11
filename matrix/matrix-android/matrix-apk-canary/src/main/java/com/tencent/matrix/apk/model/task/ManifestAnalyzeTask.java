@@ -44,6 +44,7 @@ public class ManifestAnalyzeTask extends ApkTask {
     private static final String TAG = "Matrix.ManifestAnalyzeTask";
 
     private File inputFile;
+    //todo Resources.arsc文件大家应该都知道是干什么的，它实际上就是App的资源索引表
     private File arscFile;
 
     public ManifestAnalyzeTask(JobConfig config, Map<String, String> params) {

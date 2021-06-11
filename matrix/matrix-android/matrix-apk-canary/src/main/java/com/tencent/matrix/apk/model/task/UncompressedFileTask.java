@@ -41,6 +41,9 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_UNCOMPRESS
 
 /**
  * Created by jinqiuchen on 17/6/21.
+ * 直接利用UnzipTask中统计的各个文件的压缩前和压缩后的大小，判断压缩前和压缩后大小是否相等。
+ * 如果相等，说明没有压缩
+ * 如果不想等，说明有压缩了
  */
 
 public class UncompressedFileTask extends ApkTask {
@@ -121,6 +124,14 @@ public class UncompressedFileTask extends ApkTask {
                     }
                 }
             }
+//            this.uncompressSizeMap = {HashMap@1801}  size = 3
+//            "jpg" -> {Long@1815} 1829
+//            "png" -> {Long@1817} 850150
+//            "arsc" -> {Long@1819} 1827972
+//            this.compressSizeMap = {HashMap@1802}  size = 3
+//            "jpg" -> {Long@1825} 1829
+//            "png" -> {Long@1826} 850150
+//            "arsc" -> {Long@1827} 1827972
 
             for (String suffix : uncompressSizeMap.keySet()) {
                 if (uncompressSizeMap.get(suffix).equals(compressSizeMap.get(suffix))) {
@@ -130,6 +141,7 @@ public class UncompressedFileTask extends ApkTask {
                     jsonArray.add(fileItem);
                 }
             }
+//            [{"suffix":"jpg","total-size":1829},{"suffix":"png","total-size":850150},{"suffix":"arsc","total-size":1827972}]
             ((TaskJsonResult) taskResult).add("files", jsonArray);
             taskResult.setStartTime(startTime);
             taskResult.setEndTime(System.currentTimeMillis());

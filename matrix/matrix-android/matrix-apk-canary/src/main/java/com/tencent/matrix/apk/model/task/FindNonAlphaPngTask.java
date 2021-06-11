@@ -46,6 +46,9 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_FIND_NON_A
 
 /**
  * Created by jinqiuchen on 17/6/12.
+ * ok
+ * FindNonAlphaPngTask 可以检测出apk中非透明的png文件
+ * 实现方法：通过 java.awt.BufferedImage 类读取png文件并判断是否有alpha通道。
  */
 
 public class FindNonAlphaPngTask extends ApkTask {

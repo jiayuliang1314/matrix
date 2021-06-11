@@ -21,6 +21,8 @@ import java.util.List;
 
 /**
  * Created by jinqiuchen on 17/6/13.
+ * ok
+ * 输出
  */
 @SuppressWarnings("PMD")
 public abstract class JobResult {

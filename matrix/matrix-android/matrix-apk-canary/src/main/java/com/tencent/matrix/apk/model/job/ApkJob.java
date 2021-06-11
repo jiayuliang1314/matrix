@@ -61,24 +61,23 @@ import java.util.jar.Manifest;
 public final class ApkJob {
 
     private static final String TAG = "Matrix.ApkJob";
-
-    private String[] args;
-    private JobConfig jobConfig;
-
-    private ExecutorService executor;
     private static final int TIMEOUT_SECONDS = 600;
-    private              int timeoutSeconds  = TIMEOUT_SECONDS;
-    private static final int THREAD_NUM      = 1;
-    private              int threadNum       = THREAD_NUM;
+    private static final int THREAD_NUM = 1;
+    private final String[] args;
+    private final JobConfig jobConfig;
+    private final ExecutorService executor;
+    private final List<ApkTask> preTasks;
+    private final List<ApkTask> taskList;
+    private final List<JobResult> jobResults;
+    private int timeoutSeconds = TIMEOUT_SECONDS;
+    private int threadNum = THREAD_NUM;
 
-    private List<ApkTask> preTasks;
-    private List<ApkTask> taskList;
-    private List<JobResult> jobResults;
-
+    //ok
     public ApkJob(String[] args) {
         this(args, 0, 0);
     }
 
+    //ok
     public ApkJob(String[] args, int timeoutSeconds, int threadNum) {
         this.args = args;
         jobConfig = new JobConfig();
@@ -94,6 +93,213 @@ public final class ApkJob {
         this.jobResults = new ArrayList<>();
     }
 
+    //ok
+    public void run() throws Exception {
+        if (parseParams()) {
+            ApkTask unzipTask = TaskFactory.factory(TaskFactory.TASK_TYPE_UNZIP, jobConfig, new HashMap<String, String>());
+            preTasks.add(unzipTask);
+            for (String format : jobConfig.getOutputFormatList()) {
+                JobResult result = JobResultFactory.factory(format, jobConfig);
+                if (result != null) {
+                    jobResults.add(result);
+                } else {
+                    Log.w(TAG, "Unknown output format name '%s' !", format);
+                }
+            }
+            execute();
+        } else {
+            ApkChecker.printHelp();
+        }
+    }
+
+    //1
+    /**
+     * this.args = {String[2]@793}
+     *  0 = "--config"
+     *  1 = "/Users/admin/StudioProjects/strongedge/apk-checker-config.json"
+     * @return
+     *
+     * 解析参数，创建task放到taskList
+     */
+    private boolean parseParams() {
+        if (args != null && args.length >= 2) {
+            int paramLen = parseGlobalParams();
+
+            for (int i = paramLen; i < args.length; i++) {
+                if (args[i].startsWith("-") && !args[i].startsWith("--")) {
+                    Map<String, String> params = new HashMap<>();
+                    paramLen = parseParams(i + 1, args, params);
+                    if (!params.containsKey(JobConstants.PARAM_R_TXT)) {
+                        String inputDir = jobConfig.getInputDir();
+                        if (!Util.isNullOrNil(inputDir)) {
+                            params.put(JobConstants.PARAM_R_TXT, inputDir + "/" + ApkConstants.DEFAULT_RTXT_FILENAME);
+                        }
+                    }
+                    ApkTask task = createTask(args[i], params);
+                    if (task != null) {
+                        taskList.add(task);
+                    }
+                    i += paramLen;
+                }
+            }
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    //2
+
+    /**
+     * 解析参数，创建task
+     * @return
+     */
+    private int parseGlobalParams() {
+        int paramLen = 0;
+        Map<String, String> globalParams = new HashMap<>();
+        paramLen = parseParams(0, args, globalParams);
+
+        try {
+            if (globalParams.containsKey(JobConstants.PARAM_CONFIG)) {
+                final String configPath = globalParams.get(JobConstants.PARAM_CONFIG);
+                if (!FileUtil.isLegalFile(configPath)) {
+                    ApkChecker.printError("Input config file '" + configPath + "' is illegal!");
+                } else if (!configPath.endsWith(".json")) {
+                    ApkChecker.printError("Input config file must has a suffix '.json'!");
+                } else {
+                    readConfigFile(configPath);
+                }
+            } else {
+
+                String apkPath = "";
+                String mappingFilePath = "";
+                String resMappingFilePath = "";
+
+                if (globalParams.containsKey(JobConstants.PARAM_INPUT)) {
+                    String inputDir = globalParams.get(JobConstants.PARAM_INPUT);
+                    if (!Util.isNullOrNil(inputDir)) {
+                        File inputFile = new File(inputDir);
+                        if (inputFile.isDirectory() && inputFile.exists()) {
+                            jobConfig.setInputDir(inputFile.getAbsolutePath());
+                            for (File file : inputFile.listFiles()) {
+                                if (file.isFile() && file.getName().endsWith(ApkConstants.APK_FILE_SUFFIX)) {
+                                    apkPath = file.getAbsolutePath();
+                                    break;
+                                }
+                            }
+                            mappingFilePath = inputDir + "/" + ApkConstants.DEFAULT_MAPPING_FILENAME;
+                            resMappingFilePath = inputDir + "/" + ApkConstants.DEFAULT_RESGUARD_MAPPING_FILENAME;
+                        }
+                    }
+                }
+
+                if (globalParams.containsKey(JobConstants.PARAM_APK)) {
+                    apkPath = globalParams.get(JobConstants.PARAM_APK);
+                    if (!FileUtil.isLegalFile(apkPath)) {
+                        ApkChecker.printError("Input apk path '" + apkPath + "' is illegal!");
+                    }
+                }
+
+                jobConfig.setApkPath(apkPath);
+                File apkFile = new File(apkPath);
+
+                if (globalParams.containsKey(JobConstants.PARAM_UNZIP)) {
+                    jobConfig.setUnzipPath(globalParams.get(JobConstants.PARAM_UNZIP));
+                } else {
+                    jobConfig.setUnzipPath(apkFile.getParentFile().getAbsolutePath() + File.separator + getApkRawName(apkFile.getName()) + "_unzip");
+                }
+
+                if (globalParams.containsKey(JobConstants.PARAM_MAPPING_TXT)) {
+                    mappingFilePath = globalParams.get(JobConstants.PARAM_MAPPING_TXT);
+                }
+                jobConfig.setMappingFilePath(mappingFilePath);
+
+                if (globalParams.containsKey(JobConstants.PARAM_RES_MAPPING_TXT)) {
+                    resMappingFilePath = globalParams.get(JobConstants.PARAM_RES_MAPPING_TXT);
+                }
+                jobConfig.setResMappingFilePath(resMappingFilePath);
+
+
+                String value = "";
+                if (globalParams.containsKey(JobConstants.PARAM_FORMAT) && !Util.isNullOrNil(globalParams.get(JobConstants.PARAM_FORMAT))) {
+                    value = globalParams.get(JobConstants.PARAM_FORMAT);
+                } else {
+                    value = TaskResultFactory.TASK_RESULT_TYPE_HTML;
+                }
+                String[] formats = value.split(",");
+                List<String> formatList = new ArrayList<>();
+                for (String format : formats) {
+                    if (!Util.isNullOrNil(format)) {
+                        formatList.add(format.trim());
+                    }
+                }
+                Log.i(TAG, "format list " + formatList.toString());
+                jobConfig.setOutputFormatList(formatList);
+
+                if (globalParams.containsKey(JobConstants.PARAM_OUTPUT)) {
+                    jobConfig.setOutputPath(globalParams.get(JobConstants.PARAM_OUTPUT));
+                } else {
+                    jobConfig.setOutputPath(apkFile.getParentFile().getAbsolutePath() + File.separator + getApkRawName(apkFile.getName()));
+                }
+
+                if (globalParams.containsKey(JobConstants.PARAM_FORMAT_JAR)) {//todo 可以看看这个具体的实现方案
+                    File file = new File(globalParams.get(JobConstants.PARAM_FORMAT_JAR));
+                    JarFile jarFile = new JarFile(file);
+                    Manifest manifest = jarFile.getManifest();
+                    Attributes registry = manifest.getAttributes(JobConstants.TASK_RESULT_REGISTRY);
+                    if (registry != null) {
+                        String registryClassPath = registry.getValue(JobConstants.TASK_RESULT_REGISTERY_CLASS);
+                        ClassLoader classLoader = new URLClassLoader(new URL[]{file.toURL()});
+                        Class registryClass = classLoader.loadClass(registryClassPath);
+                        TaskResultRegistry resultRegistry = (TaskResultRegistry) registryClass.newInstance();
+                        TaskResultFactory.addCustomTaskJsonResult(resultRegistry.getJsonResult());
+                        TaskResultFactory.addCustomTaskHtmlResult(resultRegistry.getHtmlResult());
+                    }
+                }
+
+                if (globalParams.containsKey(JobConstants.PARAM_FORMAT_CONFIG)) {
+                    JsonElement jsonElement = new JsonParser().parse(globalParams.get(JobConstants.PARAM_FORMAT_CONFIG));
+                    jobConfig.setOutputConfig((JsonArray) jsonElement);
+                }
+
+                if (globalParams.containsKey(JobConstants.PARAM_LOG_LEVEL)) {
+                    Log.setLogLevel(globalParams.get(JobConstants.PARAM_LOG_LEVEL));
+                }
+
+            }
+
+            //register MMTaskResult
+            MMTaskResultRegistry mmTaskResultRegistry = new MMTaskResultRegistry();
+            TaskResultFactory.addCustomTaskHtmlResult(mmTaskResultRegistry.getHtmlResult());
+            TaskResultFactory.addCustomTaskJsonResult(mmTaskResultRegistry.getJsonResult());
+        } catch (Exception e) {
+            ApkChecker.printError(e.getMessage());
+        }
+
+        return paramLen;
+    }
+
+    //3
+
+    /**
+     *
+     * start = 0
+     * params = {String[2]@793}
+     *  0 = "--config"
+     *  1 = "/Users/admin/StudioProjects/strongedge/apk-checker-config.json"
+     * result = {HashMap@811}  size = 0
+     * 将解析结果放到result里
+     * @param start
+     * @param params
+     * @param result
+     * @return
+     *
+     *  return 2;
+     *
+     *  result = {HashMap@811}  size = 1
+     *  "--config" -> "/Users/admin/StudioProjects/strongedge/apk-checker-config.json"
+     *
+     */
     private int parseParams(int start, String[] params, Map<String, String> result) {
         int end = params.length;
         String key = "";
@@ -112,6 +318,7 @@ public final class ApkJob {
         return end - start;
     }
 
+    //region ok
     private String getApkRawName(String name) {
         if (name == null || name.isEmpty()) {
             return "";
@@ -156,6 +363,7 @@ public final class ApkJob {
         }
         return task;
     }
+    //endregion
 
     private void readConfigFile(String configPath) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         StringBuilder jsonStr = new StringBuilder();
@@ -239,7 +447,7 @@ public final class ApkJob {
                 Attributes registry = manifest.getAttributes(JobConstants.TASK_RESULT_REGISTRY);
                 if (registry != null) {
                     String registryClassPath = registry.getValue(JobConstants.TASK_RESULT_REGISTERY_CLASS);
-                    ClassLoader classLoader = new URLClassLoader(new URL[] {file.toURL()});
+                    ClassLoader classLoader = new URLClassLoader(new URL[]{file.toURL()});
                     Class registryClass = classLoader.loadClass(registryClassPath);
                     TaskResultRegistry resultRegistry = (TaskResultRegistry) registryClass.newInstance();
                     TaskResultFactory.addCustomTaskJsonResult(resultRegistry.getJsonResult());
@@ -312,182 +520,8 @@ public final class ApkJob {
         }
     }
 
-    private int parseGlobalParams() {
-        int paramLen = 0;
-        Map<String, String> globalParams = new HashMap<>();
-        paramLen = parseParams(0, args, globalParams);
-
-        try {
-            if (globalParams.containsKey(JobConstants.PARAM_CONFIG)) {
-
-                final String configPath = globalParams.get(JobConstants.PARAM_CONFIG);
-                if (!FileUtil.isLegalFile(configPath)) {
-                    ApkChecker.printError("Input config file '" + configPath + "' is illegal!");
-                } else if (!configPath.endsWith(".json")) {
-                    ApkChecker.printError("Input config file must has a suffix '.json'!");
-                } else {
-                    readConfigFile(configPath);
-                }
-
-            } else {
-
-                String apkPath = "";
-                String mappingFilePath = "";
-                String resMappingFilePath = "";
-
-                if (globalParams.containsKey(JobConstants.PARAM_INPUT)) {
-                    String inputDir = globalParams.get(JobConstants.PARAM_INPUT);
-                    if (!Util.isNullOrNil(inputDir)) {
-                        File inputFile = new File(inputDir);
-                        if (inputFile.isDirectory() && inputFile.exists()) {
-                            jobConfig.setInputDir(inputFile.getAbsolutePath());
-                            for (File file : inputFile.listFiles()) {
-                                if (file.isFile() && file.getName().endsWith(ApkConstants.APK_FILE_SUFFIX)) {
-                                    apkPath =  file.getAbsolutePath();
-                                    break;
-                                }
-                            }
-                            mappingFilePath = inputDir + "/" + ApkConstants.DEFAULT_MAPPING_FILENAME;
-                            resMappingFilePath = inputDir + "/" + ApkConstants.DEFAULT_RESGUARD_MAPPING_FILENAME;
-                        }
-                    }
-                }
-
-                if (globalParams.containsKey(JobConstants.PARAM_APK)) {
-                    apkPath = globalParams.get(JobConstants.PARAM_APK);
-                    if (!FileUtil.isLegalFile(apkPath)) {
-                        ApkChecker.printError("Input apk path '" + apkPath + "' is illegal!");
-                    }
-                }
-
-                jobConfig.setApkPath(apkPath);
-                File apkFile = new File(apkPath);
-
-                if (globalParams.containsKey(JobConstants.PARAM_UNZIP)) {
-                    jobConfig.setUnzipPath(globalParams.get(JobConstants.PARAM_UNZIP));
-                } else {
-                    jobConfig.setUnzipPath(apkFile.getParentFile().getAbsolutePath() + File.separator + getApkRawName(apkFile.getName()) + "_unzip");
-                }
-
-                if (globalParams.containsKey(JobConstants.PARAM_MAPPING_TXT)) {
-                    mappingFilePath = globalParams.get(JobConstants.PARAM_MAPPING_TXT);
-                }
-                jobConfig.setMappingFilePath(mappingFilePath);
-
-                if (globalParams.containsKey(JobConstants.PARAM_RES_MAPPING_TXT)) {
-                    resMappingFilePath = globalParams.get(JobConstants.PARAM_RES_MAPPING_TXT);
-                }
-                jobConfig.setResMappingFilePath(resMappingFilePath);
-
-
-                String value = "";
-                if (globalParams.containsKey(JobConstants.PARAM_FORMAT) && !Util.isNullOrNil(globalParams.get(JobConstants.PARAM_FORMAT))) {
-                    value = globalParams.get(JobConstants.PARAM_FORMAT);
-                } else {
-                    value = TaskResultFactory.TASK_RESULT_TYPE_HTML;
-                }
-                String[] formats = value.split(",");
-                List<String> formatList = new ArrayList<>();
-                for (String format : formats) {
-                    if (!Util.isNullOrNil(format)) {
-                        formatList.add(format.trim());
-                    }
-                }
-                Log.i(TAG, "format list " + formatList.toString());
-                jobConfig.setOutputFormatList(formatList);
-
-                if (globalParams.containsKey(JobConstants.PARAM_OUTPUT)) {
-                    jobConfig.setOutputPath(globalParams.get(JobConstants.PARAM_OUTPUT));
-                } else {
-                    jobConfig.setOutputPath(apkFile.getParentFile().getAbsolutePath() + File.separator + getApkRawName(apkFile.getName()));
-                }
-
-                if (globalParams.containsKey(JobConstants.PARAM_FORMAT_JAR)) {
-                    File file = new File(globalParams.get(JobConstants.PARAM_FORMAT_JAR));
-                    JarFile jarFile = new JarFile(file);
-                    Manifest manifest = jarFile.getManifest();
-                    Attributes registry = manifest.getAttributes(JobConstants.TASK_RESULT_REGISTRY);
-                    if (registry != null) {
-                        String registryClassPath = registry.getValue(JobConstants.TASK_RESULT_REGISTERY_CLASS);
-                        ClassLoader classLoader = new URLClassLoader(new URL[]{file.toURL()});
-                        Class registryClass = classLoader.loadClass(registryClassPath);
-                        TaskResultRegistry resultRegistry = (TaskResultRegistry) registryClass.newInstance();
-                        TaskResultFactory.addCustomTaskJsonResult(resultRegistry.getJsonResult());
-                        TaskResultFactory.addCustomTaskHtmlResult(resultRegistry.getHtmlResult());
-                    }
-                }
-
-                if (globalParams.containsKey(JobConstants.PARAM_FORMAT_CONFIG)) {
-                    JsonElement jsonElement = new JsonParser().parse(globalParams.get(JobConstants.PARAM_FORMAT_CONFIG));
-                    jobConfig.setOutputConfig((JsonArray) jsonElement);
-                }
-
-                if (globalParams.containsKey(JobConstants.PARAM_LOG_LEVEL)) {
-                    Log.setLogLevel(globalParams.get(JobConstants.PARAM_LOG_LEVEL));
-                }
-
-            }
-
-            //register MMTaskResult
-            MMTaskResultRegistry mmTaskResultRegistry = new MMTaskResultRegistry();
-            TaskResultFactory.addCustomTaskHtmlResult(mmTaskResultRegistry.getHtmlResult());
-            TaskResultFactory.addCustomTaskJsonResult(mmTaskResultRegistry.getJsonResult());
-        } catch (Exception e) {
-            ApkChecker.printError(e.getMessage());
-        }
-
-        return paramLen;
-    }
-
-    private boolean parseParams() {
-        if (args != null && args.length >= 2) {
-
-            int paramLen = parseGlobalParams();
-
-            for (int i = paramLen; i < args.length; i++) {
-                if (args[i].startsWith("-") && !args[i].startsWith("--")) {
-                    Map<String, String> params = new HashMap<>();
-                    paramLen = parseParams(i + 1, args, params);
-                    if (!params.containsKey(JobConstants.PARAM_R_TXT)) {
-                        String inputDir = jobConfig.getInputDir();
-                        if (!Util.isNullOrNil(inputDir)) {
-                            params.put(JobConstants.PARAM_R_TXT, inputDir + "/" + ApkConstants.DEFAULT_RTXT_FILENAME);
-                        }
-                    }
-                    ApkTask task = createTask(args[i], params);
-                    if (task != null) {
-                        taskList.add(task);
-                    }
-                    i += paramLen;
-                }
-            }
-        } else {
-            return false;
-        }
-        return true;
-    }
-
-    public void run() throws  Exception {
-        if (parseParams()) {
-            ApkTask unzipTask = TaskFactory.factory(TaskFactory.TASK_TYPE_UNZIP, jobConfig, new HashMap<String, String>());
-            preTasks.add(unzipTask);
-            for (String format : jobConfig.getOutputFormatList()) {
-                JobResult result = JobResultFactory.factory(format, jobConfig);
-                if (result != null) {
-                    jobResults.add(result);
-                } else {
-                    Log.w(TAG, "Unknown output format name '%s' !", format);
-                }
-            }
-            execute();
-        } else {
-            ApkChecker.printHelp();
-        }
-    }
-
     private void execute() throws Exception {
         try {
-
             for (ApkTask preTask : preTasks) {
                 preTask.init();
                 TaskResult taskResult = preTask.call();

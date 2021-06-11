@@ -16,15 +16,37 @@
 
 package com.tencent.matrix.apk.model.job;
 
-import com.google.gson.JsonArray;
-
 import com.android.utils.Pair;
+import com.google.gson.JsonArray;
 
 import java.util.List;
 import java.util.Map;
 
 /**
  * Created by jinqiuchen on 17/6/15.
+ * apkPath = "/Users/admin/StudioProjects/strongedge/app/build/outputs/apk/strong_edge/release/AndResGuard_app-strong_edge-release/app-strong_edge-release_aligned_signed.apk"
+ * unzipPath = "/Users/admin/StudioProjects/strongedge/app/build/outputs/apk/strong_edge/release/AndResGuard_app-strong_edge-release/app-strong_edge-release_aligned_signed_unzip"
+ * outputPath = "/Users/admin/StudioProjects/strongedge/app/build/outputs/apk/strong_edge/release/AndResGuard_app-strong_edge-release/apk-checker-result"
+ * mappingFilePath = "/Users/admin/StudioProjects/strongedge/app/build/outputs/mapping/strong_edgeRelease/mapping.txt"
+ * resMappingFilePath = "/Users/admin/StudioProjects/strongedge/app/build/outputs/apk/strong_edge/release/AndResGuard_app-strong_edge-release/resource_mapping_app-strong_edge-release.txt"
+ * outputConfig [{"name":"-countMethod","group":[{"name":"Android System","package":"android"},{"name":"java system","package":"java"},{"name":"com.tencent.test.$","package":"com.tencent.test.$"}]}]
+ * outputFormatList = {ArrayList@904}  size = 2
+ * 0 = "mm.html"
+ * 1 = "mm.json"
+ * <p>
+ * proguardClassMap
+ * com.newbilling.view.activity.VipActivity -> com.newbilling.view.activity.VipActivity
+ * <p>
+ * resguardMap
+ * R.animator.e -> R.animator.mtrl_chip_state_list_anim
+ * <p>
+ * entrySizeMap
+ * //            "res/color/abc_primary_text_material_light.xml" -> {Pair@1161} "Pair [first=464, second=229]"
+ * //            key = "res/color/abc_primary_text_material_light.xml"
+ * //            value = {Pair@1161} "Pair [first=464, second=229]"
+ * <p>
+ * entryNameMap
+ * r/n/btn_normal.webp -> res/drawable-xhdpi-v4/btn_normal.webp
  */
 
 public final class JobConfig {

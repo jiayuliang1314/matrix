@@ -42,6 +42,8 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_COUNT_R_CL
 
 /**
  * Created by jinqiuchen on 17/6/22.
+ * CountRTask 可以统计R类以及R类的中的field数目
+ * 实现方法：同样是利用 com.android.dexdeps 类库来读取dex文件，找出R类以及field数目。
  */
 
 public class CountRTask extends ApkTask {
@@ -110,6 +112,7 @@ public class CountRTask extends ApkTask {
         try {
             TaskResult taskResult = TaskResultFactory.factory(type, TaskResultFactory.TASK_RESULT_TYPE_JSON, config);
             long startTime = System.currentTimeMillis();
+            //            com.newbilling.view.activity.VipActivity -> com.newbilling.view.activity.VipActivity
             Map<String, String> classProguardMap = config.getProguardClassMap();
             for (RandomAccessFile dexFile : dexFileList) {
                 DexData dexData = new DexData(dexFile);
@@ -131,7 +134,15 @@ public class CountRTask extends ApkTask {
                     }
                 }
             }
-
+//            classesMap
+//            result = {HashMap@1922}  size = 92
+//            "androidx.sqlite.db.framework.R" -> {Integer@2328} 0
+//            "androidx.core.R" -> {Integer@2330} 171
+//            "androidx.swiperefreshlayout.R" -> {Integer@2332} 131
+//            "com.google.android.gms.gass.R" -> {Integer@2328} 0
+//            "androidx.activity.R" -> {Integer@2335} 171
+//            "com.google.firebase.analytics.connector.R" -> {Integer@2328} 0
+//            "com.example.lib_utils.R" -> {Integer@2338} 1707
             JsonArray jsonArray = new JsonArray();
             long totalSize = 0;
             Map<String, String> proguardClassMap = config.getProguardClassMap();

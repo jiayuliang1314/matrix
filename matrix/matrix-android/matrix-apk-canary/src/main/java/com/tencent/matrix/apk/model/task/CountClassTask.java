@@ -47,6 +47,7 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_COUNT_CLAS
 
 /**
  * Created by jinqiuchen on 17/11/13.
+ *
  */
 
 public class CountClassTask extends ApkTask {

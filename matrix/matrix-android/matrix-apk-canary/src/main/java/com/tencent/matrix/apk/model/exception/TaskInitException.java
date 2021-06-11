@@ -18,6 +18,7 @@ package com.tencent.matrix.apk.model.exception;
 
 /**
  * Created by jinqiuchen on 17/5/23.
+ * ok
  */
 
 public class TaskInitException extends RuntimeException {

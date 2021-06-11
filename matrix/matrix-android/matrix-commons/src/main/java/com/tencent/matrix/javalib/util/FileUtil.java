@@ -48,6 +48,11 @@ public class FileUtil {
         return file != null && file.exists() && file.canRead() && file.isFile() && file.length() > 0;
     }
 
+    /**
+     * 存在，可读，是文件，不为空
+     * @param filename
+     * @return
+     */
     public static final boolean isLegalFile(String filename) {
         File file = new File(filename);
         return isLegalFile(file);

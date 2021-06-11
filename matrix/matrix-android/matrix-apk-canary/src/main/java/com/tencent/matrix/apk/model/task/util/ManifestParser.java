@@ -30,10 +30,24 @@ import java.util.Stack;
 
 /**
  * Created by jinqiuchen on 17/11/13.
+ *
+ * ok
+ *
+ * members = {LinkedTreeMap@1585}  size = 11
+ *  "android:versionCode" -> {JsonPrimitive@1600} ""228""
+ *  "android:versionName" -> {JsonPrimitive@1602} ""2.2.8""
+ *  "android:compileSdkVersion" -> {JsonPrimitive@1604} ""29""
+ *  "android:compileSdkVersionCodename" -> {JsonPrimitive@1606} ""10""
+ *  "package" -> {JsonPrimitive@1608} ""com.strong.love_edge8""
+ *  "platformBuildVersionCode" -> {JsonPrimitive@1610} ""29""
+ *  "platformBuildVersionName" -> {JsonPrimitive@1612} ""10""
+ *  "uses-sdk" -> {JsonArray@1614} "[{"android:minSdkVersion":"18","android:targetSdkVersion":"29"}]"
+ *  "uses-permission" -> {JsonArray@1616} "[{"android:name":"com.android.alarm.permission.SET_ALARM"},{"android:name":"android.permission.WAKE_LOCK"},{"android:name":"com.android.vending.BILLING"},{"android:name":"android.permission.CAMERA"},{"android:name":"android.permission.READ_CONTACTS"},{"android:name":"android.permission.WRITE_CONTACTS"},{"android:name":"android.permission.CALL_PHONE"},{"android:name":"android.permission.RECEIVE_BOOT_COMPLETED"},{"android:name":"android.permission.SYSTEM_ALERT_WINDOW"},{"android:name":"android.permission.SYSTEM_OVERLAY_WINDOW"},{"android:name":"android.permission.GET_TASKS"},{"android:name":"android.permission.SET_WALLPAPER"},{"android:name":"android.permission.READ_CALENDAR"},{"android:name":"android.permission.WRITE_CALENDAR"},{"android:name":"android.permission.WRITE_SETTINGS"},{"android:name":"android.permission.SET_WALLPAPER_HINTS"},{"android:name":"android.permission.VIBRATE"},{"android:name":"android.permission.INTERNET"},{"android:name":"android.permission.ACCESS_COARSE_LOCATION""
+ *  "uses-feature" -> {JsonArray@1618} "[{"android:name":"android.hardware.camera"}]"
+ *  "application" -> {JsonArray@1620} "[{"android:theme":"@style/od","android:label":"@string/b_","android:icon":"@drawable/ic_launcher1","android:name":"com.common.data.app.EasyController","android:allowBackup":"true","android:hardwareAccelerated":"true","android:supportsRtl":"true","android:networkSecurityConfig":"@xml/b","android:appComponentFactory":"androidx.core.app.CoreComponentFactory","android:requestLegacyExternalStorage":"true","uses-library":[{"android:name":"org.apache.http.legacy","android:required":"false"}],"meta-data":[{"android:name":"com.google.android.gms.ads.APPLICATION_ID","android:value":"@string/ax"},{"android:name":"android.max_aspect","android:value":"2.1"},{"android:name":"com.facebook.sdk.ApplicationId","android:value":"@string/em"},{"android:name":"com.google.android.gms.version","android:value":"@integer/t"},{"android:name":"com.google.firebase.messaging.default_notification_icon","android:resource":"@drawable/ic_launcher1"},{"android:name":"com.google.firebase.messaging.default_notification_co"
  */
 
 public class ManifestParser {
-
     private static final String ROOTTAG = "manifest";
     private final AXmlResourceParser resourceParser;//todo
     private File manifestFile;
@@ -136,6 +150,4 @@ public class ManifestParser {
             }
         }
     }
-
-
 }

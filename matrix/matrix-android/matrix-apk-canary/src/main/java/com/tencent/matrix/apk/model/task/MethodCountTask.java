@@ -51,6 +51,16 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_COUNT_METH
 
 /**
  * Created by jinqiuchen on 17/6/1.
+ * 统计方法数
+ * 统计dex包含的方法数，并支持将输出结果按照类名(class)或者包名(package)来分组
+ *
+ * MethodCountTask 可以统计出各个Dex中的方法数，并按照类名或者包名来分组输出结果。
+ * 实现方法：利用google开源的 com.android.dexdeps 类库来读取dex文件，统计方法数。
+ *
+ *     {
+ *       "name":"-countMethod",
+ *       "--group":"package"
+ *     },
  */
 
 public class MethodCountTask extends ApkTask {

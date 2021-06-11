@@ -20,6 +20,7 @@ import com.tencent.matrix.apk.model.job.JobConfig;
 
 /**
  * Created by jinqiuchen on 17/6/13.
+ * ok
  */
 
 public final class JobResultFactory {

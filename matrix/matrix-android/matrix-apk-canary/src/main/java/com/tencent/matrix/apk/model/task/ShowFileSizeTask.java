@@ -45,6 +45,8 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_SHOW_FILE_
 
 /**
  * Created by jinqiuchen on 17/6/1.
+ * 按文件大小排序列出apk中包含的文件
+ * 列出超过一定大小的文件，可按文件后缀过滤，并且按文件大小排序
  */
 
 public class ShowFileSizeTask extends ApkTask {

@@ -35,6 +35,7 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_CHECK_RESG
 
 /**
  * Created by jinqiuchen on 17/6/6.
+ * ok
  */
 
 public class ResProguardCheckTask extends ApkTask {
