@@ -21,27 +21,18 @@ import android.os.Looper;
 
 /**
  * Created by tangyinsheng on 2017/6/2.
- *
+ * <p>
  * This class is ported from LeakCanary.
- *
+ * <p>
  * Some modification was done in order to executeInBackground task with fixed delay and support
  * custom HeapDumpHandler and HandlerThread support.
  * e.g. Some framework needs to wrap default handler class for monitoring.
  */
-
+//
 public class RetryableTaskExecutor {
     private final Handler mBackgroundHandler;
     private final Handler mMainHandler;
     private long mDelayMillis;
-
-    public interface RetryableTask {
-        enum Status {
-            DONE, RETRY
-        }
-
-        Status execute();
-    }
-
 
     public RetryableTaskExecutor(long delayMillis, HandlerThread handleThread) {
         mBackgroundHandler = new Handler(handleThread.getLooper());
@@ -92,5 +83,13 @@ public class RetryableTaskExecutor {
                 }
             }
         }, mDelayMillis);
+    }
+
+    public interface RetryableTask {
+        Status execute();
+
+        enum Status {
+            DONE, RETRY
+        }
     }
 }

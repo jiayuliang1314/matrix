@@ -23,7 +23,7 @@ import android.os.Bundle;
 /**
  * Created by tangyinsheng on 2017/6/2.
  */
-
+//ok
 public class ActivityLifeCycleCallbacksAdapter implements Application.ActivityLifecycleCallbacks {
 
     @Override

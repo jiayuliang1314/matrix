@@ -21,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * Created by tangyinsheng on 2017/7/7.
+ * todo
  */
 
 public final class DigestUtil {

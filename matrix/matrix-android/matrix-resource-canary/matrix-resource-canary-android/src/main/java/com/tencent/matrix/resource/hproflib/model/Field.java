@@ -22,6 +22,7 @@ package com.tencent.matrix.resource.hproflib.model;
 
 /**
  * A field with an associated type and name.
+ * ok
  */
 public final class Field {
     public final int typeId;

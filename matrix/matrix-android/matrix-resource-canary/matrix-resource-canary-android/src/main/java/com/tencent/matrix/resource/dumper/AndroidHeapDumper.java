@@ -24,9 +24,9 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.widget.Toast;
 
-import com.tencent.matrix.resource.leakcanary.internal.FutureResult;
 import com.tencent.matrix.resource.R;
 import com.tencent.matrix.resource.analyzer.model.HeapDump;
+import com.tencent.matrix.resource.leakcanary.internal.FutureResult;
 import com.tencent.matrix.util.MatrixLog;
 
 import java.io.File;
@@ -44,10 +44,6 @@ public class AndroidHeapDumper {
     private final Context mContext;
     private final DumpStorageManager mDumpStorageManager;
     private final Handler mMainHandler;
-
-    public interface HeapDumpHandler {
-        void process(HeapDump result);
-    }
 
     public AndroidHeapDumper(Context context, DumpStorageManager dumpStorageManager) {
         this(context, dumpStorageManager, new Handler(Looper.getMainLooper()));
@@ -92,6 +88,7 @@ public class AndroidHeapDumper {
                 return null;
             }
             try {
+                //这里是真正dump的地方
                 Debug.dumpHprofData(hprofFile.getAbsolutePath());
                 cancelToast(waitingForToast.get());
                 return hprofFile;
@@ -139,5 +136,9 @@ public class AndroidHeapDumper {
                 toast.cancel();
             }
         });
+    }
+
+    public interface HeapDumpHandler {
+        void process(HeapDump result);
     }
 }

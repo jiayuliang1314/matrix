@@ -21,6 +21,7 @@ import java.util.Map;
 
 /**
  * Created by tangyinsheng on 2017/6/27.
+ * ok
  */
 
 public enum Type {

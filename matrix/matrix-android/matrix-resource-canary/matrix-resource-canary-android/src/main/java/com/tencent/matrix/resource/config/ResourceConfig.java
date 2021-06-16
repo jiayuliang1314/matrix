@@ -26,25 +26,14 @@ import java.util.concurrent.TimeUnit;
 
 public final class ResourceConfig {
     public static final String TAG = "Matrix.ResourceConfig";
-
-    public enum DumpMode {
-        NO_DUMP, // report only
-        AUTO_DUMP, // auto dump hprof
-        MANUAL_DUMP, // notify only
-        SILENCE_ANALYSE, // dump and analyse hprof when screen off
-        FORK_DUMP, // fork dump hprof immediately TODO
-        FORK_ANALYSE, // fork dump and analyse hprof immediately TODO
-    }
-
     private static final long DEFAULT_DETECT_INTERVAL_MILLIS = TimeUnit.MINUTES.toMillis(1);
     private static final long DEFAULT_DETECT_INTERVAL_MILLIS_BG = TimeUnit.MINUTES.toMillis(20);
     private static final int DEFAULT_MAX_REDETECT_TIMES = 10;
     private static final DumpMode DEFAULT_DUMP_HPROF_MODE = DumpMode.MANUAL_DUMP;
-
-    private final IDynamicConfig mDynamicConfig;
+    private final IDynamicConfig mDynamicConfig;//todo，一个动态配置类
     private final DumpMode mDumpHprofMode;
-    private final boolean mDetectDebugger;
-    private final String mTargetActivity;
+    private final boolean mDetectDebugger;//todo，是否在debugger模式支持
+    private final String mTargetActivity;//查看泄漏的Activity，在ManualDumpProcessor里会用到
 
     private ResourceConfig(IDynamicConfig dynamicConfig, DumpMode dumpHprofMode, boolean detectDebuger, String targetActivity) {
         this.mDynamicConfig = dynamicConfig;
@@ -75,6 +64,16 @@ public final class ResourceConfig {
 
     public boolean getDetectDebugger() {
         return mDetectDebugger;
+    }
+
+    //如果跳过触发Dump Hprof，甚至可以把监测步骤在现网环境启用，以发现测试阶段难以触发的Activity泄漏
+    public enum DumpMode {
+        NO_DUMP, // report only
+        AUTO_DUMP, // auto dump hprof
+        MANUAL_DUMP, // notify only
+        SILENCE_ANALYSE, // dump and analyse hprof when screen off
+        FORK_DUMP, // fork dump hprof immediately TODO
+        FORK_ANALYSE, // fork dump and analyse hprof immediately TODO
     }
 
     public static final class Builder {

@@ -22,14 +22,13 @@ import java.lang.ref.WeakReference;
 
 /**
  * Created by tangyinsheng on 2017/6/5.
- *
+ * <p>
  * If you want to rename this class or any fields of it, please update the new names to
  * field <code>ActivityLeakAnalyzer.DESTROYED_ACTIVITY_INFO_CLASSNAME</code>,
  * <code>ActivityLeakAnalyzer.ACTIVITY_REFERENCE_KEY_FIELDNAME</code>,
  * <code>ActivityLeakAnalyzer.ACTIVITY_REFERENCE_FIELDNAME</code> in analyzer project.
- *
  */
-
+//ok
 public class DestroyedActivityInfo {
     public final String mKey;
     public final String mActivityName;

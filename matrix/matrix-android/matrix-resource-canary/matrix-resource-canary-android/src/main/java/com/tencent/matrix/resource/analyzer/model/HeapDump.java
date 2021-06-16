@@ -22,12 +22,12 @@ import java.io.Serializable;
 
 /**
  * Created by tangyinsheng on 2017/6/4.
- *
+ * <p>
  * This class is ported from LeakCanary.
- *
+ * <p>
  * Some unused fields were removed.
  */
-
+//ok
 public class HeapDump implements Serializable {
 
     private final File mHprofFile;

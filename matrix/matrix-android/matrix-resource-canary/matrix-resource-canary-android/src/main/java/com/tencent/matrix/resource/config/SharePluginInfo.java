@@ -19,7 +19,7 @@ package com.tencent.matrix.resource.config;
 /**
  * Created by zhangshaowen on 17/7/13.
  */
-
+//ok
 public class SharePluginInfo {
     public static final String TAG_PLUGIN = "memory";
 
