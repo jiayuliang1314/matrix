@@ -40,6 +40,7 @@ import java.util.ArrayList;
 
 /**
  * Created by tangyinsheng on 2017/6/20.
+ * todo 尝试修复activity泄漏
  */
 
 public final class ActivityLeakFixer {

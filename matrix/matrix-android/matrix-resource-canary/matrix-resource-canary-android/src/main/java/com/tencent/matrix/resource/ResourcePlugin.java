@@ -30,6 +30,7 @@ import com.tencent.matrix.util.MatrixLog;
 
 /**
  * Created by tangyinsheng on 2017/6/2.
+ * ok
  */
 
 public class ResourcePlugin extends Plugin {
@@ -42,6 +43,7 @@ public class ResourcePlugin extends Plugin {
         mConfig = config;
     }
 
+    //todo
     public static void activityLeakFixer(Application application) {
         // Auto break the path from Views in their holder to gc root when activity is destroyed.
         application.registerActivityLifecycleCallbacks(new ActivityLifeCycleCallbacksAdapter() {
