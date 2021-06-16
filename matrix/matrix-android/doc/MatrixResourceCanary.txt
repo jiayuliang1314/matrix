@@ -1,0 +1,191 @@
+监控Activity泄漏和Bitmap重复
+
+ResourcePlugin
+    介绍：定义了个Plugin，有两个成员变量，ResourceConfig，ActivityRefWatcher
+    问题：
+    1.todo activityLeakFixer ActivityLeakFixer 用于修复activity泄漏，但没用到
+    2.todo Plugin类是Matrix的lib架构的一部分放后边学习
+
+ResourceConfig
+    介绍：配置类
+       getScanIntervalMillis     //监控时间间隔
+       getBgScanIntervalMillis   //应用处于后台的时候的监控时间间隔
+       getMaxRedetectTimes       //几次gc之后才确定是否属于泄漏了  GC Root
+       getDumpHprofMode          //监控模式
+       getTargetActivity         //查看泄漏的Activity，在ManualDumpProcessor里会用到
+       getDetectDebugger         //是否在debugger模式支持
+
+        //如果跳过触发Dump Hprof，甚至可以把监测步骤在现网环境启用，以发现测试阶段难以触发的Activity泄漏
+        public enum DumpMode {
+            NO_DUMP, // report only
+            AUTO_DUMP, // auto dump hprof
+            MANUAL_DUMP, // notify only
+            SILENCE_ANALYSE, // dump and analyse hprof when screen off
+            FORK_DUMP, // fork dump hprof immediately TODO
+            FORK_ANALYSE, // fork dump and analyse hprof immediately TODO
+        }
+    问题：
+        1.todo IDynamicConfig 一个动态配置接口是Matrix的架构的一部分放后边学习
+
+ActivityRefWatcher
+    介绍：Activity泄漏监控类
+        1.RetryableTaskExecutor构造函数
+                private ActivityRefWatcher(Application app,
+                                           ResourcePlugin resourcePlugin,
+                                           ComponentFactory componentFactory) {
+                    super(app, FILE_CONFIG_EXPIRED_TIME_MILLIS, resourcePlugin.getTag(), resourcePlugin);
+                    this.mResourcePlugin = resourcePlugin;                      //Matrix里ResourcePlugin
+                    final ResourceConfig config = resourcePlugin.getConfig();   //配置信息
+                    //todo MatrixHandlerThread使用
+                    mHandlerThread = MatrixHandlerThread.getNewHandlerThread("matrix_res"); // avoid blocking default matrix thread
+                    mHandler = new Handler(mHandlerThread.getLooper());
+                    mDumpHprofMode = config.getDumpHprofMode();                 //监控模式
+                    mBgScanTimes = config.getBgScanIntervalMillis();            //应用处于后台的时候的监控时间间隔
+                    mFgScanTimes = config.getScanIntervalMillis();              //监控时间间隔
+                    mDetectExecutor = componentFactory.createDetectExecutor(config, mHandlerThread);//监控Task调度器，内部用Handler
+                    mMaxRedetectTimes = config.getMaxRedetectTimes();           //几次gc之后才确定是否属于泄漏了  GC Root
+                    mLeakProcessor = componentFactory.createLeakProcess(mDumpHprofMode, this);//检测到泄漏了，处理程序，根据监控模式的不同处理程序不同
+                    mDestroyedActivityInfos = new ConcurrentLinkedQueue<>();    //保存ondestory的activity
+                }
+        2.pushDestroyedActivityInfo，是个ActivityLifeCycleCallbacksAdapter，在onActivityDestroyed的时候，将activity放入队列
+        private final Application.ActivityLifecycleCallbacks pushDestroyedActivityInfo = new ActivityLifeCycleCallbacksAdapter() {
+                  @Override
+                  public void onActivityDestroyed(Activity activity) {
+                      //记录已被destory的Activity
+                      pushDestroyedActivityInfo(activity);
+                      ...
+                  }
+              };
+        private void pushDestroyedActivityInfo(Activity activity) {
+            final String activityName = activity.getClass().getName();
+            //该Activity确认存在泄漏，且已经上报
+            if ((mDumpHprofMode == ResourceConfig.DumpMode.NO_DUMP || mDumpHprofMode == ResourceConfig.DumpMode.AUTO_DUMP)
+                    && !mResourcePlugin.getConfig().getDetectDebugger() //不是debug模式
+                    && isPublished(activityName)) {                     //已经上报了
+                MatrixLog.i(TAG, "activity leak with name %s had published, just ignore", activityName);
+                return;
+            }
+            final UUID uuid = UUID.randomUUID();
+            final StringBuilder keyBuilder = new StringBuilder();
+            //生成Activity实例的唯一标识
+            keyBuilder
+                    .append(ACTIVITY_REFKEY_PREFIX)
+                    .append(activityName)
+                    .append('_')
+                    .append(Long.toHexString(uuid.getMostSignificantBits()))
+                    .append(Long.toHexString(uuid.getLeastSignificantBits()));
+            final String key = keyBuilder.toString();
+            //构造一个数据结构，表示一个已被destroy的Activity，key是其代表他的唯一值
+            final DestroyedActivityInfo destroyedActivityInfo = new DestroyedActivityInfo(key, activity, activityName);
+            //放入后续待检测的Activity list
+            mDestroyedActivityInfos.add(destroyedActivityInfo);
+            synchronized (mDestroyedActivityInfos) {
+                mDestroyedActivityInfos.notifyAll();
+            }
+            MatrixLog.d(TAG, "mDestroyedActivityInfos add %s", activityName);
+        }
+        3.开始检测
+    private final RetryableTask mScanDestroyedActivitiesTask = new RetryableTask() {
+
+        @Override
+        public Status execute() {
+            // If destroyed activity list is empty, just wait to save power.
+            if (mDestroyedActivityInfos.isEmpty()) {
+                MatrixLog.i(TAG, "DestroyedActivityInfo is empty! wait...");
+                synchronized (mDestroyedActivityInfos) {
+                    try {
+                        mDestroyedActivityInfos.wait();
+                    } catch (Throwable ignored) {
+                        // Ignored.
+                    }
+                }
+                MatrixLog.i(TAG, "DestroyedActivityInfo is NOT empty! resume check");
+                return Status.RETRY;
+            }
+
+            // Fake leaks will be generated when debugger is attached.
+            //Debug调试模式，检测可能失效，直接return
+            if (Debug.isDebuggerConnected() && !mResourcePlugin.getConfig().getDetectDebugger()) {
+                MatrixLog.w(TAG, "debugger is connected, to avoid fake result, detection was delayed.");
+                return Status.RETRY;
+            }
+
+            //GC三次
+            triggerGc();
+            triggerGc();
+            triggerGc();
+
+            final Iterator<DestroyedActivityInfo> infoIt = mDestroyedActivityInfos.iterator();
+            //遍历mDestroyedActivityInfos队列
+            while (infoIt.hasNext()) {
+                final DestroyedActivityInfo destroyedActivityInfo = infoIt.next();
+                if ((mDumpHprofMode == ResourceConfig.DumpMode.NO_DUMP || mDumpHprofMode == ResourceConfig.DumpMode.AUTO_DUMP)
+                        && !mResourcePlugin.getConfig().getDetectDebugger()
+                        && isPublished(destroyedActivityInfo.mActivityName)) {
+                    //已经上报过就不管了
+                    MatrixLog.v(TAG, "activity with key [%s] was already published.", destroyedActivityInfo.mActivityName);
+                    infoIt.remove();
+                    continue;
+                }
+                triggerGc();
+                if (destroyedActivityInfo.mActivityRef.get() == null) {
+                    // The activity was recycled by a gc triggered outside.
+                    //已经回收了，说明没有泄漏，从队列里删除
+                    MatrixLog.v(TAG, "activity with key [%s] was already recycled.", destroyedActivityInfo.mKey);
+                    infoIt.remove();
+                    continue;
+                }
+                //activity还没有被回收，将其检测次数mDetectedCount加1
+                ++destroyedActivityInfo.mDetectedCount;
+                if (destroyedActivityInfo.mDetectedCount < mMaxRedetectTimes
+                        && !mResourcePlugin.getConfig().getDetectDebugger()) {
+                    // Although the sentinel tell us the activity should have been recycled,
+                    // system may still ignore it, so try again until we reach max retry times.
+                    MatrixLog.i(TAG, "activity with key [%s] should be recycled but actually still exists in %s times, wait for next detection to confirm.",
+                            destroyedActivityInfo.mKey, destroyedActivityInfo.mDetectedCount);
+                    //这个activity检测次数到还没有到达最大值，先处理下一个Activity
+                    triggerGc();
+                    continue;
+                }
+
+                MatrixLog.i(TAG, "activity with key [%s] was suspected to be a leaked instance. mode[%s]", destroyedActivityInfo.mKey, mDumpHprofMode);
+
+                if (mLeakProcessor == null) {
+                    throw new NullPointerException("LeakProcessor not found!!!");
+                }
+
+                triggerGc();
+                if (mLeakProcessor.process(destroyedActivityInfo)) {
+                    MatrixLog.i(TAG, "the leaked activity [%s] with key [%s] has been processed. stop polling", destroyedActivityInfo.mActivityName, destroyedActivityInfo.mKey);
+                    infoIt.remove();
+                }
+            }
+
+            triggerGc();
+            return Status.RETRY;
+        }
+    };
+
+
+    问题：1.todo 可以学习的技术，UUID
+         2.todo 可以学习的技术，HandlerThread
+         3.todo FilePublisher是是Matrix的lib架构的一部分放后边学习
+
+DestroyedActivityInfo
+    介绍：表示已经destory的activity的结构体
+    问题：
+BaseLeakProcessor
+    介绍：基础的处理类
+    问题：
+NoDumpProcessor
+    介绍：没有Dump的的处理类，可用于线上环境
+    问题：
+AutoDumpProcessor
+    介绍：自动dump的处理类
+    问题：
+ManualDumpProcessor
+    介绍：手动
+    问题：
+SilenceAnalyseProcessor
+    介绍：screen off的时候的dump的处理类
+    问题：

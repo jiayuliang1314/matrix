@@ -1,3 +1,11 @@
+可以利用的技术
+    1.解压apk ZipFile                                             => ok
+    2.通过 java.awt.BufferedImage 类读取png文件并判断是否有alpha通道。=> ok
+    3.求文件的MD5，MessageDigest                                   => ok
+    4.利用google开源的 com.android.dexdeps 类库来读取dex文件
+    5.利用apktool解析xml
+    6.将汇编变成smail
+
 ApkChecker
     创建ApkJob，执行其run方法
 
@@ -53,14 +61,14 @@ JobConfig
 UnzipTask
      1.输入的Apk文件首先会经过UnzipTask处理，解压到指定目录，在这一步还会做一些全局的准备工作，
      包括反混淆类名（读取mapping.txt）、反混淆资源(读取resMapping.txt)、统计文件大小等。
-     2.可以利用的技术
+     2.可以利用的技术=》ok
      解压apk ZipFile
 
 ManifestAnalyzeTask
     todo Resources.arsc文件大家应该都知道是干什么的，它实际上就是App的资源索引表
-    todo AXmlResourceParser resourceParser;//解析类，需要传入arscFile
-    todo ApkResourceDecoder具体怎么操作
-    todo ApkUtil disassembleClass 干哈的,反汇编，将汇编变成smail？
+    todo apktool里的 brut.androlib.res.decoder.AXmlResourceParser resourceParser;//解析类，需要传入arscFile
+    todo 1.ApkResourceDecoder具体怎么操作
+    todo 2.ApkUtil disassembleClass 干哈的,反汇编，将汇编变成smail？
     1.ManifestParser
         将AndroidManifest解析成Json数据格式
          *  "android:versionCode" -> {JsonPrimitive@1600} ""228""
@@ -76,11 +84,6 @@ ManifestAnalyzeTask
          *  3 = "R.array.c"
          *  4 = "R.array.d"
 
-CountClassTask
-    利用google开源的 com.android.dexdeps 类库来读取dex文件
-    可以利用的技术DexData，读取dex里的class，不过只是ClassName
-CountRTask
-    可以利用的技术DexData，读取dex里的class，不过只是ClassName
 DuplicateFileTask
     可以利用的技术，求文件的MD5，MessageDigest
 //            "com.google.android.gms.gass.R" -> {Integer@2328} 0
@@ -89,19 +92,7 @@ DuplicateFileTask
 //            "com.example.lib_utils.R" -> {Integer@2338} 1707
 FindNonAlphaPngTask
     可以检测出apk中非透明的png文件
-     * 可以利用的技术：通过 java.awt.BufferedImage 类读取png文件并判断是否有alpha通道。
-MethodCountTask
-     * 统计方法数
-     * 统计dex包含的方法数，并支持将输出结果按照类名(class)或者包名(package)来分组
-     * MethodCountTask 可以统计出各个Dex中的方法数，并按照类名或者包名来分组输出结果。
-     * 实现方法：利用google开源的 com.android.dexdeps 类库来读取dex文件，统计方法数。
-UnusedAssetsTask
-     * UnusedAssetsTask 可以检测出apk中未使用的assets文件
-     * 可以利用的技术：搜索smali文件中引用字符串常量的指令，判断引用的字符串常量是否某个assets文件的名称
-     * 读取dex里的class
-     * DexBackedDexFile -》 ClassDef -》Smali
-
-
+     * 可以利用的技术：通过 java.awt.BufferedImage 类读取png文件并判断是否有alpha通道。=》ok
 ResProguardCheckTask
     查看是否使用ResProguard
     原理：ResProguard会将res资源变成r，或者保留res，其他资源改为[a-z_0-9]{1,3}
@@ -115,13 +106,27 @@ UncompressedFileTask
      * 如果相等，说明没有压缩
      * 如果不相等，说明有压缩了
 
-
+CountClassTask
+    利用google开源的 com.android.dexdeps 类库来读取dex文件
+    可以利用的技术DexData，读取dex里的class，不过只是ClassName
+CountRTask
+    可以利用的技术DexData，读取dex里的class，不过只是ClassName
 MethodCountTask
      * todo
              MethodRef[] methodRefs = dexData.getMethodRefs();                  //方法引用？
              ClassRef[] externalClassRefs = dexData.getExternalReferences();    //外部类？
             classInternalMethod.clear();
             classExternalMethod.clear();
+     * 统计方法数
+     * 统计dex包含的方法数，并支持将输出结果按照类名(class)或者包名(package)来分组
+     * MethodCountTask 可以统计出各个Dex中的方法数，并按照类名或者包名来分组输出结果。
+     * 实现方法：利用google开源的 com.android.dexdeps 类库来读取dex文件，统计方法数。
+UnusedAssetsTask
+     * UnusedAssetsTask 可以检测出apk中未使用的assets文件
+     * 可以利用的技术：搜索smali文件中引用字符串常量的指令，判断引用的字符串常量是否某个assets文件的名称
+     * 读取dex里的class
+     * DexBackedDexFile -》 ClassDef -》Smali
+
 UnusedResourcesTask
      * todo
     unusedResSet.removeAll(resourceRefSet);
