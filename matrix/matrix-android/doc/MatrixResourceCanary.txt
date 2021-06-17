@@ -173,19 +173,45 @@ ActivityRefWatcher
 
 DestroyedActivityInfo
     介绍：表示已经destory的activity的结构体
+    public class DestroyedActivityInfo {
+        public final String mKey;           //这个onDestroy Activity的key，使用了UUID
+        public final String mActivityName;  //Activity的名字
+        public final WeakReference<Activity> mActivityRef;  //WeakReference，gc的时候会回收，如果回收不了说明泄漏了
+        public int mDetectedCount = 0;                      //检测了几次
+    }
+HeapDump
+    介绍：
+    public class HeapDump implements Serializable {
+        private final File mHprofFile;  //hprof文件位置
+        private final String mRefKey;   //DestroyedActivityInfo里边的key
+        private final String mActivityName;
+    }
     问题：
 BaseLeakProcessor
     介绍：基础的处理类
+        private DumpStorageManager                mDumpStorageManager;//此变量唯一需要关注的是newHprofFile方法
+        private AndroidHeapDumper                 mHeapDumper;//负责dump的类，会调用Debug.dumpHprofData(hprofFile.getAbsolutePath());
+        private AndroidHeapDumper.HeapDumpHandler mHeapDumpHandler;//dump成功后回调，裁剪Hprof并上传CanaryWorkerService.shrinkHprofAndReport(mWatcher.getContext(), result);
+
+        protected ActivityLeakResult analyze(File hprofFile, String referenceKey) {
+            final HeapSnapshot heapSnapshot;
+            ActivityLeakResult result;
+            final ExcludedRefs excludedRefs = AndroidExcludedRefs.createAppDefaults(Build.VERSION.SDK_INT, Build.MANUFACTURER).build();
+            try {
+                heapSnapshot = new HeapSnapshot(hprofFile);
+                //todo 这里是这个函数的主要逻辑，使用ActivityLeakAnalyzer分析heapSnapshot，返回ActivityLeakResult
+                result = new ActivityLeakAnalyzer(referenceKey, excludedRefs).analyze(heapSnapshot);
+            } catch (IOException e) {
+                result = ActivityLeakResult.failure(e, 0);
+            }
+            return result;
+        }
     问题：
 NoDumpProcessor
     介绍：没有Dump的的处理类，可用于线上环境
-    问题：
 AutoDumpProcessor
-    介绍：自动dump的处理类
-    问题：
+    介绍：自动dump的处理类，会上传到后台
 ManualDumpProcessor
-    介绍：手动
-    问题：
+    介绍：手动，在手机端分析
 SilenceAnalyseProcessor
-    介绍：screen off的时候的dump的处理类
-    问题：
+    介绍：screen off的时候的dump的处理类，在手机端分析
