@@ -32,7 +32,7 @@ public final class ResourceConfig {
     private static final DumpMode DEFAULT_DUMP_HPROF_MODE = DumpMode.MANUAL_DUMP;
     private final IDynamicConfig mDynamicConfig;//todo，一个动态配置类
     private final DumpMode mDumpHprofMode;
-    private final boolean mDetectDebugger;//todo，是否在debugger模式支持
+    private final boolean mDetectDebugger;//是否在debugger模式支持
     private final String mTargetActivity;//查看泄漏的Activity，在ManualDumpProcessor里会用到
 
     private ResourceConfig(IDynamicConfig dynamicConfig, DumpMode dumpHprofMode, boolean detectDebuger, String targetActivity) {

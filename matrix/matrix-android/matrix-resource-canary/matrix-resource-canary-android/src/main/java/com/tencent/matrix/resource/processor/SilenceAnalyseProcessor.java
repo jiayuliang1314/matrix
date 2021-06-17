@@ -90,8 +90,7 @@ public class SilenceAnalyseProcessor extends BaseLeakProcessor {
         return false;
     }
 
-    // todo analyse Service
-    // todo batch analyse
+    // todo analyse
     private boolean dumpAndAnalyse(String activity, String refString) {
 
         long dumpBegin = System.currentTimeMillis();
@@ -109,12 +108,14 @@ public class SilenceAnalyseProcessor extends BaseLeakProcessor {
 
         long analyseBegin = System.currentTimeMillis();
         try {
+            // todo analyse 这里分析了
             final ActivityLeakResult result = analyze(file, refString);
             MatrixLog.i(TAG, String.format("analyze cost=%sms refString=%s",
                     System.currentTimeMillis() - analyseBegin, refString));
 
             String refChain = result.toString();
             if (result.mLeakFound) {
+                //这里分析了
                 publishIssue(SharePluginInfo.IssueType.LEAK_FOUND, activity, refString, refChain, String.valueOf(
                         System.currentTimeMillis() - dumpBegin));
                 MatrixLog.i(TAG, refChain);

@@ -62,6 +62,7 @@ public abstract class BaseLeakProcessor {
             mHeapDumpHandler = new AndroidHeapDumper.HeapDumpHandler() {
                 @Override
                 public void process(HeapDump result) {
+                    //裁剪Hprof并上传
                     CanaryWorkerService.shrinkHprofAndReport(mWatcher.getContext(), result);
                 }
             };
@@ -77,12 +78,21 @@ public abstract class BaseLeakProcessor {
     public void onDestroy() {
     }
 
+    /**
+     * todo
+     * SilenceAnalyseProcessor 调用了
+     * ManualDumpProcessor调用了
+     * @param hprofFile
+     * @param referenceKey
+     * @return
+     */
     protected ActivityLeakResult analyze(File hprofFile, String referenceKey) {
         final HeapSnapshot heapSnapshot;
         ActivityLeakResult result;
         final ExcludedRefs excludedRefs = AndroidExcludedRefs.createAppDefaults(Build.VERSION.SDK_INT, Build.MANUFACTURER).build();
         try {
             heapSnapshot = new HeapSnapshot(hprofFile);
+            //todo 这里是这个函数的主要逻辑，使用ActivityLeakAnalyzer分析heapSnapshot，返回ActivityLeakResult
             result = new ActivityLeakAnalyzer(referenceKey, excludedRefs).analyze(heapSnapshot);
         } catch (IOException e) {
             result = ActivityLeakResult.failure(e, 0);
@@ -103,6 +113,7 @@ public abstract class BaseLeakProcessor {
             MatrixLog.printErrStackTrace(TAG, jsonException, "");
         }
         issue.setContent(content);
+        //todo matrix lib框架的功能
         getWatcher().getResourcePlugin().onDetectIssue(issue);
     }
 }

@@ -391,7 +391,7 @@ public class UnusedResourcesTask extends ApkTask {
                                     attrReferences.add(columns[i]);
                                 }
                             }
-                            .put(resourceName, attrReferences);
+                            styleableMap.put(resourceName, attrReferences);
                         }
                     }
                 }
@@ -467,6 +467,7 @@ public class UnusedResourcesTask extends ApkTask {
             for (ClassDef classDef : classDefs) {
                 String[] lines = ApkUtil.disassembleClass(classDef, options);
                 if (lines != null) {
+//                    遍历DexFile，并使用Bakmali库将其编译成Smali文件
                     readSmaliLines(lines);
                 }
             }
@@ -639,6 +640,7 @@ public class UnusedResourcesTask extends ApkTask {
             TaskResult taskResult = TaskResultFactory.factory(type, TaskResultFactory.TASK_RESULT_TYPE_JSON, config);
             long startTime = System.currentTimeMillis();
             readMappingTxtFile();
+            //首先通过读取R.txt获取apk中声明的所有资源 写入set中；
             readResourceTxtFile();
             //this.resourceDefMap = {HashMap@1789}  size = 5782
             // "0x7f09014f" -> "R.id.dar_container"
@@ -647,8 +649,11 @@ public class UnusedResourcesTask extends ApkTask {
             // "0x7f10003e" -> "R.string.advert_a"
             unusedResSet.addAll(resourceDefMap.values());
             Log.i(TAG, "find resource declarations %d items.", unusedResSet.size());
+//            通过读取smali文件中引用资源的指令 得出class中引用的资源Set
+            //遍历DexFile，并使用Bakmali库将其编译成Smali文件
             decodeCode();
             Log.i(TAG, "find resource references in classes: %d items.", resourceRefSet.size());
+            //遍历XML、resource.arsc
             decodeResources();
             Log.i(TAG, "find resource references %d items.", resourceRefSet.size());
             unusedResSet.removeAll(resourceRefSet);
