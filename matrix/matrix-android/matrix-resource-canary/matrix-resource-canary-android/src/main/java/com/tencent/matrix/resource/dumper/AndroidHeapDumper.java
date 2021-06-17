@@ -83,7 +83,7 @@ public class AndroidHeapDumper {
             final FutureResult<Toast> waitingForToast = new FutureResult<>();
             showToast(waitingForToast);
 
-            if (!waitingForToast.wait(5, TimeUnit.SECONDS)) {
+            if (!waitingForToast.wait(5, TimeUnit.SECONDS)) {//这里是等toast
                 MatrixLog.w(TAG, "give up dumping heap, waiting for toast too long.");
                 return null;
             }
@@ -98,6 +98,7 @@ public class AndroidHeapDumper {
             }
         } else {
             try {
+                //这里是真正dump的地方
                 Debug.dumpHprofData(hprofFile.getAbsolutePath());
                 return hprofFile;
             } catch (Exception e) {
@@ -120,7 +121,7 @@ public class AndroidHeapDumper {
                 // Waiting for Idle to make sure Toast gets rendered.
                 Looper.myQueue().addIdleHandler(new MessageQueue.IdleHandler() {
                     @Override
-                    public boolean queueIdle() {
+                    public boolean queueIdle() {//等toast花了点时间
                         waitingForToast.set(toast);
                         return false;
                     }

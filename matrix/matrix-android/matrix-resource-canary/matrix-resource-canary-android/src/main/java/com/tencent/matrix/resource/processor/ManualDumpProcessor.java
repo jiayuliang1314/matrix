@@ -29,7 +29,8 @@ import java.util.concurrent.TimeUnit;
 import static android.os.Build.VERSION.SDK_INT;
 
 /**
- * X process leaked -> send notification -> main process activity -> dump and analyse in X process -> show result in main process activity
+ * X process leaked -> send notification -> main process activity
+ * -> dump and analyse in X process -> show result in main process activity
  * Created by Yves on 2021/3/4
  */
 public class ManualDumpProcessor extends BaseLeakProcessor {

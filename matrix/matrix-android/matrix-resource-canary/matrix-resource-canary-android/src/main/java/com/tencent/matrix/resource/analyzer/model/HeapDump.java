@@ -27,7 +27,7 @@ import java.io.Serializable;
  * <p>
  * Some unused fields were removed.
  */
-//ok
+//ok - HeapDump代表
 public class HeapDump implements Serializable {
 
     private final File mHprofFile;

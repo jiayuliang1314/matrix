@@ -2,9 +2,9 @@
     1.解压apk ZipFile                                             => ok
     2.通过 java.awt.BufferedImage 类读取png文件并判断是否有alpha通道。=> ok
     3.求文件的MD5，MessageDigest                                   => ok
-    4.利用google开源的 com.android.dexdeps 类库来读取dex文件
+    4.利用google开源的 com.android.dexdeps 类库来读取dex文件，Bakmali库将汇编变成smail
     5.利用apktool解析xml
-    6.将汇编变成smail
+    6.Bakmali库将汇编变成smail
 
 ApkChecker
     创建ApkJob，执行其run方法

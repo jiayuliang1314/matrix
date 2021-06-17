@@ -33,6 +33,7 @@ import java.util.Locale;
  * <p>
  * This class is ported from LeakCanary.
  * ok
+ * 唯一需要关注的是newHprofFile方法
  */
 
 public class DumpStorageManager {
@@ -63,6 +64,7 @@ public class DumpStorageManager {
         if (storageDir == null) {
             return null;
         }
+//        进程名+进程id+时间
         final String hprofFileName = "dump"
                 + "_" + MatrixUtil.getProcessName(mContext).replace(".", "_").replace(":", "_")
                 + "_" + Process.myPid()
