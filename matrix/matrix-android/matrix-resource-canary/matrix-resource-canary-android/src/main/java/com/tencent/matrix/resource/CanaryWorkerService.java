@@ -21,8 +21,8 @@ import android.content.Intent;
 import android.os.Build;
 
 import com.tencent.matrix.resource.analyzer.model.HeapDump;
-import com.tencent.matrix.resource.hproflib.HprofBufferShrinker;
 import com.tencent.matrix.resource.dumper.DumpStorageManager;
+import com.tencent.matrix.resource.hproflib.HprofBufferShrinker;
 import com.tencent.matrix.util.MatrixLog;
 
 import java.io.BufferedOutputStream;
@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -43,7 +44,6 @@ import static com.tencent.matrix.resource.common.utils.StreamUtil.copyFileToStre
 
 /**
  * Created by tangyinsheng on 2017/7/11.
- *
  */
 public class CanaryWorkerService extends MatrixJobIntentService {
     private static final String TAG = "Matrix.CanaryWorkerService";
@@ -73,7 +73,7 @@ public class CanaryWorkerService extends MatrixJobIntentService {
                         MatrixLog.e(TAG, "failed to deserialize heap dump, give up shrinking and reporting.");
                     }
                 } catch (Throwable thr) {
-                    MatrixLog.printErrStackTrace(TAG, thr,  "failed to deserialize heap dump, give up shrinking and reporting.");
+                    MatrixLog.printErrStackTrace(TAG, thr, "failed to deserialize heap dump, give up shrinking and reporting.");
                 }
             }
         }
@@ -81,28 +81,31 @@ public class CanaryWorkerService extends MatrixJobIntentService {
 
     private void doShrinkHprofAndReport(HeapDump heapDump) {
         final File hprofDir = heapDump.getHprofFile().getParentFile();
+        //裁剪之后的Hprof文件名
         final File shrinkedHProfFile = new File(hprofDir, getShrinkHprofName(heapDump.getHprofFile()));
         final File zipResFile = new File(hprofDir, getResultZipName("dump_result_" + android.os.Process.myPid()));
         final File hprofFile = heapDump.getHprofFile();
         ZipOutputStream zos = null;
         try {
             long startTime = System.currentTimeMillis();
+            //执行Hprof裁剪
             new HprofBufferShrinker().shrink(hprofFile, shrinkedHProfFile);
             MatrixLog.i(TAG, "shrink hprof file %s, size: %dk to %s, size: %dk, use time:%d",
                     hprofFile.getPath(), hprofFile.length() / 1024, shrinkedHProfFile.getPath(), shrinkedHProfFile.length() / 1024, (System.currentTimeMillis() - startTime));
-
+            //打成压缩包
             zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipResFile)));
-
+            //记录一些设备信息
             final ZipEntry resultInfoEntry = new ZipEntry("result.info");
+            //裁剪后的Hprof文件
             final ZipEntry shrinkedHProfEntry = new ZipEntry(shrinkedHProfFile.getName());
 
             zos.putNextEntry(resultInfoEntry);
-            final PrintWriter pw = new PrintWriter(new OutputStreamWriter(zos, Charset.forName("UTF-8")));
+            final PrintWriter pw = new PrintWriter(new OutputStreamWriter(zos, StandardCharsets.UTF_8));
             pw.println("# Resource Canary Result Infomation. THIS FILE IS IMPORTANT FOR THE ANALYZER !!");
-            pw.println("sdkVersion=" + Build.VERSION.SDK_INT);
-            pw.println("manufacturer=" + Build.MANUFACTURER);
-            pw.println("hprofEntry=" + shrinkedHProfEntry.getName());
-            pw.println("leakedActivityKey=" + heapDump.getReferenceKey());
+            pw.println("sdkVersion=" + Build.VERSION.SDK_INT);//系统版本
+            pw.println("manufacturer=" + Build.MANUFACTURER);//厂商信息
+            pw.println("hprofEntry=" + shrinkedHProfEntry.getName());//裁剪后Hprof文件名
+            pw.println("leakedActivityKey=" + heapDump.getReferenceKey());//泄漏Activity实例的key
             pw.flush();
             zos.closeEntry();
 
@@ -110,11 +113,12 @@ public class CanaryWorkerService extends MatrixJobIntentService {
             copyFileToStream(shrinkedHProfFile, zos);
             zos.closeEntry();
 
+            //原始数据删除
             shrinkedHProfFile.delete();
             hprofFile.delete();
 
             MatrixLog.i(TAG, "process hprof file use total time:%d", (System.currentTimeMillis() - startTime));
-
+            //CanaryResultService执行上报逻辑
             CanaryResultService.reportHprofResult(this, zipResFile.getAbsolutePath(), heapDump.getActivityName());
         } catch (IOException e) {
             MatrixLog.printErrStackTrace(TAG, e, "");

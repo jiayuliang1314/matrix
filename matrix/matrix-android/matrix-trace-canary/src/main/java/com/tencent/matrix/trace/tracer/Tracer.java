@@ -6,6 +6,7 @@ import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.trace.listeners.LooperObserver;
 import com.tencent.matrix.util.MatrixLog;
 
+//ok
 public abstract class Tracer extends LooperObserver implements ITracer {
 
     private volatile boolean isAlive = false;

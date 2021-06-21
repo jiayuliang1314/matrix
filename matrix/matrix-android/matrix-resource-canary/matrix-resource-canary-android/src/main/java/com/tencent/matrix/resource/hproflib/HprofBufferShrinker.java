@@ -168,12 +168,15 @@ public class HprofBufferShrinker {
             is = new FileInputStream(hprofIn);
             os = new BufferedOutputStream(new FileOutputStream(hprofOut));
             final HprofReader reader = new HprofReader(new BufferedInputStream(is));
+            //1、收集Bitmap和String信息
             reader.accept(new HprofInfoCollectVisitor());
             // Reset.
             is.getChannel().position(0);
+            //2、找到Bitmap、String中持有的byte数组,并找到内容重复的Bitmap
             reader.accept(new HprofKeptBufferCollectVisitor());
             // Reset.
             is.getChannel().position(0);
+            //3、裁剪掉内容重复的Bitmap，和其他byte数组
             reader.accept(new HprofBufferShrinkVisitor(new HprofWriter(os)));
         } finally {
             if (os != null) {
@@ -208,14 +211,19 @@ public class HprofBufferShrinker {
         @Override
         public void visitStringRecord(ID id, String text, int timestamp, long length) {
             if (mBitmapClassNameStringId == null && "android.graphics.Bitmap".equals(text)) {
+                //Bitmap类型String字符串的索引
                 mBitmapClassNameStringId = id;
             } else if (mMBufferFieldNameStringId == null && "mBuffer".equals(text)) {
+                //mBuffer字段String字符串的索引
                 mMBufferFieldNameStringId = id;
             } else if (mMRecycledFieldNameStringId == null && "mRecycled".equals(text)) {
+                //mRecycled字段String字符串的索引
                 mMRecycledFieldNameStringId = id;
             } else if (mStringClassNameStringId == null && "java.lang.String".equals(text)) {
+                //String类型 字符串的索引
                 mStringClassNameStringId = id;
             } else if (mValueFieldNameStringId == null && "value".equals(text)) {
+                //value字段字符串的索引
                 mValueFieldNameStringId = id;
             }
         }
@@ -223,8 +231,10 @@ public class HprofBufferShrinker {
         @Override
         public void visitLoadClassRecord(int serialNumber, ID classObjectId, int stackTraceSerial, ID classNameStringId, int timestamp, long length) {
             if (mBmpClassId == null && mBitmapClassNameStringId != null && mBitmapClassNameStringId.equals(classNameStringId)) {
+                //找到Bitmap这个类的索引
                 mBmpClassId = classObjectId;
             } else if (mStringClassId == null && mStringClassNameStringId != null && mStringClassNameStringId.equals(classNameStringId)) {
+                //找到String这个类的索引
                 mStringClassId = classObjectId;
             }
         }
@@ -235,8 +245,10 @@ public class HprofBufferShrinker {
                 @Override
                 public void visitHeapDumpClass(ID id, int stackSerialNumber, ID superClassId, ID classLoaderId, int instanceSize, Field[] staticFields, Field[] instanceFields) {
                     if (mBmpClassInstanceFields == null && mBmpClassId != null && mBmpClassId.equals(id)) {
+                        //找到Bitmap所有实例的字段信息
                         mBmpClassInstanceFields = instanceFields;
                     } else if (mStringClassInstanceFields == null && mStringClassId != null && mStringClassId.equals(id)) {
+                        //找到String所有势力的字段信息
                         mStringClassInstanceFields = instanceFields;
                     }
                 }

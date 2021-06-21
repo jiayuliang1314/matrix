@@ -64,6 +64,47 @@ UnzipTask
      2.可以利用的技术=》ok
      解压apk ZipFile
 
+     class mapping文件截取片段：
+         ...
+     android.arch.core.executor.ArchTaskExecutor$1 -> android.arch.a.a.a$1:
+         42:42:void <init>() -> <init>
+         45:46:void execute(java.lang.Runnable) -> execute
+     android.arch.core.executor.ArchTaskExecutor$2 -> android.arch.a.a.a$2:
+         50:50:void <init>() -> <init>
+         53:54:void execute(java.lang.Runnable) -> execute
+     android.arch.core.executor.DefaultTaskExecutor -> android.arch.a.a.b:
+         java.lang.Object mLock -> a
+         java.util.concurrent.ExecutorService mDiskIO -> b
+         android.os.Handler mMainHandler -> c
+         31:33:void <init>() -> <init>
+         40:41:void executeOnDiskIO(java.lang.Runnable) -> a
+         45:54:void postToMainThread(java.lang.Runnable) -> b
+         58:58:boolean isMainThread() -> b
+         ...
+
+    * 原始类名 -> 混淆后类名 （顶格）
+    * 原始字段名 -> 混淆后字段名   （行首预留一个Tab）
+    * 原始函数名 -> 混淆后函数名   （行首预留一个Tab）
+
+    res mapping文件截取片段：
+    res path mapping:
+        res/layout-v22 -> r/a
+        res/drawable -> r/b
+        res/color-night-v8 -> r/c
+        res/xml -> r/d
+        res/layout -> r/e
+      ...
+
+    res id mapping:
+        com.example.app.R.attr.avatar_border_color -> com.example.app.R.attr.a
+        com.example.app.R.attr.actualImageScaleType -> com.example.app.R.attr.b
+        com.example.app.R.attr.backgroundImage -> com.example.app.R.attr.c
+        com.example.app.R.attr.fadeDuration -> com.example.app.R.attr.d
+        com.example.app.R.attr.failureImage -> com.example.app.R.attr.e
+    * 原始资源目录 -> 混淆后资源目录
+    * 原始资源名 -> 混淆后资源名
+
+
 ManifestAnalyzeTask
     todo Resources.arsc文件大家应该都知道是干什么的，它实际上就是App的资源索引表
     todo apktool里的 brut.androlib.res.decoder.AXmlResourceParser resourceParser;//解析类，需要传入arscFile

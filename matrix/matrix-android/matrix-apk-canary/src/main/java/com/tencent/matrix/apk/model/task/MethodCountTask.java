@@ -56,6 +56,7 @@ import static com.tencent.matrix.apk.model.task.TaskFactory.TASK_TYPE_COUNT_METH
  *
  * MethodCountTask 可以统计出各个Dex中的方法数，并按照类名或者包名来分组输出结果。
  * 实现方法：利用google开源的 com.android.dexdeps 类库来读取dex文件，统计方法数。
+ * 统计在本dex文件内定义的方法数、未在本dex文件内定义的方法数。
  *
  *     {
  *       "name":"-countMethod",
@@ -132,14 +133,17 @@ public class MethodCountTask extends ApkTask {
         pkgInternalRefMethod.clear();
         pkgExternalMethod.clear();
         DexData dexData = new DexData(dexFile);
+        //加载dex数据
         dexData.load();
         MethodRef[] methodRefs = dexData.getMethodRefs();
         ClassRef[] externalClassRefs = dexData.getExternalReferences();
+        //获取混淆的Class maping规则
         Map<String, String> proguardClassMap = config.getProguardClassMap();
         String className = null;
         for (ClassRef classRef : externalClassRefs) {
             className = ApkUtil.getNormalClassName(classRef.getName());
             if (proguardClassMap.containsKey(className)) {
+                //混淆前的原始className
                 className = proguardClassMap.get(className);
             }
             if (className.indexOf('.') == -1) {
@@ -213,13 +217,16 @@ public class MethodCountTask extends ApkTask {
             JsonArray jsonArray = new JsonArray();
             for (int i = 0; i < dexFileList.size(); i++) {
                 RandomAccessFile dexFile = dexFileList.get(i);
+                //计算dex中的方法信息
                 countDex(dexFile);
                 dexFile.close();
+                //dex内能找到定义的方法
                 int totalInternalMethods = sumOfValue(classInternalMethod);
+                //跨dex的方法
                 int totalExternalMethods = sumOfValue(classExternalMethod);
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("dex-file", dexFileNameList.get(i));
-
+                //按Class维度聚合
                 if (JobConstants.GROUP_CLASS.equals(group)) {
                     List<String> sortList = sortKeyByValue(classInternalMethod);
                     JsonArray classes = new JsonArray();
@@ -230,6 +237,7 @@ public class MethodCountTask extends ApkTask {
                         classes.add(classObj);
                     }
                     jsonObject.add("internal-classes", classes);
+                    //按package维度聚合
                 } else if (JobConstants.GROUP_PACKAGE.equals(group)) {
                     String packageName;
                     for (Map.Entry<String, Integer> entry : classInternalMethod.entrySet()) {

@@ -62,7 +62,7 @@ public abstract class BaseLeakProcessor {
             mHeapDumpHandler = new AndroidHeapDumper.HeapDumpHandler() {
                 @Override
                 public void process(HeapDump result) {
-                    //裁剪Hprof并上传
+                    //裁剪Hprof并上传,process流程最终调用CanaryWorkerService进行裁剪和上报
                     CanaryWorkerService.shrinkHprofAndReport(mWatcher.getContext(), result);
                 }
             };
