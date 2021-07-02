@@ -35,8 +35,8 @@ public class Utils {
     }
 
     public static String calculateCpuUsage(long threadMs, long ms) {
-        if (threadMs <= 0) {
-            return ms > 1000 ? "0%" : "100%";
+        if (threadMs <= 0) {//todo？
+            return ms > 1000 ? "0%" : "100%";//todo？
         }
 
         if (threadMs >= ms) {
@@ -50,6 +50,7 @@ public class Utils {
         return null == str || str.equals("");
     }
 
+    //todo？
     public static int[] getProcessPriority(int pid) {
         String name = String.format("/proc/%s/stat", pid);
         int priority = Integer.MIN_VALUE;

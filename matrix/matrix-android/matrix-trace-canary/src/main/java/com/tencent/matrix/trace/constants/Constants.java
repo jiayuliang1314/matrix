@@ -22,27 +22,27 @@ package com.tencent.matrix.trace.constants;
 
 public class Constants {
 
-    public static final int BUFFER_SIZE = 100 * 10000; // 7.6M
-    public static final int TIME_UPDATE_CYCLE_MS = 5;
+    public static final int BUFFER_SIZE = 100 * 10000;  // 7.6M
+    public static final int TIME_UPDATE_CYCLE_MS = 5;   //ok 通过一个线程，每五毫秒更新变量，每个方法调用前后只需读取该变量获取时间
     public static final int FILTER_STACK_MAX_COUNT = 60;
     public static final float FILTER_STACK_KEY_ALL_PERCENT = .3F;
     public static final float FILTER_STACK_KEY_PATENT_PERCENT = .8F;
-    public static final int DEFAULT_EVIL_METHOD_THRESHOLD_MS = 700;
-    public static final int DEFAULT_FPS_TIME_SLICE_ALIVE_MS = 10 * 1000;
-    public static final int TIME_MILLIS_TO_NANO = 1000000;
+    public static final int DEFAULT_EVIL_METHOD_THRESHOLD_MS = 700;//邪恶方法，执行时间长的方法阈值
+    public static final int DEFAULT_FPS_TIME_SLICE_ALIVE_MS = 10 * 1000;//？？
+    public static final int TIME_MILLIS_TO_NANO = 1000000;      //ok
     public static final int DEFAULT_INPUT_EXPIRED_TIME = 500;
-    public static final int DEFAULT_ANR = 5 * 1000;
+    public static final int DEFAULT_ANR = 5 * 1000;             //ok
     public static final int DEFAULT_NORMAL_LAG = 2 * 1000;
-    public static final int DEFAULT_ANR_INVALID = 6 * 1000;
-    public static final long DEFAULT_FRAME_DURATION = 16666667L;
+    public static final int DEFAULT_ANR_INVALID = 6 * 1000;     //ok
+    public static final long DEFAULT_FRAME_DURATION = 16666667L;//ok
 
-    public static final int DEFAULT_DROPPED_NORMAL = 3;
-    public static final int DEFAULT_DROPPED_MIDDLE = 9;
-    public static final int DEFAULT_DROPPED_HIGH = 24;
-    public static final int DEFAULT_DROPPED_FROZEN = 42;
+    public static final int DEFAULT_DROPPED_NORMAL = 3; //ok 掉帧
+    public static final int DEFAULT_DROPPED_MIDDLE = 9; //ok 150ms
+    public static final int DEFAULT_DROPPED_HIGH = 24;  //ok 384ms
+    public static final int DEFAULT_DROPPED_FROZEN = 42;//ok 672ms
 
     public static final int DEFAULT_STARTUP_THRESHOLD_MS_WARM = 4 * 1000;
-    public static final int DEFAULT_STARTUP_THRESHOLD_MS_COLD = 10 * 1000;
+    public static final int DEFAULT_STARTUP_THRESHOLD_MS_COLD = 10 * 1000;//干哈的
 
     public static final int DEFAULT_RELEASE_BUFFER_DELAY = 15 * 1000;//15秒
     public static final int TARGET_EVIL_METHOD_STACK = 30;

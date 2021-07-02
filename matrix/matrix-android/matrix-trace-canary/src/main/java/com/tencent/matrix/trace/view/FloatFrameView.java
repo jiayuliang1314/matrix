@@ -69,7 +69,7 @@ public class FloatFrameView extends LinearLayout {
         chartView = findViewById(R.id.chart);
     }
 
-
+    //todo 干哈的
     public static class LineChartView extends View {
 
         private final Paint paint;

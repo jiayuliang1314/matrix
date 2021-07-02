@@ -36,7 +36,9 @@ public class SharePluginInfo {
     public static final String ISSUE_TRACE_STACK = "stack";
     public static final String ISSUE_THREAD_STACK = "threadStack";
     public static final String ISSUE_PROCESS_PRIORITY = "processPriority";
-    public static final String ISSUE_PROCESS_NICE = "processNice";
+    //使用nice value（以下成为nice值）来设定一个进程的优先级，系统任务调度器根据nice值合理安排调度。
+//    nice的值越大，进程的优先级就越低，获得CPU调用的机会越少，nice值越小，进程的优先级则越高，获得CPU调用的机会越多。
+    public static final String ISSUE_PROCESS_NICE = "processNice";//https://blog.csdn.net/caonima0001112/article/details/50379738
     public static final String ISSUE_PROCESS_FOREGROUND = "isProcessForeground";
     public static final String ISSUE_STACK_KEY = "stackKey";
     public static final String ISSUE_MEMORY = "memory";

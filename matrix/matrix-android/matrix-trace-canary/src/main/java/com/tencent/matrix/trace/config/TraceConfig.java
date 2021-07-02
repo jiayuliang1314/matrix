@@ -129,20 +129,20 @@ public class TraceConfig implements IDefaultConfig {
                 : dynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_trace_evil_method_threshold.name(), Constants.DEFAULT_EVIL_METHOD_THRESHOLD_MS);
     }
 
-    public int getTimeSliceMs() {
+    public int getTimeSliceMs() {//todo？干哈的
         return null == dynamicConfig
                 ? Constants.DEFAULT_FPS_TIME_SLICE_ALIVE_MS
                 : dynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_trace_fps_time_slice.name(), Constants.DEFAULT_FPS_TIME_SLICE_ALIVE_MS);
     }
 
 
-    public int getColdStartupThresholdMs() {
+    public int getColdStartupThresholdMs() {//冷启动限制，10s
         return null == dynamicConfig
                 ? Constants.DEFAULT_STARTUP_THRESHOLD_MS_COLD
                 : dynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_trace_app_start_up_threshold.name(), Constants.DEFAULT_STARTUP_THRESHOLD_MS_COLD);
     }
 
-    public int getWarmStartupThresholdMs() {
+    public int getWarmStartupThresholdMs() {//热启动限制，4s
         return null == dynamicConfig
                 ? Constants.DEFAULT_STARTUP_THRESHOLD_MS_WARM
                 : dynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_trace_warm_app_start_up_threshold.name(), Constants.DEFAULT_STARTUP_THRESHOLD_MS_WARM);
