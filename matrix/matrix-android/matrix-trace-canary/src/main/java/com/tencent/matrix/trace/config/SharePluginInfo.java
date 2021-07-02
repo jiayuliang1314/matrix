@@ -22,10 +22,10 @@ package com.tencent.matrix.trace.config;
 
 public class SharePluginInfo {
 
-    public static final String TAG_PLUGIN = "Trace";
-    public static final String TAG_PLUGIN_FPS = TAG_PLUGIN + "_FPS";
-    public static final String TAG_PLUGIN_EVIL_METHOD = TAG_PLUGIN + "_EvilMethod";
-    public static final String TAG_PLUGIN_STARTUP = TAG_PLUGIN + "_StartUp";
+    public static final String TAG_PLUGIN = "Trace";                //plugin名字
+    public static final String TAG_PLUGIN_FPS = TAG_PLUGIN + "_FPS";//plugin fps功能
+    public static final String TAG_PLUGIN_EVIL_METHOD = TAG_PLUGIN + "_EvilMethod"; //plugin 耗时函数功能
+    public static final String TAG_PLUGIN_STARTUP = TAG_PLUGIN + "_StartUp";        //plugin启动功能
 
 //    public static final String ISSUE_DEVICE = "machine";
     public static final String ISSUE_SCENE = "scene";

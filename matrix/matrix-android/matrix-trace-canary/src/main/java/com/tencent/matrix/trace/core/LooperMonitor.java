@@ -152,7 +152,6 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
             } catch (Exception e) {
                 Log.e(TAG, "[removeIdleHandler] %s", e);
             }
-
         }
     }
 
@@ -168,6 +167,7 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
             }
         }
     }
+    //endregion
 
 
     class LooperPrinter implements Printer {
@@ -182,7 +182,7 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         @Override
         public void println(String x) {
             if (null != origin) {
-                origin.println(x);
+                origin.println(x); // 保证原对象正常执行
                 if (origin == this) {
                     throw new RuntimeException(TAG + " origin == this");
                 }
@@ -197,7 +197,7 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
             }
 
             if (isValid) {
-                dispatch(x.charAt(0) == '>', x);
+                dispatch(x.charAt(0) == '>', x);// 分发，通过第一个字符判断是开始分发，还是结束分发
             }
 
         }

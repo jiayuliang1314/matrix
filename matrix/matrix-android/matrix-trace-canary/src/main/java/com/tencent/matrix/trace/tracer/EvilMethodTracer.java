@@ -33,6 +33,7 @@ public class EvilMethodTracer extends Tracer {
     private long evilThresholdMs;
     private boolean isEvilMethodTraceEnable;
 
+    //ok
     public EvilMethodTracer(TraceConfig config) {
         this.config = config;
         this.evilThresholdMs = config.getEvilThresholdMs();

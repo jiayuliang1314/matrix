@@ -169,7 +169,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
     }
 
-
+//    FrameTracer模块主要FPSCollector和FrameDecorator， 主要原理是通过Choreographer获取VSync垂直同步相关回调。
     private class FPSCollector extends IDoFrameListener {
 
         private Handler frameHandler = new Handler(MatrixHandlerThread.getDefaultHandlerThread().getLooper());

@@ -123,7 +123,7 @@ public class TraceConfig implements IDefaultConfig {
     }
 
 
-    public int getEvilThresholdMs() {
+    public int getEvilThresholdMs() {//700ms
         return null == dynamicConfig
                 ? Constants.DEFAULT_EVIL_METHOD_THRESHOLD_MS
                 : dynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_trace_evil_method_threshold.name(), Constants.DEFAULT_EVIL_METHOD_THRESHOLD_MS);
@@ -225,8 +225,5 @@ public class TraceConfig implements IDefaultConfig {
         public TraceConfig build() {
             return config;
         }
-
     }
-
-
 }

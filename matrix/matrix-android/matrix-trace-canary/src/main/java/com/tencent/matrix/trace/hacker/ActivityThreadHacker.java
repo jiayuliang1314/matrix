@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+
 import androidx.annotation.RequiresApi;
 
 import com.tencent.matrix.trace.core.AppMethodBeat;
@@ -33,37 +34,29 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by caichongyang on 2017/5/26.
+ *
+ * todo
  **/
 public class ActivityThreadHacker {
+    //region 参数
     private static final String TAG = "Matrix.ActivityThreadHacker";
-    private static long sApplicationCreateBeginTime = 0L;
-    private static long sApplicationCreateEndTime = 0L;
+    private static final HashSet<IApplicationCreateListener> listeners = new HashSet<>();
     public static AppMethodBeat.IndexRecord sLastLaunchActivityMethodIndex = new AppMethodBeat.IndexRecord();
     public static AppMethodBeat.IndexRecord sApplicationCreateBeginMethodIndex = new AppMethodBeat.IndexRecord();
     public static int sApplicationCreateScene = Integer.MIN_VALUE;
-    private static final HashSet<IApplicationCreateListener> listeners = new HashSet<>();
+    private static long sApplicationCreateBeginTime = 0L;
+    private static long sApplicationCreateEndTime = 0L;
     private static boolean sIsCreatedByLaunchActivity = false;
+    //endregion
 
-    public static void addListener(IApplicationCreateListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
-    public static void removeListener(IApplicationCreateListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
-        }
-    }
-
-    public interface IApplicationCreateListener {
-        void onApplicationCreateEnd();
-    }
-
+    //记录时间戳
+//    记录了第一个方法开始执行时的时间戳后，Matrix 还会通过反射的方式，接管 ActivityThread 的 Handler 的 Callback：
     public static void hackSysHandlerCallback() {
         try {
+            // 记录时间戳，作为应用启用的开始时间
             sApplicationCreateBeginTime = SystemClock.uptimeMillis();
             sApplicationCreateBeginMethodIndex = AppMethodBeat.getInstance().maskIndex("ApplicationCreateBeginMethodIndex");
+//            反射 ActivityThread，接管 Handler
             Class<?> forName = Class.forName("android.app.ActivityThread");
             Field field = forName.getDeclaredField("sCurrentActivityThread");
             field.setAccessible(true);
@@ -79,10 +72,31 @@ public class ActivityThreadHacker {
                 HackCallback callback = new HackCallback(originalCallback);
                 callbackField.set(handler, callback);
             }
-
             MatrixLog.i(TAG, "hook system handler completed. start:%s SDK_INT:%s", sApplicationCreateBeginTime, Build.VERSION.SDK_INT);
         } catch (Exception e) {
             MatrixLog.e(TAG, "hook system handler err! %s", e.getCause().toString());
+        }
+    }
+
+    //region ok
+    public static boolean isCreatedByLaunchActivity() {
+        return sIsCreatedByLaunchActivity;
+    }
+
+    public interface IApplicationCreateListener {
+        void onApplicationCreateEnd();
+    }
+
+
+    public static void addListener(IApplicationCreateListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public static void removeListener(IApplicationCreateListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
         }
     }
 
@@ -94,28 +108,27 @@ public class ActivityThreadHacker {
     public static long getEggBrokenTime() {
         return ActivityThreadHacker.sApplicationCreateBeginTime;
     }
-
-    public static boolean isCreatedByLaunchActivity() {
-        return sIsCreatedByLaunchActivity;
-    }
+    //endregion
 
 
+//    这样就能知道第一个 Activity 或 Service 或 Receiver 启动的具体时间了，
+//    这个时间戳可以作为 Application 启动的结束时间：
     private final static class HackCallback implements Handler.Callback {
         private static final int LAUNCH_ACTIVITY = 100;
         private static final int CREATE_SERVICE = 114;
         private static final int RELAUNCH_ACTIVITY = 126;
         private static final int RECEIVER = 113;
         private static final int EXECUTE_TRANSACTION = 159; // for Android 9.0
-        private static boolean isCreated = false;
-        private static int hasPrint = Integer.MAX_VALUE;
-
-        private final Handler.Callback mOriginalCallback;
-
         private static final int SERIVCE_ARGS = 115;
         private static final int STOP_SERVICE = 116;
         private static final int STOP_ACTIVITY_SHOW = 103;
         private static final int STOP_ACTIVITY_HIDE = 104;
         private static final int SLEEPING = 137;
+
+        private static boolean isCreated = false;
+        private static int hasPrint = Integer.MAX_VALUE;
+        private final Handler.Callback mOriginalCallback;
+        private Method method = null;
 
         HackCallback(Handler.Callback callback) {
             this.mOriginalCallback = callback;
@@ -144,6 +157,7 @@ public class ActivityThreadHacker {
             }
 
             if (!isCreated) {
+                // 如果是第一个启动的 Activity 或 Service 或 Receiver，则以该时间戳作为 Application 启动的结束时间
                 if (isLaunchActivity || msg.what == CREATE_SERVICE
                         || msg.what == RECEIVER) { // todo for provider
                     ActivityThreadHacker.sApplicationCreateEndTime = SystemClock.uptimeMillis();
@@ -162,7 +176,7 @@ public class ActivityThreadHacker {
         }
 
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-        private void fix() {
+        private void fix() {//todo ？
             try {
                 Class cls = Class.forName("android.app.QueuedWork");
                 Field field = cls.getDeclaredField("sPendingWorkFinishers");
@@ -186,12 +200,9 @@ public class ActivityThreadHacker {
                 MatrixLog.e(TAG, "[Matrix.fix.sp.apply] Exception = " + e.getMessage());
                 e.printStackTrace();
             }
-
         }
 
-        private Method method = null;
-
-        private boolean isLaunchActivity(Message msg) {
+        private boolean isLaunchActivity(Message msg) {//todo ？
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) {
                 if (msg.what == EXECUTE_TRANSACTION && msg.obj != null) {
                     try {
@@ -214,6 +225,4 @@ public class ActivityThreadHacker {
             }
         }
     }
-
-
 }

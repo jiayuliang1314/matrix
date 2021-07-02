@@ -37,6 +37,7 @@ import com.tencent.matrix.util.MatrixLog;
  * Created by caichongyang on 2017/5/20.
  */
 public class TracePlugin extends Plugin {
+    //region 参数
     private static final String TAG = "Matrix.TracePlugin";
 
     private final TraceConfig traceConfig;
@@ -44,6 +45,7 @@ public class TracePlugin extends Plugin {
     private StartupTracer startupTracer;
     private FrameTracer frameTracer;
     private AnrTracer anrTracer;
+    //endregion
 
     public TracePlugin(TraceConfig config) {
         this.traceConfig = config;
@@ -68,6 +70,7 @@ public class TracePlugin extends Plugin {
         startupTracer = new StartupTracer(traceConfig);
     }
 
+    //step 1
     @Override
     public void start() {
         super.start();
@@ -178,6 +181,9 @@ public class TracePlugin extends Plugin {
         super.destroy();
     }
 
+
+    //region get方法
+
     @Override
     public String getTag() {
         return SharePluginInfo.TAG_PLUGIN;
@@ -214,4 +220,5 @@ public class TracePlugin extends Plugin {
     public TraceConfig getTraceConfig() {
         return traceConfig;
     }
+    //endregion
 }

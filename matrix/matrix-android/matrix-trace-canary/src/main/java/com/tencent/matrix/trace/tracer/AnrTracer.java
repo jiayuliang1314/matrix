@@ -30,6 +30,7 @@ import java.util.List;
 public class AnrTracer extends Tracer {
 
     private static final String TAG = "Matrix.AnrTracer";
+//    onAlive 时初始化，onDead 时退出
     private Handler anrHandler;
     private Handler lagHandler;
     private final TraceConfig traceConfig;
@@ -68,7 +69,7 @@ public class AnrTracer extends Tracer {
     @Override
     public void dispatchBegin(long beginNs, long cpuBeginMs, long token) {
         super.dispatchBegin(beginNs, cpuBeginMs, token);
-
+// 插入方法结点，如果出现了 ANR，就从该结点开始收集方法执行记录
         anrTask.beginRecord = AppMethodBeat.getInstance().maskIndex("AnrTracer#dispatchBegin");
         anrTask.token = token;
 
@@ -76,6 +77,8 @@ public class AnrTracer extends Tracer {
             MatrixLog.v(TAG, "* [dispatchBegin] token:%s index:%s", token, anrTask.beginRecord.index);
         }
         long cost = (System.nanoTime() - token) / Constants.TIME_MILLIS_TO_NANO;
+        // 5 秒后执行
+        // token 和 beginMs 相等，因此后一个减式用于减去回调该方法过程中所消耗的时间
         anrHandler.postDelayed(anrTask, Constants.DEFAULT_ANR - cost);
         lagHandler.postDelayed(lagTask, Constants.DEFAULT_NORMAL_LAG - cost);
     }
