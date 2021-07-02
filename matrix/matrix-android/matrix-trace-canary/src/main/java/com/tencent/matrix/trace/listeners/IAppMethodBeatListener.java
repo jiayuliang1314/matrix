@@ -21,7 +21,7 @@ import android.app.Activity;
 /**
  * Created by caichongyang on 2017/5/27.
  */
-
+//ok
 public interface IAppMethodBeatListener {
 
     void onActivityFocused(Activity activity);

@@ -19,12 +19,12 @@ package com.tencent.matrix.trace.listeners;
 /**
  * Created by caichongyang on 17/5/18.
  */
-
+//ok
 public interface IDefaultConfig {
 
     boolean isFPSEnable();
 
-    boolean isEvilMethodTraceEnable();
+    boolean isEvilMethodTraceEnable();//Evil邪恶的
 
     boolean isAnrTraceEnable();
 

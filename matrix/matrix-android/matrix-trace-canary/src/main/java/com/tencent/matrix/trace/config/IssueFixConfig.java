@@ -1,5 +1,6 @@
 package com.tencent.matrix.trace.config;
 
+//ok
 public class IssueFixConfig {
     private final static IssueFixConfig sInstance = new IssueFixConfig();
     private boolean enableFixSpApply;

@@ -1,7 +1,8 @@
 package com.tencent.matrix.trace.listeners;
 
 import androidx.annotation.CallSuper;
-
+//ok
+//它是 Looper 的观察者，在 Looper 分发消息、刷新 UI 时回调，这几个回调方法也是 ANR、慢方法等模块的判断依据：
 public abstract class LooperObserver {
 
     private boolean isDispatchBegin = false;

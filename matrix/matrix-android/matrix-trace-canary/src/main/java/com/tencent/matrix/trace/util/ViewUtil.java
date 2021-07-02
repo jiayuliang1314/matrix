@@ -22,7 +22,7 @@ import android.view.ViewGroup;
 /**
  * Created by caichongyang on 2017/7/10.
  */
-
+//ok 遍历
 public class ViewUtil {
 
     public static ViewInfo dumpViewInfo(View view) {

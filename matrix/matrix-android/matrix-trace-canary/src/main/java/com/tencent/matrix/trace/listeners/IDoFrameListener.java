@@ -27,6 +27,7 @@ import java.util.concurrent.Executor;
 /**
  * Created by caichongyang on 2017/5/26.
  **/
+//ok
 public class IDoFrameListener {
 
     private Executor executor;
@@ -35,7 +36,7 @@ public class IDoFrameListener {
 
     private final static LinkedList<FrameReplay> sPool = new LinkedList<>();
 
-    public static final class FrameReplay {
+    public static final class FrameReplay {//(由于未决出胜负而进行的)重赛; (录像、录音等的)重放，重演，重播; 重演的事物; 重复出现的事物;
         public String focusedActivity;
         public long startNs;
         public long endNs;
