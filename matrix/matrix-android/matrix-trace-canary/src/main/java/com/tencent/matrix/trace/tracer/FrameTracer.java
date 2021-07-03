@@ -31,22 +31,23 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 public class FrameTracer extends Tracer implements Application.ActivityLifecycleCallbacks {
-
+    //region 参数
     private static final String TAG = "Matrix.FrameTracer";
-    private final HashSet<IDoFrameListener> listeners = new HashSet<>();
-    private DropFrameListener dropFrameListener;
-    private int dropFrameListenerThreshold = 0;
-    private final long frameIntervalNs;
+    private final HashSet<IDoFrameListener> listeners = new HashSet<>();//FPSCollector实现了IDoFrameListener
+    private final long frameIntervalNs;//16ms
     private final TraceConfig config;
-    private long timeSliceMs;
-    private boolean isFPSEnable;
-    private long frozenThreshold;
-    private long highThreshold;
-    private long middleThreshold;
-    private long normalThreshold;
-    private int droppedSum = 0;
-    private long durationSum = 0;
-    private Map<String, Long> lastResumeTimeMap = new HashMap<>();
+    private final long timeSliceMs;//10s，记录的是累计的帧耗时。
+    private final boolean isFPSEnable;
+    private final long frozenThreshold;//掉了42帧
+    private final long highThreshold;//24
+    private final long middleThreshold;//9
+    private final long normalThreshold;//3
+    private final Map<String, Long> lastResumeTimeMap = new HashMap<>();//activity和其最后一次可见resume时间的map
+    private DropFrameListener dropFrameListener;//没设置
+    private int dropFrameListenerThreshold = 0;//没设置
+    private int droppedSum = 0;//掉帧数量
+    private long durationSum = 0;//掉帧时间累计
+    //endregion
 
     public FrameTracer(TraceConfig config) {
         this.config = config;
@@ -95,6 +96,16 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
     }
 
+    /**
+     * @param focusedActivity     正在显示的Activity名称
+     * @param startNs             Message执行前的时间
+     * @param endNs               Message执行完毕，调用LooperObserver#doFrame时的时间
+     * @param isVsyncFrame        是否是vsync帧
+     * @param intendedFrameTimeNs
+     * @param inputCostNs         执行三种CallbackQueue的耗时
+     * @param animationCostNs     执行三种CallbackQueue的耗时
+     * @param traversalCostNs     执行三种CallbackQueue的耗时
+     */
     @Override
     public void doFrame(String focusedActivity, long startNs, long endNs, boolean isVsyncFrame, long intendedFrameTimeNs, long inputCostNs, long animationCostNs, long traversalCostNs) {
         if (isForeground()) {
@@ -128,8 +139,9 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
                     }
                 }
             }
-
+            //掉帧数量
             droppedSum += dropFrame;
+            //掉帧时间
             durationSum += Math.max(jiter, frameIntervalNs);
 
             synchronized (listeners) {
@@ -145,12 +157,14 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
                             listener.getExecutor().execute(new Runnable() {
                                 @Override
                                 public void run() {
+                                    //Deprecated了
                                     listener.doFrameAsync(focusedActivity, startNs, endNs, dropFrame, isVsyncFrame,
                                             intendedFrameTimeNs, inputCostNs, animationCostNs, traversalCostNs);
                                 }
                             });
                         }
                     } else {
+                        //Deprecated了
                         listener.doFrameSync(focusedActivity, startNs, endNs, dropFrame, isVsyncFrame,
                                 intendedFrameTimeNs, inputCostNs, animationCostNs, traversalCostNs);
                     }
@@ -169,19 +183,78 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
     }
 
-//    FrameTracer模块主要FPSCollector和FrameDecorator， 主要原理是通过Choreographer获取VSync垂直同步相关回调。
+    public void addDropFrameListener(int dropFrameListenerThreshold, DropFrameListener dropFrameListener) {
+        this.dropFrameListener = dropFrameListener;
+        this.dropFrameListenerThreshold = dropFrameListenerThreshold;
+    }
+
+    public void removeDropFrameListener() {
+        this.dropFrameListener = null;
+    }
+
+    //region ActivityLifecycleCallbacks ok
+    @Override
+    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onActivityStarted(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+        lastResumeTimeMap.put(activity.getClass().getName(), System.currentTimeMillis());
+    }
+
+    @Override
+    public void onActivityPaused(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(Activity activity) {
+
+    }
+    //endregion
+
+    //region ok
+    public enum DropStatus {
+        DROPPED_FROZEN(4), DROPPED_HIGH(3), DROPPED_MIDDLE(2), DROPPED_NORMAL(1), DROPPED_BEST(0);
+        public int index;
+
+        DropStatus(int index) {
+            this.index = index;
+        }
+    }
+
+    public interface DropFrameListener {
+        void dropFrame(int dropedFrame, String scene, long lastResume);
+    }
+    //endregion
+
+    //FrameTracer模块主要FPSCollector， 主要原理是通过Choreographer获取VSync垂直同步相关回调。
     private class FPSCollector extends IDoFrameListener {
 
-        private Handler frameHandler = new Handler(MatrixHandlerThread.getDefaultHandlerThread().getLooper());
-
+        private final Handler frameHandler = new Handler(MatrixHandlerThread.getDefaultHandlerThread().getLooper());
+        private final HashMap<String, FrameCollectItem> map = new HashMap<>();
         Executor executor = new Executor() {
             @Override
             public void execute(Runnable command) {
                 frameHandler.post(command);
             }
         };
-
-        private HashMap<String, FrameCollectItem> map = new HashMap<>();
 
         @Override
         public Executor getExecutor() {
@@ -225,10 +298,10 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
     }
 
     private class FrameCollectItem {
-        String visibleScene;
-        long sumFrameCost;
-        int sumFrame = 0;
-        int sumDroppedFrames;
+        String visibleScene;//activity
+        long sumFrameCost;//超时时间累计，算上本来的那一帧
+        int sumFrame = 0; //帧数
+        int sumDroppedFrames;//超时帧累计
         // record the level of frames dropped each time
         int[] dropLevel = new int[DropStatus.values().length];
         int[] dropSum = new int[DropStatus.values().length];
@@ -239,7 +312,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
 
         void collect(int droppedFrames) {
             float frameIntervalCost = 1f * UIThreadMonitor.getMonitor().getFrameIntervalNanos()
-                    / Constants.TIME_MILLIS_TO_NANO;
+                    / Constants.TIME_MILLIS_TO_NANO;//16ms
             sumFrameCost += (droppedFrames + 1) * frameIntervalCost;
             sumDroppedFrames += droppedFrames;
             sumFrame++;
@@ -306,7 +379,6 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
             }
         }
 
-
         @Override
         public String toString() {
             return "visibleScene=" + visibleScene
@@ -317,61 +389,4 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
     }
 
-    public enum DropStatus {
-        DROPPED_FROZEN(4), DROPPED_HIGH(3), DROPPED_MIDDLE(2), DROPPED_NORMAL(1), DROPPED_BEST(0);
-        public int index;
-
-        DropStatus(int index) {
-            this.index = index;
-        }
-
-    }
-
-    public void addDropFrameListener(int dropFrameListenerThreshold, DropFrameListener dropFrameListener) {
-        this.dropFrameListener = dropFrameListener;
-        this.dropFrameListenerThreshold = dropFrameListenerThreshold;
-    }
-
-    public void removeDropFrameListener() {
-        this.dropFrameListener = null;
-    }
-
-    public interface DropFrameListener {
-        void dropFrame(int dropedFrame, String scene, long lastResume);
-    }
-
-    @Override
-    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
-    }
-
-    @Override
-    public void onActivityStarted(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivityResumed(Activity activity) {
-        lastResumeTimeMap.put(activity.getClass().getName(), System.currentTimeMillis());
-    }
-
-    @Override
-    public void onActivityPaused(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivityStopped(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
-    }
-
-    @Override
-    public void onActivityDestroyed(Activity activity) {
-
-    }
 }

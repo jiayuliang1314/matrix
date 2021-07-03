@@ -41,12 +41,14 @@ public class ActivityThreadHacker {
     //region 参数
     private static final String TAG = "Matrix.ActivityThreadHacker";
     private static final HashSet<IApplicationCreateListener> listeners = new HashSet<>();
+    //没有其他地方初始化？不知道干哈用的
     public static AppMethodBeat.IndexRecord sLastLaunchActivityMethodIndex = new AppMethodBeat.IndexRecord();
+    //ApplicationCreateBeginMethodIndex application创建方法index
     public static AppMethodBeat.IndexRecord sApplicationCreateBeginMethodIndex = new AppMethodBeat.IndexRecord();
-    public static int sApplicationCreateScene = Integer.MIN_VALUE;
-    private static long sApplicationCreateBeginTime = 0L;
-    private static long sApplicationCreateEndTime = 0L;
-    private static boolean sIsCreatedByLaunchActivity = false;
+    public static int sApplicationCreateScene = Integer.MIN_VALUE;//记录第一个启动的是Activity 或 Service 或 Receiver
+    private static long sApplicationCreateBeginTime = 0L;       //记录时间戳，作为应用启用的开始时间
+    private static long sApplicationCreateEndTime = 0L;         //应用启动结束时间
+    private static boolean sIsCreatedByLaunchActivity = false;  //是否app启动先创建的activity
     //endregion
 
     //记录时间戳
@@ -69,6 +71,7 @@ public class ActivityThreadHacker {
                 Field callbackField = handlerClass.getDeclaredField("mCallback");
                 callbackField.setAccessible(true);
                 Handler.Callback originalCallback = (Handler.Callback) callbackField.get(handler);
+                //Matrix 还会通过反射的方式，接管 ActivityThread 的 Handler 的 Callback：
                 HackCallback callback = new HackCallback(originalCallback);
                 callbackField.set(handler, callback);
             }
@@ -87,7 +90,6 @@ public class ActivityThreadHacker {
         void onApplicationCreateEnd();
     }
 
-
     public static void addListener(IApplicationCreateListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
@@ -105,7 +107,7 @@ public class ActivityThreadHacker {
                 - ActivityThreadHacker.sApplicationCreateBeginTime;
     }
 
-    public static long getEggBrokenTime() {
+    public static long getEggBrokenTime() {//蛋打碎
         return ActivityThreadHacker.sApplicationCreateBeginTime;
     }
     //endregion
@@ -149,7 +151,7 @@ public class ActivityThreadHacker {
                 return null != mOriginalCallback && mOriginalCallback.handleMessage(msg);
             }
 
-            boolean isLaunchActivity = isLaunchActivity(msg);
+            boolean isLaunchActivity = isLaunchActivity(msg);//Application是否是从activity启动的
 
             if (hasPrint > 0) {
                 MatrixLog.i(TAG, "[handleMessage] msg.what:%s begin:%s isLaunchActivity:%s SDK_INT=%s", msg.what, SystemClock.uptimeMillis(), isLaunchActivity, Build.VERSION.SDK_INT);

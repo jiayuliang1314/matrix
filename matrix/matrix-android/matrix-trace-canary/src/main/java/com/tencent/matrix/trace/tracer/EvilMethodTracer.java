@@ -29,8 +29,8 @@ public class EvilMethodTracer extends Tracer {
     private static final String TAG = "Matrix.EvilMethodTracer";
     private final TraceConfig config;
     private AppMethodBeat.IndexRecord indexRecord;
-    private long[] queueTypeCosts = new long[3];
-    private long evilThresholdMs;
+    private long[] queueTypeCosts = new long[3];//输入，io，渲染消耗时间
+    private long evilThresholdMs;               //700ms执行超过700ms
     private boolean isEvilMethodTraceEnable;
 
     //ok
@@ -46,7 +46,6 @@ public class EvilMethodTracer extends Tracer {
         if (isEvilMethodTraceEnable) {
             UIThreadMonitor.getMonitor().addObserver(this);
         }
-
     }
 
     @Override
@@ -61,6 +60,7 @@ public class EvilMethodTracer extends Tracer {
     @Override
     public void dispatchBegin(long beginNs, long cpuBeginMs, long token) {
         super.dispatchBegin(beginNs, cpuBeginMs, token);
+        //插入方法结点，如果出现了 超时，就从该结点开始收集方法执行记录
         indexRecord = AppMethodBeat.getInstance().maskIndex("EvilMethodTracer#dispatchBegin");
     }
 

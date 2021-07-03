@@ -31,8 +31,8 @@ public class AnrTracer extends Tracer {
 
     private static final String TAG = "Matrix.AnrTracer";
 //    onAlive 时初始化，onDead 时退出
-    private Handler anrHandler;
-    private Handler lagHandler;
+    private Handler anrHandler;//检测anr的handler，推迟5s之后，执行AnrHandleTask
+    private Handler lagHandler;//检测lag 拖后腿方法的handler，推迟2s之后，执行LagHandleTask
     private final TraceConfig traceConfig;
     private volatile AnrHandleTask anrTask = new AnrHandleTask();
     private volatile LagHandleTask lagTask = new LagHandleTask();
@@ -69,7 +69,7 @@ public class AnrTracer extends Tracer {
     @Override
     public void dispatchBegin(long beginNs, long cpuBeginMs, long token) {
         super.dispatchBegin(beginNs, cpuBeginMs, token);
-// 插入方法结点，如果出现了 ANR，就从该结点开始收集方法执行记录
+        // 插入方法结点，如果出现了 ANR，就从该结点开始收集方法执行记录
         anrTask.beginRecord = AppMethodBeat.getInstance().maskIndex("AnrTracer#dispatchBegin");
         anrTask.token = token;
 
@@ -153,6 +153,7 @@ public class AnrTracer extends Tracer {
             this.token = token;
         }
 
+        //5s时间到，执行了run说明anr发生了
         @Override
         public void run() {
             long curTime = SystemClock.uptimeMillis();

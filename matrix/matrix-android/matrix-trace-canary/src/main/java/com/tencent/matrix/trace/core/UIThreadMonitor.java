@@ -44,9 +44,9 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     private static final String TAG = "Matrix.UIThreadMonitor";
     // Choreographer 中一个内部类的方法，用于添加回调
     private static final String ADD_CALLBACK = "addCallbackLocked";
-    // The time of the oldest input event
+    // The time of the oldest input event，没有用到
     private static final int OLDEST_INPUT_EVENT = 3;
-    // The time of the newest input event
+    // The time of the newest input event，没用到
     private static final int NEWEST_INPUT_EVENT = 4;
     private static final int CALLBACK_LAST = CALLBACK_TRAVERSAL;
     // 回调类型，分别为输入事件、动画、View 绘制三种
@@ -54,25 +54,25 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     private static final int DO_QUEUE_DEFAULT = 0;
     private static final int DO_QUEUE_BEGIN = 1;
     private static final int DO_QUEUE_END = 2;
-    private final HashSet<LooperObserver> observers = new HashSet<>();
-    private final long[] dispatchTimeMs = new long[4];
+    private final HashSet<LooperObserver> observers = new HashSet<>();  //用于通知帧状态
+    private final long[] dispatchTimeMs = new long[4];//dispatchTimeMs 0,2位置为开始时间，0为纳秒，2为毫秒，1，3为结束时间
     private volatile boolean isAlive = false;
-    private volatile long token = 0L;
-    private boolean isVsyncFrame = false;
+    private volatile long token = 0L;       //消息执行开始时间，也用做token
+    private boolean isVsyncFrame = false;   //frame开始标记
     private TraceConfig config;
-    private Object callbackQueueLock;
-    private Object[] callbackQueues;
-    private Method addTraversalQueue;
+    private Object callbackQueueLock;   //用于同步
+    private Object[] callbackQueues;    //队列数组，保存
+    private Method addTraversalQueue;   //往绘制队列添加callback的方法
     private Method addInputQueue;
     private Method addAnimationQueue;
-    private Choreographer choreographer;
-    private Object vsyncReceiver;//？干哈的
+    private Choreographer choreographer;//Choreographer机制，用于同vsync机制配合，统一动画，输入，绘制时机。
+    private Object vsyncReceiver;       //？干哈的，获取了一个getIntendedFrameTimeNs，不知道啥用
     private long frameIntervalNanos = 16666666;
-    private int[] queueStatus = new int[CALLBACK_LAST + 1];
-    private boolean[] callbackExist = new boolean[CALLBACK_LAST + 1]; // ABA
-    private long[] queueCost = new long[CALLBACK_LAST + 1];
-    private boolean isInit = false;
-    private long[] frameInfo = null;
+    private int[] queueStatus = new int[CALLBACK_LAST + 1];                 //队列状态
+    private boolean[] callbackExist = new boolean[CALLBACK_LAST + 1];       //用于标记callback是否添加
+    private long[] queueCost = new long[CALLBACK_LAST + 1];                 //每个队列花费时间
+    private boolean isInit = false;                                         //是否init
+    private long[] frameInfo = null;//没用到
     //endregion
 
     //region ok
@@ -108,7 +108,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         //每一帧的时间16ms的纳秒值
         frameIntervalNanos = ReflectUtils.reflectObject(choreographer, "mFrameIntervalNanos", Constants.DEFAULT_FRAME_DURATION);
         //向LooperMonitor注册Message执行开始的回调、执行结束的回调。这里的Message是指主线程中发生的所有Message，
-        // 包括App自己的以及Framework中的，Choreographer中的自然也可以捕获到。
+        //包括App自己的以及Framework中的，Choreographer中的自然也可以捕获到。
         LooperMonitor.register(new LooperMonitor.LooperDispatchListener() {
             @Override
             public boolean isValid() {
