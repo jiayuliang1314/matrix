@@ -4,8 +4,8 @@ public class MethodItem {
 
     public int methodId;
     public int durTime;
-    public int depth;//todo ？
-    public int count = 1;//todo ？
+    public int depth;
+    public int count = 1;
 
     public MethodItem(int methodId, int durTime, int depth) {
         this.methodId = methodId;

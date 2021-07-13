@@ -34,16 +34,16 @@ import java.util.Set;
 
 public class TraceConfig implements IDefaultConfig {
     private static final String TAG = "Matrix.TraceConfig";
-    public IDynamicConfig dynamicConfig;
-    public boolean defaultFpsEnable;
-    public boolean defaultMethodTraceEnable;
-    public boolean defaultStartupEnable;
-    public boolean defaultAnrEnable;
+    public IDynamicConfig dynamicConfig;    //动态配置
+    public boolean defaultFpsEnable;        //是否开启fps
+    public boolean defaultMethodTraceEnable;//是否开启超时函数检测
+    public boolean defaultStartupEnable;    //是否开启启动检测
+    public boolean defaultAnrEnable;        //是否开启Anr检测
     public boolean isDebug;
     public boolean isDevEnv;
-    public String splashActivities;
-    public Set<String> splashActivitiesSet;
-    public boolean isHasActivity;
+    public String splashActivities;         //闪屏activity，用;链接
+    public Set<String> splashActivitiesSet; //闪屏activity set
+    public boolean isHasActivity;           //是否含有activity
 
     private TraceConfig() {
         this.isHasActivity = true;
@@ -175,7 +175,7 @@ public class TraceConfig implements IDefaultConfig {
 
 
     public static class Builder {
-        private TraceConfig config = new TraceConfig();
+        private final TraceConfig config = new TraceConfig();
 
         public Builder dynamicConfig(IDynamicConfig dynamicConfig) {
             config.dynamicConfig = dynamicConfig;

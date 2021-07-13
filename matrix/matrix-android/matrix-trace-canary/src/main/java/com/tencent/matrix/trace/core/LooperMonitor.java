@@ -16,23 +16,29 @@ import java.util.HashSet;
 import java.util.Objects;
 
 //Looper 的监控是由类 LooperMonitor 实现的，原理很简单，为主线程 Looper 设置一个 Printer 即可，
-// 但值得一提的是，LooperMonitor 不会直接设置 Printer，而是先获取旧对象，并创建代理对象，避免影响到其它用户设置的 Printer：
+// 但值得一提的是，LooperMonitor 不会直接设置 Printer，而是先获取旧对象，并创建代理对象，避免影响到其它用户设置的 Printer
+
+//消息队列空闲时会执行IdelHandler的queueIdle()方法，该方法返回一个boolean值，
+//        如果为false则执行完毕之后移除这条消息，
+//        如果为true则保留，等到下次空闲时会再次执行，
 public class LooperMonitor implements MessageQueue.IdleHandler {
     //region 参数
     private static final String TAG = "Matrix.LooperMonitor";
-    private static final long CHECK_TIME = 60 * 1000L;
-    private static final LooperMonitor mainMonitor = new LooperMonitor();
+    private static final long CHECK_TIME = 60 * 1000L;                      //1分钟重新设置一次
+    private static final LooperMonitor mainMonitor = new LooperMonitor();   //单例模式
     private static boolean isReflectLoggingError = false;
-    private final HashSet<LooperDispatchListener> listeners = new HashSet<>();
-    private LooperPrinter printer;
+    private final HashSet<LooperDispatchListener> listeners = new HashSet<>();  //所有的监听器
+    private LooperPrinter printer;                                              //代理printer对象
     private Looper looper;
-    private long lastCheckPrinterTime = 0;
+    private long lastCheckPrinterTime = 0;                                      //1分钟重新设置一次
     //endregion
 
     public LooperMonitor(Looper looper) {
         Objects.requireNonNull(looper);
         this.looper = looper;
+        //重新创建一个代理printer
         resetPrinter();
+        //
         addIdleHandler(looper);
     }
 
@@ -41,10 +47,12 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
     }
 
     //region get set
+    //没有pulic修饰符，只能在此package下使用
     static void register(LooperDispatchListener listener) {
         mainMonitor.addListener(listener);
     }
 
+    //没有pulic修饰符，只能在此package下使用
     static void unregister(LooperDispatchListener listener) {
         mainMonitor.removeListener(listener);
     }
@@ -81,10 +89,12 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
 
     public synchronized void onRelease() {
         if (printer != null) {
+            //清空listeners
             synchronized (listeners) {
                 listeners.clear();
             }
             MatrixLog.v(TAG, "[onRelease] %s, origin printer:%s", looper.getThread().getName(), printer.origin);
+            //重新设置为原来的Printer
             looper.setMessageLogging(printer.origin);
             removeIdleHandler(looper);
             looper = null;
@@ -96,8 +106,9 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         Printer originPrinter = null;
         try {
             if (!isReflectLoggingError) {
+                //拿到originPrinter
                 originPrinter = ReflectUtils.get(looper.getClass(), "mLogging", looper);
-                if (originPrinter == printer && null != printer) {
+                if (originPrinter == printer && null != printer) {//不是很清楚这个？？？ todo 干哈的
                     return;
                 }
             }
@@ -165,6 +176,9 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
     }
     //endregion
 
+    /**
+     * 监听Looper 消息分发开始，结束
+     */
     public abstract static class LooperDispatchListener {
 
         boolean isHasDispatchStart = false;
@@ -208,11 +222,11 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         public void println(String x) {
             if (null != origin) {
                 origin.println(x); // 保证原对象正常执行
-                if (origin == this) {
+                if (origin == this) {//代理对象和原来的不能是一个，如果是，则报错
                     throw new RuntimeException(TAG + " origin == this");
                 }
             }
-
+            //校验一下，消息是 > 或者 < 开头的才有效
             if (!isHasChecked) {
                 isValid = x.charAt(0) == '>' || x.charAt(0) == '<';
                 isHasChecked = true;
@@ -224,7 +238,6 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
             if (isValid) {
                 dispatch(x.charAt(0) == '>', x);// 分发，通过第一个字符判断是开始分发，还是结束分发
             }
-
         }
     }
     //endregion

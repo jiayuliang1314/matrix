@@ -30,11 +30,11 @@ import java.util.concurrent.Executor;
 //ok
 public class IDoFrameListener {
 
-    private final static LinkedList<FrameReplay> sPool = new LinkedList<>();//一个缓存
-    private final List<FrameReplay> list = new LinkedList<>();  //有多少帧
-    public long time;                                           //用于计算这个IDoFrameListener所花的时间
-    private Executor executor;//执行线程
-    private int intervalFrame = 0;//300个帧，一起处理
+    private final static LinkedList<FrameReplay> sPool = new LinkedList<>();//一个静态缓存，1000帧信息
+    private final List<FrameReplay> list = new LinkedList<>();  //临时缓存，存300帧信息
+    public long time;                                           //用于计算这个IDoFrameListener所花的时间，用于开发log信息
+    private Executor executor;          //线程池
+    private int intervalFrame = 0;      //300，代表300个帧，一起处理
 
     public IDoFrameListener() {
         intervalFrame = getIntervalFrameReplay();
@@ -63,7 +63,8 @@ public class IDoFrameListener {
             list.clear();
             getExecutor().execute(new Runnable() {
                 @Override
-                public void run() {//放到一个新线程里处理
+                public void run() {
+                    //放到一个新线程里处理
                     doReplay(copy);
                     for (FrameReplay record : copy) {
                         record.recycle();
@@ -97,6 +98,11 @@ public class IDoFrameListener {
         doFrameSync(focusedActivity, cost, cost, dropFrame, isVsyncFrame);
     }
 
+    /**
+     * 处理帧数据
+     *
+     * @param list
+     */
     public void doReplay(List<FrameReplay> list) {
 
     }
@@ -115,23 +121,26 @@ public class IDoFrameListener {
         public long endNs;
         public int dropFrame;           //掉了多少帧
         public boolean isVsyncFrame;    //是否是vsync帧
-        public long intendedFrameTimeNs;//预期结束时间
+        public long intendedFrameTimeNs;//vsync帧开始时间，校对时间
         public long inputCostNs;        //input时间
         public long animationCostNs;    //animation时间
         public long traversalCostNs;    //绘制时间
 
         public static FrameReplay create() {//创建
             FrameReplay replay;
+            //从缓存池里区
             synchronized (sPool) {
                 replay = sPool.poll();
             }
+            //如果没有，则新建个
             if (replay == null) {
                 return new FrameReplay();
             }
             return replay;
         }
 
-        public void recycle() {//回收到sPool里
+        public void recycle() {
+            //回收到sPool里
             if (sPool.size() <= 1000) {
                 this.focusedActivity = "";
                 this.startNs = 0;
@@ -148,6 +157,4 @@ public class IDoFrameListener {
             }
         }
     }
-
-
 }

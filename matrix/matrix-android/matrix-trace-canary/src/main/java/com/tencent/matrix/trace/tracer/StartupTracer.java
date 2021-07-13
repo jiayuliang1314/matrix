@@ -44,7 +44,10 @@ import static android.os.SystemClock.uptimeMillis;
  * |<--------------firstScreenCost-------------->|
  * |<---------------------------------------coldCost------------------------------------->|
  * .                         |<-----warmCost---->|
- *
+ * <p>
+ * <p>
+ * applicationCost 通过ActivityThreadHacker获取
+ * firstScreenCost
  * </p>
  */
 
@@ -53,10 +56,10 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
     private static final String TAG = "Matrix.StartupTracer";
     private final TraceConfig config;
     private final boolean isStartupEnable;
-    private final Set<String> splashActivities;//splashactivity
-    private final long coldStartupThresholdMs;//冷启动限制，10s
-    private final long warmStartupThresholdMs;//热启动限制，4s
-    private final boolean isHasActivity;      //true
+    private final Set<String> splashActivities; //splashactivity
+    private final long coldStartupThresholdMs;  //冷启动限制，10s
+    private final long warmStartupThresholdMs;  //热启动限制，4s
+    private final boolean isHasActivity;        //true
     private final HashMap<String, Long> createdTimeMap = new HashMap<>();//保存了activity onCreate-》可见的逻辑
     private final boolean isShouldRecordCreateTime = true;//一直是true，记录时间
     private long firstScreenCost = 0;//首屏启动耗时
@@ -77,7 +80,7 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
         ActivityThreadHacker.addListener(this);
     }
 
-    //看着好像是啥也没干
+    //ActivityThreadHacker里有个HackCallback，接管了mCallback
     private static void checkActivityThread_mCallback() {
         try {
             Class<?> forName = Class.forName("android.app.ActivityThread");
@@ -194,7 +197,7 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
             }
         } else if (isWarmStartUp()) {
             isWarmStartUp = false;
-            long warmCost = uptimeMillis() - lastCreateActivity;// 温启动时间是当前时间减去最后一次 launch Activity 的时间
+            long warmCost = uptimeMillis() - lastCreateActivity;
 
             MatrixLog.i(TAG, "#WarmStartup# activity:%s, warmCost:%d, now:%d, lastCreateActivity:%d", activityName, warmCost, uptimeMillis(), lastCreateActivity);
 
@@ -229,11 +232,13 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
 
     }
 
-    //region step1 ActivityLifecycleCallbacks onActivityCreated首先被调用
+    //region step1
+    // onCreate,onStart,onResume都不是真正visible的时间点，真正的visible时间点是onWindowFocusChanged()函数被执行时。
+    // ActivityLifecycleCallbacks onActivityCreated首先被调用
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
         MatrixLog.i(TAG, "activeActivityCount:%d, coldCost:%d", activeActivityCount, coldCost);
-        if (activeActivityCount == 0 && coldCost > 0) {//activity没有create，怎么coldCost了>0了？
+        if (activeActivityCount == 0 && coldCost > 0) {
             lastCreateActivity = uptimeMillis();
             MatrixLog.i(TAG, "lastCreateActivity:%d, activity:%s", lastCreateActivity, activity.getClass().getName());
             isWarmStartUp = true;

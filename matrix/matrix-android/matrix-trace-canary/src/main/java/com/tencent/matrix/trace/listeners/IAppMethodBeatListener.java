@@ -24,5 +24,10 @@ import android.app.Activity;
 //ok
 public interface IAppMethodBeatListener {
 
+    /**
+     * Activity可见了
+     *
+     * @param activity
+     */
     void onActivityFocused(Activity activity);
 }

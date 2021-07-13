@@ -41,7 +41,7 @@ public class ActivityThreadHacker {
     //region 参数
     private static final String TAG = "Matrix.ActivityThreadHacker";
     private static final HashSet<IApplicationCreateListener> listeners = new HashSet<>();
-    //没有其他地方初始化？不知道干哈用的
+    //标记0开始index，第一个方法
     public static AppMethodBeat.IndexRecord sLastLaunchActivityMethodIndex = new AppMethodBeat.IndexRecord();
     //ApplicationCreateBeginMethodIndex application创建方法index
     public static AppMethodBeat.IndexRecord sApplicationCreateBeginMethodIndex = new AppMethodBeat.IndexRecord();

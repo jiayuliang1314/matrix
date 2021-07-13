@@ -16,6 +16,11 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 
+/**
+ * 通过LooperMonitor监听ui线程的消息分发，vsync同步也是消息的一种，将结果通过LooperObserver分发出去
+ * 通过往编舞者Choreographer ALLBACK_INPUT、CALLBACK_ANIMATION、CALLBACK_TRAVERSAL三种类型的CallbackQueue
+ * 里添加Runnable，即UIThreadMonitor，当UIThreadMonitor的run被调用了说明这个消息是vsync消息
+ */
 public class UIThreadMonitor implements BeatLifecycle, Runnable {
     //region 参数
     /**
@@ -66,7 +71,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     private Method addInputQueue;
     private Method addAnimationQueue;
     private Choreographer choreographer;//Choreographer机制，用于同vsync机制配合，统一动画，输入，绘制时机。
-    private Object vsyncReceiver;       //？干哈的，获取了一个getIntendedFrameTimeNs，不知道啥用
+    private Object vsyncReceiver;       //获取了一个getIntendedFrameTimeNs vsync开始的时间,校对时间
     private long frameIntervalNanos = 16666666;
     private int[] queueStatus = new int[CALLBACK_LAST + 1];                 //队列状态
     private boolean[] callbackExist = new boolean[CALLBACK_LAST + 1];       //用于标记callback是否添加
@@ -103,7 +108,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
             addAnimationQueue = ReflectUtils.reflectMethod(callbackQueues[CALLBACK_ANIMATION], ADD_CALLBACK, long.class, Object.class, Object.class);
             addTraversalQueue = ReflectUtils.reflectMethod(callbackQueues[CALLBACK_TRAVERSAL], ADD_CALLBACK, long.class, Object.class, Object.class);
         }
-        //？干哈的
+        //这个Receiver用来获取屏幕lcd硬件显示vsync信息
         vsyncReceiver = ReflectUtils.reflectObject(choreographer, "mDisplayEventReceiver", null);
         //每一帧的时间16ms的纳秒值
         frameIntervalNanos = ReflectUtils.reflectObject(choreographer, "mFrameIntervalNanos", Constants.DEFAULT_FRAME_DURATION);
@@ -223,29 +228,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
             MatrixLog.d(TAG, "[dispatchBegin#run] inner cost:%sns", System.nanoTime() - token);
         }
     }
-    //endregion
 
-    private void doFrameBegin(long token) {
-        this.isVsyncFrame = true;
-    }
-
-    private void doFrameEnd(long token) {
-        doQueueEnd(CALLBACK_TRAVERSAL);
-
-        for (int i : queueStatus) {
-            if (i != DO_QUEUE_END) {
-                queueCost[i] = DO_QUEUE_END_ERROR;
-                if (config.isDevEnv) {
-                    throw new RuntimeException(String.format("UIThreadMonitor happens type[%s] != DO_QUEUE_END", i));
-                }
-            }
-        }
-        queueStatus = new int[CALLBACK_LAST + 1];
-
-        addFrameCallback(CALLBACK_INPUT, this, true);
-    }
-
-    //
     private void dispatchEnd() {
         long traceBegin = 0;//用于devenv记录时间打log用
         if (config.isDevEnv()) {//用于devenv记录时间打log用
@@ -255,7 +238,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         long intendedFrameTimeNs = startNs;
         if (isVsyncFrame) {
             doFrameEnd(token);
-            intendedFrameTimeNs = getIntendedFrameTimeNs(startNs);
+            intendedFrameTimeNs = getIntendedFrameTimeNs(startNs);//如果是vsyncframe的话，intendedFrameTimeNs代表vsync 帧的校对时间
         }
 
         long endNs = System.nanoTime();
@@ -286,11 +269,34 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
             MatrixLog.d(TAG, "[dispatchEnd#run] inner cost:%sns", System.nanoTime() - traceBegin);//用于devenv记录时间打log用
         }
     }
+    //endregion
+
+    //region vsync相关的开始doFrameBegin doFrameEnd
+    private void doFrameBegin(long token) {
+        this.isVsyncFrame = true;
+    }
+
+    private void doFrameEnd(long token) {
+        doQueueEnd(CALLBACK_TRAVERSAL);
+
+        for (int i : queueStatus) {
+            if (i != DO_QUEUE_END) {
+                queueCost[i] = DO_QUEUE_END_ERROR;
+                if (config.isDevEnv) {
+                    throw new RuntimeException(String.format("UIThreadMonitor happens type[%s] != DO_QUEUE_END", i));
+                }
+            }
+        }
+        queueStatus = new int[CALLBACK_LAST + 1];
+
+        addFrameCallback(CALLBACK_INPUT, this, true);
+    }
+    //endregion
 
 
     //region step 2 onStart,初始化callbackExist，queueStatus，queueCost三个值，然后调用addFrameCallback CALLBACK_INPUT
-//    上面就是onStart方法干的事情，归根结底就是向Choreograpger注册了一个回调（即UIThreadMonitor自身），这样下次Vsync信号来到时，
-//    就会触发这个callback（UIThreadMonitor#run方法）。
+//    归根结底就是向Choreograpger注册了一个回调（即UIThreadMonitor自身），这样下次Vsync信号来到时，
+//    就会触发这个callback（即会执行UIThreadMonitor的 run方法 *****很重要*****，执行这个run即表明是vsync帧）。
     @Override
     public synchronized void onStart() {
         if (!isInit) {
@@ -352,10 +358,12 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         }
     }
 
+    //执行run方法，代表这个消息是vsync frame消息
     @Override
     public void run() {
         final long start = System.nanoTime();
         try {
+            //执行run方法，代表这个消息是vsync frame消息
             doFrameBegin(token);
             doQueueBegin(CALLBACK_INPUT);
 
@@ -385,7 +393,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     }
     //endregion
 
-    //todo ?
+    //vsync开始的时间,校对时间
     private long getIntendedFrameTimeNs(long defaultValue) {
         try {
             return ReflectUtils.reflectObject(vsyncReceiver, "mTimestampNanos", defaultValue);

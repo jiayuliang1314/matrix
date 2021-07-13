@@ -78,7 +78,7 @@ public class AnrTracer extends Tracer {
         }
         long cost = (System.nanoTime() - token) / Constants.TIME_MILLIS_TO_NANO;
         // 5 秒后执行
-        // token 和 beginMs 相等，因此后一个减式用于减去回调该方法过程中所消耗的时间
+        // token 和 beginMs 相等，后一个减式用于减去回调该方法过程中所消耗的时间
         anrHandler.postDelayed(anrTask, Constants.DEFAULT_ANR - cost);
         lagHandler.postDelayed(lagTask, Constants.DEFAULT_NORMAL_LAG - cost);
     }

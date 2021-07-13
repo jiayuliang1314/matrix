@@ -34,19 +34,19 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
     //region 参数
     private static final String TAG = "Matrix.FrameTracer";
     private final HashSet<IDoFrameListener> listeners = new HashSet<>();//FPSCollector实现了IDoFrameListener
-    private final long frameIntervalNs;//16ms
+    private final long frameIntervalNs; //16ms
     private final TraceConfig config;
-    private final long timeSliceMs;//10s，记录的是累计的帧耗时。
+    private final long timeSliceMs;     //10s，记录的是累计的丢帧耗时。
     private final boolean isFPSEnable;
-    private final long frozenThreshold;//掉了42帧
-    private final long highThreshold;//24
-    private final long middleThreshold;//9
-    private final long normalThreshold;//3
+    private final long frozenThreshold; //掉了42帧
+    private final long highThreshold;   //24
+    private final long middleThreshold; //9
+    private final long normalThreshold; //3
     private final Map<String, Long> lastResumeTimeMap = new HashMap<>();//activity和其最后一次可见resume时间的map
     private DropFrameListener dropFrameListener;//没设置
     private int dropFrameListenerThreshold = 0;//没设置
-    private int droppedSum = 0;//掉帧数量
-    private long durationSum = 0;//掉帧时间累计
+    private int droppedSum = 0;     //掉帧数量
+    private long durationSum = 0;   //掉帧时间累计
     //endregion
 
     public FrameTracer(TraceConfig config) {
@@ -65,6 +65,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
     }
 
+    //region addListener removeListener
     public void addListener(IDoFrameListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
@@ -77,6 +78,25 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
     }
 
+    public int getDroppedSum() {
+        return droppedSum;
+    }
+
+    public long getDurationSum() {
+        return durationSum;
+    }
+
+    public void addDropFrameListener(int dropFrameListenerThreshold, DropFrameListener dropFrameListener) {
+        this.dropFrameListener = dropFrameListener;
+        this.dropFrameListenerThreshold = dropFrameListenerThreshold;
+    }
+
+    public void removeDropFrameListener() {
+        this.dropFrameListener = null;
+    }
+    //endregion
+
+    //region onAlive onDead
     @Override
     public void onAlive() {
         super.onAlive();
@@ -95,13 +115,16 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
             Matrix.with().getApplication().unregisterActivityLifecycleCallbacks(this);
         }
     }
+    //endregion
+
+    //region doFrame
 
     /**
      * @param focusedActivity     正在显示的Activity名称
      * @param startNs             Message执行前的时间
      * @param endNs               Message执行完毕，调用LooperObserver#doFrame时的时间
      * @param isVsyncFrame        是否是vsync帧
-     * @param intendedFrameTimeNs
+     * @param intendedFrameTimeNs vsync帧开始时间，校对时间
      * @param inputCostNs         执行三种CallbackQueue的耗时
      * @param animationCostNs     执行三种CallbackQueue的耗时
      * @param traversalCostNs     执行三种CallbackQueue的耗时
@@ -113,20 +136,12 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
     }
 
-    public int getDroppedSum() {
-        return droppedSum;
-    }
-
-    public long getDurationSum() {
-        return durationSum;
-    }
-
     private void notifyListener(final String focusedActivity, final long startNs, final long endNs, final boolean isVsyncFrame,
                                 final long intendedFrameTimeNs, final long inputCostNs, final long animationCostNs, final long traversalCostNs) {
         long traceBegin = System.currentTimeMillis();
         try {
             final long jiter = endNs - intendedFrameTimeNs;
-            final int dropFrame = (int) (jiter / frameIntervalNs);
+            final int dropFrame = (int) (jiter / frameIntervalNs);//这里是long整型运算，所以大于16s将会计算出来掉帧数量大于1，否则小于16s则为0
             if (dropFrameListener != null) {
                 if (dropFrame > dropFrameListenerThreshold) {
                     try {
@@ -182,15 +197,8 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
             }
         }
     }
+    //endregion
 
-    public void addDropFrameListener(int dropFrameListenerThreshold, DropFrameListener dropFrameListener) {
-        this.dropFrameListener = dropFrameListener;
-        this.dropFrameListenerThreshold = dropFrameListenerThreshold;
-    }
-
-    public void removeDropFrameListener() {
-        this.dropFrameListener = null;
-    }
 
     //region ActivityLifecycleCallbacks ok
     @Override
@@ -280,7 +288,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
                                   long animationCostNs, long traversalCostNs) {
 
             if (Utils.isEmpty(visibleScene)) return;
-            if (!isVsyncFrame) return;
+            if (!isVsyncFrame) return;//只处理vsync帧
 
             FrameCollectItem item = map.get(visibleScene);
             if (null == item) {
@@ -290,7 +298,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
 
             item.collect(droppedFrames);
 
-            if (item.sumFrameCost >= timeSliceMs) { // report
+            if (item.sumFrameCost >= timeSliceMs) { // report，如果一个activity，总共超时帧所占时间超过10s，上报
                 map.remove(visibleScene);
                 item.report();
             }
@@ -298,12 +306,14 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
     }
 
     private class FrameCollectItem {
-        String visibleScene;//activity
-        long sumFrameCost;//超时时间累计，算上本来的那一帧
-        int sumFrame = 0; //帧数
-        int sumDroppedFrames;//超时帧累计
+        String visibleScene;    //activity
+        long sumFrameCost;      //超时时间累计，算上本来的16ms，总共超时帧所占时间
+        int sumFrame = 0;       //帧数
+        int sumDroppedFrames;   //超时帧累计
         // record the level of frames dropped each time
+        //每种情况掉帧次数
         int[] dropLevel = new int[DropStatus.values().length];
+        //每种情况总掉帧计数
         int[] dropSum = new int[DropStatus.values().length];
 
         FrameCollectItem(String visibleScene) {
@@ -313,7 +323,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         void collect(int droppedFrames) {
             float frameIntervalCost = 1f * UIThreadMonitor.getMonitor().getFrameIntervalNanos()
                     / Constants.TIME_MILLIS_TO_NANO;//16ms
-            sumFrameCost += (droppedFrames + 1) * frameIntervalCost;
+            sumFrameCost += (droppedFrames + 1) * frameIntervalCost;//这个地方+1为什么
             sumDroppedFrames += droppedFrames;
             sumFrame++;
             if (droppedFrames >= frozenThreshold) {
@@ -388,5 +398,4 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
                     + ", dropLevel=" + Arrays.toString(dropLevel);
         }
     }
-
 }

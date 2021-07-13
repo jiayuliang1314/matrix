@@ -30,7 +30,7 @@ public class EvilMethodTracer extends Tracer {
     private final TraceConfig config;
     private AppMethodBeat.IndexRecord indexRecord;
     private long[] queueTypeCosts = new long[3];//输入，io，渲染消耗时间
-    private long evilThresholdMs;               //700ms执行超过700ms
+    private long evilThresholdMs;               //700ms消息执行超过700ms，则调查是否有evil方法
     private boolean isEvilMethodTraceEnable;
 
     //ok
@@ -121,8 +121,11 @@ public class EvilMethodTracer extends Tracer {
         void analyse() {
 
             // process
+            //进程优先级，nice值
             int[] processStat = Utils.getProcessPriority(Process.myPid());
+            //cpu状态
             String usage = Utils.calculateCpuUsage(cpuCost, cost);
+            //
             LinkedList<MethodItem> stack = new LinkedList();
             if (data.length > 0) {
                 TraceDataUtils.structuredDataToStack(data, stack, true, endMs);
@@ -189,6 +192,9 @@ public class EvilMethodTracer extends Tracer {
             analyse();
         }
 
+        //stack
+        //stackSize
+        //stackKey
         private String printEvil(String scene, int[] processStat, boolean isForeground, StringBuilder stack, long stackSize, String stackKey, String usage, long inputCost,
                                  long animationCost, long traversalCost, long allCost) {
             StringBuilder print = new StringBuilder();

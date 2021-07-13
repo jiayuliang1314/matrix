@@ -24,6 +24,7 @@ public abstract class Tracer extends LooperObserver implements ITracer {
         MatrixLog.i(TAG, "[onDead] %s", this.getClass().getName());
     }
 
+    //TracePlugin调用
     @Override
     final synchronized public void onStartTrace() {
         if (!isAlive) {
@@ -32,6 +33,7 @@ public abstract class Tracer extends LooperObserver implements ITracer {
         }
     }
 
+    //TracePlugin调用
     @Override
     final synchronized public void onCloseTrace() {
         if (isAlive) {

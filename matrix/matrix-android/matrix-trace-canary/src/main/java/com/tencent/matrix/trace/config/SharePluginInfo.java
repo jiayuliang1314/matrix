@@ -25,14 +25,15 @@ public class SharePluginInfo {
     public static final String TAG_PLUGIN = "Trace";                //plugin名字
     public static final String TAG_PLUGIN_FPS = TAG_PLUGIN + "_FPS";//plugin fps功能
     public static final String TAG_PLUGIN_EVIL_METHOD = TAG_PLUGIN + "_EvilMethod"; //plugin 耗时函数功能
-    public static final String TAG_PLUGIN_STARTUP = TAG_PLUGIN + "_StartUp";        //plugin启动功能
+    public static final String TAG_PLUGIN_STARTUP = TAG_PLUGIN + "_StartUp";        //plugin 启动耗时功能
 
-//    public static final String ISSUE_DEVICE = "machine";
-    public static final String ISSUE_SCENE = "scene";
-    public static final String ISSUE_DROP_LEVEL = "dropLevel";
-    public static final String ISSUE_DROP_SUM = "dropSum";
-    public static final String ISSUE_FPS = "fps";
+    //    public static final String ISSUE_DEVICE = "machine";
+    public static final String ISSUE_SCENE = "scene";           //场景，指activity
+    public static final String ISSUE_DROP_LEVEL = "dropLevel";  //掉帧程度
+    public static final String ISSUE_DROP_SUM = "dropSum";      //掉帧数量
+    public static final String ISSUE_FPS = "fps";               //帧率
     public static final String ISSUE_SUM_TASK_FRAME = "dropTaskFrameSum";
+
     public static final String ISSUE_TRACE_STACK = "stack";
     public static final String ISSUE_THREAD_STACK = "threadStack";
     public static final String ISSUE_PROCESS_PRIORITY = "processPriority";
