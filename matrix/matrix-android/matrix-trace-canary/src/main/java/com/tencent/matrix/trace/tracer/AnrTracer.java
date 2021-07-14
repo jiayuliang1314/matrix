@@ -219,7 +219,7 @@ public class AnrTracer extends Tracer {
             //因为是anr所以最小是5s
             long stackCost = Math.max(Constants.DEFAULT_ANR, TraceDataUtils.stackToString(stack, reportBuilder, logcatBuilder));
 
-            // stackKey
+            // stackKey，找出超过帧消息时间30%的方法的id并用 | 连接起来
             String stackKey = TraceDataUtils.getTreeKey(stack, stackCost);
             MatrixLog.w(TAG, "%s \npostTime:%s curTime:%s",
                     printAnr(scene, processStat, memoryInfo, status, logcatBuilder, isForeground, stack.size(),

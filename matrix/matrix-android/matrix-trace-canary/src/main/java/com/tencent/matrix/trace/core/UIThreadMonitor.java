@@ -196,19 +196,6 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         }
         return queueStatus[type] == DO_QUEUE_END ? queueCost[type] : 0;
     }
-
-    private void doQueueBegin(int type) {
-        queueStatus[type] = DO_QUEUE_BEGIN;//设置queueStatus[type]状态为begin
-        queueCost[type] = System.nanoTime();//记录初始值时间
-    }
-
-    private void doQueueEnd(int type) {
-        queueStatus[type] = DO_QUEUE_END;//设置queueStatus[type]状态为end
-        queueCost[type] = System.nanoTime() - queueCost[type];//记录消耗的时间
-        synchronized (this) {
-            callbackExist[type] = false;//重置状态
-        }
-    }
     //endregion
 
     //region step 4 dispatchBegin
@@ -389,6 +376,19 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
             if (config.isDevEnv()) {
                 MatrixLog.d(TAG, "[UIThreadMonitor#run] inner cost:%sns", System.nanoTime() - start);
             }
+        }
+    }
+
+    private void doQueueBegin(int type) {
+        queueStatus[type] = DO_QUEUE_BEGIN;//设置queueStatus[type]状态为begin
+        queueCost[type] = System.nanoTime();//记录初始值时间
+    }
+
+    private void doQueueEnd(int type) {
+        queueStatus[type] = DO_QUEUE_END;//设置queueStatus[type]状态为end
+        queueCost[type] = System.nanoTime() - queueCost[type];//记录消耗的时间
+        synchronized (this) {
+            callbackExist[type] = false;//重置状态
         }
     }
     //endregion
