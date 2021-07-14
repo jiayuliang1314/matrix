@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package sample.tencent.matrix.trace;
+package sample.tencent.matrix.trace.nouse;
 
 import android.os.Bundle;
 import androidx.annotation.Nullable;
@@ -26,6 +26,8 @@ import android.widget.Button;
 
 import androidx.fragment.app.Fragment;
 import sample.tencent.matrix.R;
+import sample.tencent.matrix.trace.nouse.FirstFragment;
+import sample.tencent.matrix.trace.nouse.SecondFragment;
 
 public class TestTraceFragmentActivity extends FragmentActivity {
     private static String TAG = "Matrix.TestTraceFragmentActivity";

@@ -135,20 +135,20 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
         A();
     }
 
-    private void A() {
-        B();
-        H();
-        L();
+    private void A() {//11s
+        B();//380
+        H();//56
+        L();//10秒
         SystemClock.sleep(800);
     }
 
-    private void B() {
-        C();
-        G();
+    private void B() {//380
+        C();//160
+        G();//20
         SystemClock.sleep(200);
     }
 
-    private void C() {
+    private void C() {//160
         D();
         E();
         F();
@@ -171,11 +171,11 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
         SystemClock.sleep(20);
     }
 
-    private void H() {
+    private void H() {//56
         SystemClock.sleep(20);
-        I();
-        J();
-        K();
+        I();//20
+        J();//6
+        K();//10
     }
 
     private void I() {

@@ -34,7 +34,7 @@
         <activity android:name=".resource.TestLeakActivity"
             android:process=":leaktest"/>
         <activity android:name=".trace.TestTraceMainActivity" />
-        <activity android:name=".trace.TestTraceFragmentActivity" />
+        <activity android:name=".trace.nouse.TestTraceFragmentActivity" />
         <activity android:name=".trace.TestEnterActivity" />
         <activity android:name=".trace.TestFpsActivity" />
         <activity android:name=".sqlitelint.TestSQLiteLintActivity" />

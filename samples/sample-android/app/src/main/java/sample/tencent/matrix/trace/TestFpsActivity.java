@@ -22,17 +22,16 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.print.PrinterId;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.tencent.matrix.Matrix;
-import com.tencent.matrix.plugin.Plugin;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.constants.Constants;
 import com.tencent.matrix.trace.listeners.IDoFrameListener;
@@ -50,18 +49,18 @@ import sample.tencent.matrix.issue.IssueFilter;
 
 public class TestFpsActivity extends Activity {
     private static final String TAG = "Matrix.TestFpsActivity";
-    private ListView mListView;
-    private Handler mainHandler = new Handler(Looper.getMainLooper());
-    private static HandlerThread sHandlerThread = new HandlerThread("test");
+    private static final HandlerThread sHandlerThread = new HandlerThread("test");
 
     static {
         sHandlerThread.start();
     }
 
+    private ListView mListView;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private int count;
     private long time = System.currentTimeMillis();
-    private IDoFrameListener mDoFrameListener = new IDoFrameListener(new Executor() {
-        Handler handler = new Handler(sHandlerThread.getLooper());
+    private final IDoFrameListener mDoFrameListener = new IDoFrameListener(new Executor() {
+        final Handler handler = new Handler(sHandlerThread.getLooper());
 
         @Override
         public void execute(Runnable command) {
@@ -104,7 +103,7 @@ public class TestFpsActivity extends Activity {
             }
         });
         mListView.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, data) {
-            Random random = new Random();
+            final Random random = new Random();
 
             @NonNull
             @Override

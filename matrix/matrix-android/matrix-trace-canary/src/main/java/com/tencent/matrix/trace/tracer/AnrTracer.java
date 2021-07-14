@@ -178,25 +178,34 @@ public class AnrTracer extends Tracer {
             long animationCost = monitor.getQueueCost(UIThreadMonitor.CALLBACK_ANIMATION, token);
             long traversalCost = monitor.getQueueCost(UIThreadMonitor.CALLBACK_TRAVERSAL, token);
 
+
+
+
+
+
             // trace
             LinkedList<MethodItem> stack = new LinkedList();
             if (data.length > 0) {
+                //Matrix默认最多上传30个堆栈。如果堆栈调用超过30条，需要裁剪堆栈。裁剪策略如下：
+                //从后往前遍历先序遍历结果，如果堆栈大小大于30，则将执行时间小于5*整体遍历次数的节点剔除掉
+                //最多整体遍历60次，每次整体遍历，比较时间增加5ms
+                //如果遍历了60次，堆栈大小还是大于30，将后面多余的删除掉
                 TraceDataUtils.structuredDataToStack(data, stack, true, curTime);
                 TraceDataUtils.trimStack(stack, Constants.TARGET_EVIL_METHOD_STACK, new TraceDataUtils.IStructuredDataFilter() {
                     @Override
                     public boolean isFilter(long during, int filterCount) {
-                        return during < filterCount * Constants.TIME_UPDATE_CYCLE_MS;
+                        return during < filterCount * Constants.TIME_UPDATE_CYCLE_MS;//TIME_UPDATE_CYCLE_MS 5
                     }
 
                     @Override
-                    public int getFilterMaxCount() {
+                    public int getFilterMaxCount() {//60
                         return Constants.FILTER_STACK_MAX_COUNT;
                     }
 
                     @Override
                     public void fallback(List<MethodItem> stack, int size) {
                         MatrixLog.w(TAG, "[fallback] size:%s targetSize:%s stack:%s", size, Constants.TARGET_EVIL_METHOD_STACK, stack);
-                        Iterator iterator = stack.listIterator(Math.min(size, Constants.TARGET_EVIL_METHOD_STACK));
+                        Iterator iterator = stack.listIterator(Math.min(size, Constants.TARGET_EVIL_METHOD_STACK));//TARGET_EVIL_METHOD_STACK 30
                         while (iterator.hasNext()) {
                             iterator.next();
                             iterator.remove();
@@ -207,6 +216,7 @@ public class AnrTracer extends Tracer {
 
             StringBuilder reportBuilder = new StringBuilder();
             StringBuilder logcatBuilder = new StringBuilder();
+            //因为是anr所以最小是5s
             long stackCost = Math.max(Constants.DEFAULT_ANR, TraceDataUtils.stackToString(stack, reportBuilder, logcatBuilder));
 
             // stackKey
@@ -214,6 +224,12 @@ public class AnrTracer extends Tracer {
             MatrixLog.w(TAG, "%s \npostTime:%s curTime:%s",
                     printAnr(scene, processStat, memoryInfo, status, logcatBuilder, isForeground, stack.size(),
                             stackKey, dumpStack, inputCost, animationCost, traversalCost, stackCost), token / Constants.TIME_MILLIS_TO_NANO, curTime); // for logcat
+
+
+
+
+
+
 
             if (stackCost >= Constants.DEFAULT_ANR_INVALID) {
                 MatrixLog.w(TAG, "The checked anr task was not executed on time. "

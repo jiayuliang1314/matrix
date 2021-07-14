@@ -18,14 +18,6 @@ public class TraceDataUtils {
 
     private static final String TAG = "Matrix.TraceDataUtils";
 
-    public interface IStructuredDataFilter {
-        boolean isFilter(long during, int filterCount);
-
-        int getFilterMaxCount();
-
-        void fallback(List<MethodItem> stack, int size);
-    }
-
     public static void structuredDataToStack(long[] buffer, LinkedList<MethodItem> result, boolean isStrict, long endTime) {
         long lastInId = 0L;
         int depth = 0;
@@ -116,6 +108,7 @@ public class TraceDataUtils {
         treeToStack(root, result);
     }
 
+    //region ok
     private static boolean isIn(long trueId) {
         return ((trueId >> 63) & 0x1) == 1;
     }
@@ -128,6 +121,30 @@ public class TraceDataUtils {
         return (int) ((trueId >> 43) & 0xFFFFFL);
     }
 
+    /**
+     * 递归打印TreeNode，存入ss里
+     * @param root
+     * @param depth
+     * @param ss
+     * @param prefixStr
+     */
+    public static void printTree(TreeNode root, int depth, StringBuilder ss, String prefixStr) {
+        StringBuilder empty = new StringBuilder(prefixStr);
+
+        for (int i = 0; i <= depth; i++) {
+            empty.append("    ");
+        }
+        for (int i = 0; i < root.children.size(); i++) {
+            TreeNode node = root.children.get(i);
+            //methodId【时间】
+            ss.append(empty.toString()).append(node.item.methodId).append("[").append(node.item.durTime).append("]").append("\n");
+            if (!node.children.isEmpty()) {
+                printTree(node, depth + 1, ss, prefixStr);
+            }
+        }
+    }
+    //endregion
+
     private static int addMethodItem(LinkedList<MethodItem> resultStack, MethodItem item) {
         if (AppMethodBeat.isDev) {
             Log.v(TAG, "method:" + item);
@@ -138,6 +155,7 @@ public class TraceDataUtils {
         }
         if (null != last && last.methodId == item.methodId && last.depth == item.depth
                 && 0 != item.depth) {
+            //todo 为什么判断item.durTime == Constants.DEFAULT_ANR
             item.durTime = item.durTime == Constants.DEFAULT_ANR ? last.durTime : item.durTime;
             last.mergeMore(item.durTime);
             return last.durTime;
@@ -147,12 +165,18 @@ public class TraceDataUtils {
         }
     }
 
-
+    /**
+     * 将TreeNode保存到list
+     * 深度优先遍历
+     * @param root
+     * @param list
+     */
     private static void treeToStack(TreeNode root, LinkedList<MethodItem> list) {
-
         for (int i = 0; i < root.children.size(); i++) {
             TreeNode node = root.children.get(i);
-            if (null == node) continue;
+            if (null == node) {
+                continue;
+            }
             if (node.item != null) {
                 list.add(node.item);
             }
@@ -161,7 +185,6 @@ public class TraceDataUtils {
             }
         }
     }
-
 
     /**
      * Structured the method stack as a tree Data structure
@@ -199,7 +222,6 @@ public class TraceDataUtils {
         return count;
     }
 
-
     public static long stackToString(LinkedList<MethodItem> stack, StringBuilder reportBuilder, StringBuilder logcatBuilder) {
         logcatBuilder.append("|*\t\tTraceStack:").append("\n");
         logcatBuilder.append("|*\t\t[id count cost]").append("\n");
@@ -217,7 +239,7 @@ public class TraceDataUtils {
         return stackCost;
     }
 
-
+    //region nouse
     public static int countTreeNode(TreeNode node) {
         int count = node.children.size();
         Iterator<TreeNode> iterator = node.children.iterator();
@@ -227,53 +249,43 @@ public class TraceDataUtils {
         return count;
     }
 
-    /**
-     * it's the node for the stack tree
-     */
-    public static final class TreeNode {
-        MethodItem item;
-        TreeNode father;
-
-        LinkedList<TreeNode> children = new LinkedList<>();
-
-        TreeNode(MethodItem item, TreeNode father) {
-            this.item = item;
-            this.father = father;
-        }
-
-        private int depth() {
-            return null == item ? 0 : item.depth;
-        }
-
-        private void add(TreeNode node) {
-            children.addFirst(node);
-        }
-
-        private boolean isLeaf() {
-            return children.isEmpty();
-        }
-    }
-
     public static void printTree(TreeNode root, StringBuilder print) {
         print.append("|*   TraceStack: ").append("\n");
         printTree(root, 0, print, "|*        ");
     }
 
-    public static void printTree(TreeNode root, int depth, StringBuilder ss, String prefixStr) {
-
-        StringBuilder empty = new StringBuilder(prefixStr);
-
-        for (int i = 0; i <= depth; i++) {
-            empty.append("    ");
-        }
-        for (int i = 0; i < root.children.size(); i++) {
-            TreeNode node = root.children.get(i);
-            ss.append(empty.toString()).append(node.item.methodId).append("[").append(node.item.durTime).append("]").append("\n");
-            if (!node.children.isEmpty()) {
-                printTree(node, depth + 1, ss, prefixStr);
+    @Deprecated
+    public static String getTreeKey(List<MethodItem> stack, final int targetCount) {
+        StringBuilder ss = new StringBuilder();
+        final List<MethodItem> tmp = new LinkedList<>(stack);
+        trimStack(tmp, targetCount, new TraceDataUtils.IStructuredDataFilter() {
+            @Override
+            public boolean isFilter(long during, int filterCount) {
+                return during < filterCount * Constants.TIME_UPDATE_CYCLE_MS;
             }
+
+            @Override
+            public int getFilterMaxCount() {
+                return Constants.FILTER_STACK_MAX_COUNT;
+            }
+
+            @Override
+            public void fallback(List<MethodItem> stack, int size) {
+                MatrixLog.w(TAG, "[getTreeKey] size:%s targetSize:%s", size, targetCount);
+                Iterator iterator = stack.listIterator(Math.min(size, targetCount));
+                while (iterator.hasNext()) {
+                    iterator.next();
+                    iterator.remove();
+                }
+            }
+        });
+        for (MethodItem item : tmp) {
+            ss.append(item.methodId + "|");
         }
+        return ss.toString();
     }
+    //endregion
+
 
 
     public static void trimStack(List<MethodItem> stack, int targetCount, IStructuredDataFilter filter) {
@@ -308,36 +320,6 @@ public class TraceDataUtils {
         }
     }
 
-    @Deprecated
-    public static String getTreeKey(List<MethodItem> stack, final int targetCount) {
-        StringBuilder ss = new StringBuilder();
-        final List<MethodItem> tmp = new LinkedList<>(stack);
-        trimStack(tmp, targetCount, new TraceDataUtils.IStructuredDataFilter() {
-            @Override
-            public boolean isFilter(long during, int filterCount) {
-                return during < filterCount * Constants.TIME_UPDATE_CYCLE_MS;
-            }
-
-            @Override
-            public int getFilterMaxCount() {
-                return Constants.FILTER_STACK_MAX_COUNT;
-            }
-
-            @Override
-            public void fallback(List<MethodItem> stack, int size) {
-                MatrixLog.w(TAG, "[getTreeKey] size:%s targetSize:%s", size, targetCount);
-                Iterator iterator = stack.listIterator(Math.min(size, targetCount));
-                while (iterator.hasNext()) {
-                    iterator.next();
-                    iterator.remove();
-                }
-            }
-        });
-        for (MethodItem item : tmp) {
-            ss.append(item.methodId + "|");
-        }
-        return ss.toString();
-    }
 
     public static String getTreeKey(List<MethodItem> stack, long stackCost) {
         StringBuilder ss = new StringBuilder();
@@ -373,5 +355,41 @@ public class TraceDataUtils {
         return ss.toString();
     }
 
+    public interface IStructuredDataFilter {
+        boolean isFilter(long during, int filterCount);
+
+        int getFilterMaxCount();
+
+        void fallback(List<MethodItem> stack, int size);
+    }
+
+    //region TreeNode
+
+    /**
+     * it's the node for the stack tree
+     */
+    public static final class TreeNode {
+        MethodItem item;
+        TreeNode father;
+        LinkedList<TreeNode> children = new LinkedList<>();
+
+        TreeNode(MethodItem item, TreeNode father) {
+            this.item = item;
+            this.father = father;
+        }
+
+        private int depth() {
+            return null == item ? 0 : item.depth;
+        }
+
+        private void add(TreeNode node) {
+            children.addFirst(node);//为什么addFirst
+        }
+
+        private boolean isLeaf() {
+            return children.isEmpty();
+        }
+    }
+    //endregion
 
 }
