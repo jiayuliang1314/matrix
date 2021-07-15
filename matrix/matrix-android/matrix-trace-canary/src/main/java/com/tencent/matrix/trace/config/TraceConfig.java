@@ -38,7 +38,7 @@ public class TraceConfig implements IDefaultConfig {
     public boolean defaultFpsEnable;        //是否开启fps
     public boolean defaultMethodTraceEnable;//是否开启超时函数检测
     public boolean defaultStartupEnable;    //是否开启启动检测
-    public boolean defaultAppMethodBeatEnable = true;
+    public boolean defaultAppMethodBeatEnable = true;//是否开启method埋点
     public boolean defaultAnrEnable;        //是否开启Anr检测
     public boolean isDebug;
     public boolean isDevEnv;
