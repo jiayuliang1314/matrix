@@ -38,6 +38,7 @@ public class TraceConfig implements IDefaultConfig {
     public boolean defaultFpsEnable;        //是否开启fps
     public boolean defaultMethodTraceEnable;//是否开启超时函数检测
     public boolean defaultStartupEnable;    //是否开启启动检测
+    public boolean defaultAppMethodBeatEnable = true;
     public boolean defaultAnrEnable;        //是否开启Anr检测
     public boolean isDebug;
     public boolean isDevEnv;
@@ -62,6 +63,11 @@ public class TraceConfig implements IDefaultConfig {
         ss.append("* defaultAnrEnable:\t").append(defaultAnrEnable).append("\n");
         ss.append("* splashActivities:\t").append(splashActivities).append("\n");
         return ss.toString();
+    }
+
+    @Override
+    public boolean isAppMethodBeatEnable() {
+        return defaultAppMethodBeatEnable;
     }
 
     @Override
@@ -123,26 +129,26 @@ public class TraceConfig implements IDefaultConfig {
     }
 
 
-    public int getEvilThresholdMs() {//700ms
+    public int getEvilThresholdMs() {
         return null == dynamicConfig
                 ? Constants.DEFAULT_EVIL_METHOD_THRESHOLD_MS
                 : dynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_trace_evil_method_threshold.name(), Constants.DEFAULT_EVIL_METHOD_THRESHOLD_MS);
     }
 
-    public int getTimeSliceMs() {//todo？干哈的
+    public int getTimeSliceMs() {
         return null == dynamicConfig
                 ? Constants.DEFAULT_FPS_TIME_SLICE_ALIVE_MS
                 : dynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_trace_fps_time_slice.name(), Constants.DEFAULT_FPS_TIME_SLICE_ALIVE_MS);
     }
 
 
-    public int getColdStartupThresholdMs() {//冷启动限制，10s
+    public int getColdStartupThresholdMs() {
         return null == dynamicConfig
                 ? Constants.DEFAULT_STARTUP_THRESHOLD_MS_COLD
                 : dynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_trace_app_start_up_threshold.name(), Constants.DEFAULT_STARTUP_THRESHOLD_MS_COLD);
     }
 
-    public int getWarmStartupThresholdMs() {//热启动限制，4s
+    public int getWarmStartupThresholdMs() {
         return null == dynamicConfig
                 ? Constants.DEFAULT_STARTUP_THRESHOLD_MS_WARM
                 : dynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_trace_warm_app_start_up_threshold.name(), Constants.DEFAULT_STARTUP_THRESHOLD_MS_WARM);
@@ -175,10 +181,15 @@ public class TraceConfig implements IDefaultConfig {
 
 
     public static class Builder {
-        private final TraceConfig config = new TraceConfig();
+        private TraceConfig config = new TraceConfig();
 
         public Builder dynamicConfig(IDynamicConfig dynamicConfig) {
             config.dynamicConfig = dynamicConfig;
+            return this;
+        }
+
+        public Builder enableAppMethodBeat(boolean enable) {
+            config.defaultAppMethodBeatEnable = enable;
             return this;
         }
 
@@ -225,5 +236,8 @@ public class TraceConfig implements IDefaultConfig {
         public TraceConfig build() {
             return config;
         }
+
     }
+
+
 }
