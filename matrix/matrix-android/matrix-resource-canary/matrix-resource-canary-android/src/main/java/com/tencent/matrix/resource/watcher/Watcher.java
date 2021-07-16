@@ -19,7 +19,7 @@ package com.tencent.matrix.resource.watcher;
 /**
  * Created by tangyinsheng on 2017/6/2.
  */
-
+//接口，监控类，有start，stop，destroy方法
 public interface Watcher {
     void start();
 

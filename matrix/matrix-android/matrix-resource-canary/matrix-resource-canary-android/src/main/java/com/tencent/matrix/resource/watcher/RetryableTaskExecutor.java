@@ -28,7 +28,7 @@ import android.os.Looper;
  * custom HeapDumpHandler and HandlerThread support.
  * e.g. Some framework needs to wrap default handler class for monitoring.
  */
-//再次执行某个任务的执行这
+//再次执行某个任务的执行器
 public class RetryableTaskExecutor {
     //后台handler，将task发送到后台线程执行
     private final Handler mBackgroundHandler;

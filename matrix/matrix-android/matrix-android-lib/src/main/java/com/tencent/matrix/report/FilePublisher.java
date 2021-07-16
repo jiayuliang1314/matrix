@@ -31,9 +31,9 @@ import java.util.HashSet;
 public class FilePublisher extends IssuePublisher {
     private static final String TAG = "Matrix.FilePublisher";
 
-    private final long                     mExpiredTime;
+    private final long                     mExpiredTime;//一天过期日期
     private final SharedPreferences.Editor mEditor;
-    private final HashMap<String, Long>    mPublishedMap;
+    private final HashMap<String, Long>    mPublishedMap;//activity名字和发生泄漏的时间
 
     private final Context mContext;
 
@@ -41,9 +41,9 @@ public class FilePublisher extends IssuePublisher {
     public FilePublisher(Context context, long expire, String tag, OnIssueDetectListener issueDetectListener) {
         super(issueDetectListener);
         this.mContext = context;
-        mExpiredTime = expire;
+        mExpiredTime = expire;//1天过期日期
         SharedPreferences sharedPreferences = context.getSharedPreferences(tag + MatrixUtil.getProcessName(context), Context.MODE_PRIVATE);
-        mPublishedMap = new HashMap<>();
+        mPublishedMap = new HashMap<>();//activity名字和发生泄漏的时间
         long current = System.currentTimeMillis();
         mEditor = sharedPreferences.edit();
         HashSet<String> spKeys = null;
@@ -55,9 +55,9 @@ public class FilePublisher extends IssuePublisher {
                 long start = sharedPreferences.getLong(key, 0);
                 long costTime = current - start;
                 if (start <= 0 || costTime > mExpiredTime) {
-                    mEditor.remove(key);
+                    mEditor.remove(key);//超时则删除
                 } else {
-                    mPublishedMap.put(key, start);
+                    mPublishedMap.put(key, start);//没有的话，添加到map里
                 }
             }
         }
@@ -70,12 +70,12 @@ public class FilePublisher extends IssuePublisher {
         if (key == null) {
             return;
         }
-        if (mPublishedMap.containsKey(key)) {
+        if (mPublishedMap.containsKey(key)) {//如果含有则返回
             return;
         }
         final long now = System.currentTimeMillis();
         mPublishedMap.put(key, now);
-
+        //如果保存文件里则保存到SharedPreferences里
         if (persist) {
             SharedPreferences.Editor e = mEditor.putLong(key, now);
             if (null != e) {
@@ -110,6 +110,7 @@ public class FilePublisher extends IssuePublisher {
             return false;
         }
         long start = mPublishedMap.get(key);
+        //时间判断，超过1天删除，并返回false
         if (start <= 0 || (System.currentTimeMillis() - start) > mExpiredTime) {
             SharedPreferences.Editor e = mEditor.remove(key);
             if (null != e) {
