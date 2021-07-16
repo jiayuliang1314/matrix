@@ -23,7 +23,7 @@ import android.os.Bundle;
 /**
  * Created by tangyinsheng on 2017/6/2.
  */
-//ok
+//ActivityLifecycleCallbacks的一个适配类，子类只需集成想覆盖的名字
 public class ActivityLifeCycleCallbacksAdapter implements Application.ActivityLifecycleCallbacks {
 
     @Override

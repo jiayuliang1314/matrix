@@ -21,16 +21,24 @@ package com.tencent.matrix.resource.config;
  */
 //ok
 public class SharePluginInfo {
+
+    //plugin名字
     public static final String TAG_PLUGIN = "memory";
-
+    //Hprof压缩文件位置？
     public static final String ISSUE_RESULT_PATH = "resultZipPath";
-
+    //dump的模式
     public static final String ISSUE_DUMP_MODE     = "dump_mode";
+    //泄漏的activity的名字
     public static final String ISSUE_ACTIVITY_NAME = "activity";
+    //泄漏的acitivity的唯一key
     public static final String ISSUE_REF_KEY       = "ref_key";
+    //refChain gc链
     public static final String ISSUE_LEAK_DETAIL   = "leak_detail";
+    //花了多长时间，dump+分析的消耗时间
     public static final String ISSUE_COST_MILLIS   = "cost_millis";
+    //进程名字
     public static final String ISSUE_LEAK_PROCESS  = "leak_process";
+    //没用到
     public static final String ISSUE_NOTIFICATION_ID     = "notification_id";
 
     public static final class IssueType {

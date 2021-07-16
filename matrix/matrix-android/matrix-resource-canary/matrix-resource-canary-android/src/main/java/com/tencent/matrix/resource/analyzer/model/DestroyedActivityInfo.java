@@ -30,10 +30,13 @@ import java.lang.ref.WeakReference;
  */
 //ok
 public class DestroyedActivityInfo {
+    //为每个已经ondestroy的activity设置一个key
     public final String mKey;
+    //activity的名字
     public final String mActivityName;
-
+    //已经调用onDestroy方法的activity的弱引用
     public final WeakReference<Activity> mActivityRef;
+    //强制gc多次发现这个activity泄漏的次数
     public int mDetectedCount = 0;
 
     public DestroyedActivityInfo(String key, Activity activity, String activityName) {

@@ -29,9 +29,11 @@ import java.io.Serializable;
  */
 //ok - HeapDump代表
 public class HeapDump implements Serializable {
-
+    //Hprof文件
     private final File mHprofFile;
+    //DestroyedActivityInfo类中为每个已经ondestroy的activity设置的key
     private final String mRefKey;
+    //activity名字
     private final String mActivityName;
 
 
