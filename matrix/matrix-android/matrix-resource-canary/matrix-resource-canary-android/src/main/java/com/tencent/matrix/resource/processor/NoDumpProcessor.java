@@ -22,9 +22,10 @@ public class NoDumpProcessor extends BaseLeakProcessor {
     public boolean process(DestroyedActivityInfo destroyedActivityInfo) {
         // Lightweight mode, just report leaked activity name.
         MatrixLog.i(TAG, "lightweight mode, just report leaked activity name.");
+        //标记泄漏了
         getWatcher().markPublished(destroyedActivityInfo.mActivityName);
         getWatcher().triggerGc();
-
+        //上报问题
         publishIssue(SharePluginInfo.IssueType.LEAK_FOUND, ResourceConfig.DumpMode.NO_DUMP, destroyedActivityInfo.mActivityName, destroyedActivityInfo.mKey, "no dump", "0");
 
         return true;

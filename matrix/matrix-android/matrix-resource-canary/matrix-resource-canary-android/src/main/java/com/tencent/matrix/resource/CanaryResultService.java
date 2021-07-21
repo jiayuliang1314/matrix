@@ -41,6 +41,7 @@ public class CanaryResultService extends MatrixJobIntentService {
     private static final String EXTRA_PARAM_RESULT_PATH = "RESULT_PATH";
     private static final String EXTRA_PARAM_ACTIVITY = "RESULT_ACTIVITY";
 
+    //入口
     public static void reportHprofResult(Context context, String resultPath, String activityName) {
         final Intent intent = new Intent(context, CanaryResultService.class);
         intent.setAction(ACTION_REPORT_HPROF_RESULT);
@@ -59,6 +60,7 @@ public class CanaryResultService extends MatrixJobIntentService {
 
                 if (resultPath != null && !resultPath.isEmpty()
                     && activityName != null && !activityName.isEmpty()) {
+                    //上报问题
                     doReportHprofResult(resultPath, activityName);
                 } else {
                     MatrixLog.e(TAG, "resultPath or activityName is null or empty, skip reporting.");
@@ -68,6 +70,7 @@ public class CanaryResultService extends MatrixJobIntentService {
     }
 
     // notice: compatible
+    //上报问题
     private void doReportHprofResult(String resultPath, String activityName) {
         Issue issue = new Issue(SharePluginInfo.IssueType.LEAK_FOUND);
         final JSONObject resultJson = new JSONObject();

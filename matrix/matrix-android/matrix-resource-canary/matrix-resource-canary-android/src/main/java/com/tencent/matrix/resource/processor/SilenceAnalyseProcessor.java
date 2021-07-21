@@ -28,7 +28,7 @@ public class SilenceAnalyseProcessor extends BaseLeakProcessor {
 
     public SilenceAnalyseProcessor(ActivityRefWatcher watcher) {
         super(watcher);
-
+        //注册监听
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
@@ -36,6 +36,7 @@ public class SilenceAnalyseProcessor extends BaseLeakProcessor {
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                //设置标记位
                 if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
                     isScreenOff = true;
                     MatrixLog.i(TAG, "[ACTION_SCREEN_OFF]");
@@ -55,18 +56,20 @@ public class SilenceAnalyseProcessor extends BaseLeakProcessor {
 
     @Override
     public boolean process(DestroyedActivityInfo destroyedActivityInfo) {
+        //处理方法
         return onLeak(destroyedActivityInfo.mActivityName, destroyedActivityInfo.mKey);
     }
 
     @Override
     public void onDestroy() {
         MatrixLog.i(TAG, "onDestroy: unregister receiver");
+        //解除注册
         getWatcher().getResourcePlugin().getApplication().unregisterReceiver(mReceiver);
     }
 
     private boolean onLeak(final String activity, final String refString) {
         MatrixLog.i(TAG, "[onLeak] activity=%s isScreenOff=%s isProcessing=%s", activity, isScreenOff, isProcessing);
-
+        //leak监听过了
         if (getWatcher().isPublished(activity)) {
             MatrixLog.i(TAG, "this activity has been dumped! %s", activity);
             return true;
@@ -80,6 +83,7 @@ public class SilenceAnalyseProcessor extends BaseLeakProcessor {
             boolean res = dumpAndAnalyse(activity, refString);
 
             if (res) {
+                //又将leak删除了，因为在silent模式下不支持isPublished，在ActivityRefWatcher里只有NO_DUMP，AUTO_DUMP才支持
                 getWatcher().markPublished(activity, false);
             }
 

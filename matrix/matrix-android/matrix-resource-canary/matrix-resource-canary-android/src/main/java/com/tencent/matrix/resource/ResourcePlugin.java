@@ -35,15 +35,16 @@ import com.tencent.matrix.util.MatrixLog;
 
 public class ResourcePlugin extends Plugin {
     private static final String TAG = "Matrix.ResourcePlugin";
-
+    //配置类
     private final ResourceConfig mConfig;
+    //执行activity泄漏检测的类
     private ActivityRefWatcher mWatcher = null;
 
     public ResourcePlugin(ResourceConfig config) {
         mConfig = config;
     }
 
-    //todo
+    //todo 没有用到
     public static void activityLeakFixer(Application application) {
         // Auto break the path from Views in their holder to gc root when activity is destroyed.
         application.registerActivityLifecycleCallbacks(new ActivityLifeCycleCallbacksAdapter() {
@@ -68,6 +69,7 @@ public class ResourcePlugin extends Plugin {
             unSupportPlugin();
             return;
         }
+        //执行activity泄漏检测的类
         mWatcher = new ActivityRefWatcher(app, this);
     }
 
@@ -78,6 +80,7 @@ public class ResourcePlugin extends Plugin {
             MatrixLog.e(TAG, "ResourcePlugin start, ResourcePlugin is not supported, just return");
             return;
         }
+        //开启检测
         mWatcher.start();
     }
 
@@ -88,6 +91,7 @@ public class ResourcePlugin extends Plugin {
             MatrixLog.e(TAG, "ResourcePlugin stop, ResourcePlugin is not supported, just return");
             return;
         }
+        //关掉检测
         mWatcher.stop();
     }
 
@@ -98,6 +102,7 @@ public class ResourcePlugin extends Plugin {
             MatrixLog.e(TAG, "ResourcePlugin destroy, ResourcePlugin is not supported, just return");
             return;
         }
+        //destroy检测
         mWatcher.destroy();
     }
 

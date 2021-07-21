@@ -49,42 +49,47 @@ public class ManualDumpProcessor extends BaseLeakProcessor {
 
     public ManualDumpProcessor(ActivityRefWatcher watcher, String targetActivity) {
         super(watcher);
+        //处理activity
         mTargetActivity = targetActivity;
+        //notification
         mNotificationManager = (NotificationManager) watcher.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-
+        //注册BroadcastReceiver
         ManualDumpProcessorHelper.install(watcher.getContext(), this);
     }
 
     @Override
     public boolean process(DestroyedActivityInfo destroyedActivityInfo) {
         final Context context = getWatcher().getContext();
+        //gc了以下
         getWatcher().triggerGc();
-
+        //如果回收了返回true
         if (destroyedActivityInfo.mActivityRef.get() == null) {
             MatrixLog.v(TAG, "activity with key [%s] was already recycled.", destroyedActivityInfo.mKey);
             return true;
         }
-
+        //保存了下泄漏的信息
         mLeakedActivities.add(destroyedActivityInfo);
 
         MatrixLog.i(TAG, "show notification for activity leak. %s", destroyedActivityInfo.mActivityName);
-
+        //？todo 不知道干哈的
         if (isMuted) {
             MatrixLog.i(TAG, "is muted, won't show notification util process reboot");
             return true;
         }
-
+        //发送通知
+        //通知点击之后跳转的activity
         Intent targetIntent = new Intent();
         targetIntent.setClassName(getWatcher().getContext(), mTargetActivity);
         targetIntent.putExtra(SharePluginInfo.ISSUE_ACTIVITY_NAME, destroyedActivityInfo.mActivityName);
         targetIntent.putExtra(SharePluginInfo.ISSUE_REF_KEY, destroyedActivityInfo.mKey);
         targetIntent.putExtra(SharePluginInfo.ISSUE_LEAK_PROCESS, MatrixUtil.getProcessName(context));
 
-
+        //点击之后的响应pendingintent
         PendingIntent pIntent = PendingIntent.getActivity(context, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
+        //title
         String dumpingHeapTitle = context.getString(R.string.resource_canary_leak_tip);
         ResourceConfig config = getWatcher().getResourcePlugin().getConfig();
+        //content
         String dumpingHeapContent =
                 String.format(Locale.getDefault(), "[%s] has leaked for [%s]min!!!",
                         destroyedActivityInfo.mActivityName,
@@ -106,15 +111,16 @@ public class ManualDumpProcessor extends BaseLeakProcessor {
                 .setWhen(System.currentTimeMillis());
 
         Notification notification = builder.build();
-
+        //发送通知
         mNotificationManager.notify(
                 NOTIFICATION_ID + destroyedActivityInfo.mKey.hashCode(), notification);
-
+        //上报了问题
         publishIssue(destroyedActivityInfo.mActivityName, destroyedActivityInfo.mKey);
         MatrixLog.i(TAG, "shown notification!!!3");
         return true;
     }
 
+    //创建通知channel
     private String getNotificationChannelIdCompat(Context context) {
         if (SDK_INT >= Build.VERSION_CODES.O) {
             String channelName = "com.tencent.matrix.resource.processor.ManualDumpProcessor";
@@ -139,7 +145,7 @@ public class ManualDumpProcessor extends BaseLeakProcessor {
      *
      * @param activity
      * @param refString
-     * @return
+     * @return ManualDumpData 包含dump文件+引用链
      */
     private ManualDumpData dumpAndAnalyse(String activity, String refString) {
         long dumpBegin = System.currentTimeMillis();
@@ -178,15 +184,17 @@ public class ManualDumpProcessor extends BaseLeakProcessor {
         return null;
     }
 
+    //单纯上报问题
     private void publishIssue(String activity, String refKey) {
         publishIssue(SharePluginInfo.IssueType.LEAK_FOUND, ResourceConfig.DumpMode.MANUAL_DUMP, activity, refKey, "manual_dump", "0");
     }
 
     /**
      * multi process dump helper.
+     * 多进程dump帮组类
      */
     public static class ManualDumpProcessorHelper extends BroadcastReceiver {
-
+        //permission
         private static final String DUMP_PERMISSION_SUFFIX = ".manual.dump";
 
         private static final String ACTION_DUMP = "com.tencent.matrix.manual.dump";
@@ -198,7 +206,7 @@ public class ManualDumpProcessor extends BaseLeakProcessor {
         private static final String KEY_LEAK_REFKEY = "leak_refkey";
         private static final String KEY_HPROF_PATH = "hprof_path";
         private static final String KEY_REF_CHAIN = "ref_chain";
-
+        //是否注册了BroadcastReceiver
         private static boolean hasInstalled;
 
         private static ManualDumpProcessor sProcessor;
@@ -215,8 +223,10 @@ public class ManualDumpProcessor extends BaseLeakProcessor {
                 @Override
                 public void run() {
                     if (ACTION_DUMP.equals(intent.getAction())) {
+                        //进程
                         String leakProcess = intent.getStringExtra(KEY_LEAK_PROCESS);
                         String currentProcess = MatrixUtil.getProcessName(context);
+                        //如果是这个进程泄漏了
                         if (!currentProcess.equals(leakProcess)) {
                             MatrixLog.v(TAG, "ACTION_DUMP: current process [%s] is NOT leaked process [%s]", currentProcess, leakProcess);
                             return;
@@ -227,7 +237,7 @@ public class ManualDumpProcessor extends BaseLeakProcessor {
 
                         String leakActivity = intent.getStringExtra(KEY_LEAK_ACTIVITY);
                         String refKey = intent.getStringExtra(KEY_LEAK_REFKEY);
-
+                        //dump信息并分析
                         ManualDumpData data = sProcessor.dumpAndAnalyse(leakActivity, refKey);
                         Intent resultIntent = new Intent(ACTION_RESULT);
                         if (data != null) {
@@ -267,17 +277,20 @@ public class ManualDumpProcessor extends BaseLeakProcessor {
             });
         }
 
+        //注册BroadcastReceiver
         private static void install(Context context, ManualDumpProcessor processor) {
             IntentFilter filter = new IntentFilter();
             filter.addAction(ACTION_DUMP);
             filter.addAction(ACTION_RESULT);
             final String dumpPermission = context.getPackageName() + DUMP_PERMISSION_SUFFIX;
+            //注册BroadcastReceiver
             context.registerReceiver(new ManualDumpProcessorHelper(), filter, dumpPermission, null);
             MatrixLog.d(TAG, "[%s] DUMP_PERMISSION is %s", MatrixUtil.getProcessName(context), dumpPermission);
             hasInstalled = true;
             sProcessor = processor;
         }
 
+        //nouse
         public static void dumpAndAnalyse(Context context, String leakProcess, String activity, String refKey, IResultListener resultListener) {
             if (!hasInstalled) {
                 throw new IllegalStateException("ManualDumpProcessorHelper was not installed yet!!! maybe your target activity is not running in right process.");
@@ -311,6 +324,10 @@ public class ManualDumpProcessor extends BaseLeakProcessor {
         void onFailed();
     }
 
+    /**
+     * hprof文件路径
+     * 链
+     */
     public static class ManualDumpData {
         public final String hprofPath;
         public final String refChain;

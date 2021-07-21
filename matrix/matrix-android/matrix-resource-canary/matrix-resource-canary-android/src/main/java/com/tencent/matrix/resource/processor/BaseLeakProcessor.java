@@ -30,11 +30,13 @@ import java.io.IOException;
  */
 public abstract class BaseLeakProcessor {
     private static final String TAG = "Matrix.LeakProcessor.Base";
-
+    //检测泄漏
     private final ActivityRefWatcher mWatcher;
-
+    //dump文件相关
     private DumpStorageManager                mDumpStorageManager;
+    //dump的类
     private AndroidHeapDumper                 mHeapDumper;
+    //dump完了回调
     private AndroidHeapDumper.HeapDumpHandler mHeapDumpHandler;
 
     public BaseLeakProcessor(ActivityRefWatcher watcher) {

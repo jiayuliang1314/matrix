@@ -45,6 +45,7 @@ import static com.tencent.matrix.resource.common.utils.StreamUtil.copyFileToStre
 /**
  * Created by tangyinsheng on 2017/7/11.
  */
+//裁剪hprof，并上报
 public class CanaryWorkerService extends MatrixJobIntentService {
     private static final String TAG = "Matrix.CanaryWorkerService";
 
@@ -52,6 +53,7 @@ public class CanaryWorkerService extends MatrixJobIntentService {
     private static final String ACTION_SHRINK_HPROF = "com.tencent.matrix.resource.worker.action.SHRINK_HPROF";
     private static final String EXTRA_PARAM_HEAPDUMP = "com.tencent.matrix.resource.worker.param.HEAPDUMP";
 
+    //入口
     public static void shrinkHprofAndReport(Context context, HeapDump heapDump) {
         final Intent intent = new Intent(context, CanaryWorkerService.class);
         intent.setAction(ACTION_SHRINK_HPROF);
@@ -68,6 +70,7 @@ public class CanaryWorkerService extends MatrixJobIntentService {
                     intent.setExtrasClassLoader(this.getClassLoader());
                     final HeapDump heapDump = (HeapDump) intent.getSerializableExtra(EXTRA_PARAM_HEAPDUMP);
                     if (heapDump != null) {
+                        //裁剪并上报
                         doShrinkHprofAndReport(heapDump);
                     } else {
                         MatrixLog.e(TAG, "failed to deserialize heap dump, give up shrinking and reporting.");
@@ -83,6 +86,7 @@ public class CanaryWorkerService extends MatrixJobIntentService {
         final File hprofDir = heapDump.getHprofFile().getParentFile();
         //裁剪之后的Hprof文件名
         final File shrinkedHProfFile = new File(hprofDir, getShrinkHprofName(heapDump.getHprofFile()));
+        //压缩文件
         final File zipResFile = new File(hprofDir, getResultZipName("dump_result_" + android.os.Process.myPid()));
         final File hprofFile = heapDump.getHprofFile();
         ZipOutputStream zos = null;
@@ -127,6 +131,7 @@ public class CanaryWorkerService extends MatrixJobIntentService {
         }
     }
 
+    //返回压缩后的 _shrink.hprof
     private String getShrinkHprofName(File origHprof) {
         final String origHprofName = origHprof.getName();
         final int extPos = origHprofName.indexOf(DumpStorageManager.HPROF_EXT);
@@ -134,6 +139,7 @@ public class CanaryWorkerService extends MatrixJobIntentService {
         return namePrefix + "_shrink" + DumpStorageManager.HPROF_EXT;
     }
 
+    //返回zip todo 会不会重复
     private String getResultZipName(String prefix) {
         StringBuilder sb = new StringBuilder();
         sb.append(prefix).append('_')

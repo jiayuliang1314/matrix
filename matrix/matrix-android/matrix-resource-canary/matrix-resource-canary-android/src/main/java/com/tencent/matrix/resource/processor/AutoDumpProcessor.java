@@ -21,10 +21,13 @@ public class AutoDumpProcessor extends BaseLeakProcessor {
 
     @Override
     public boolean process(DestroyedActivityInfo destroyedActivityInfo) {
+//        dump
         final File hprofFile = getHeapDumper().dumpHeap(true);
         if (hprofFile != null) {
+//标记
             getWatcher().markPublished(destroyedActivityInfo.mActivityName);
             getWatcher().triggerGc();
+            //
             final HeapDump heapDump = new HeapDump(hprofFile, destroyedActivityInfo.mKey, destroyedActivityInfo.mActivityName);
             getHeapDumpHandler().process(heapDump);
         } else {

@@ -38,12 +38,13 @@ import java.util.Locale;
 
 public class DumpStorageManager {
     private static final String TAG = "Matrix.DumpStorageManager";
-
+    //后缀
     public static final String HPROF_EXT = ".hprof";
-
+    //最多五个缓存的hprof
     public static final int DEFAULT_MAX_STORED_HPROF_FILECOUNT = 5;
 
     protected final Context mContext;
+    //最多缓存的hprof数量
     protected final int mMaxStoredHprofFileCount;
 
     public DumpStorageManager(Context context) {
@@ -59,12 +60,13 @@ public class DumpStorageManager {
         mMaxStoredHprofFileCount = maxStoredHprofFileCount;
     }
 
+    //新建一个hprof
     public File newHprofFile() {
         final File storageDir = prepareStorageDirectory();
         if (storageDir == null) {
             return null;
         }
-//        进程名+进程id+时间
+//        进程名+进程id+时间+后缀
         final String hprofFileName = "dump"
                 + "_" + MatrixUtil.getProcessName(mContext).replace(".", "_").replace(":", "_")
                 + "_" + Process.myPid()
@@ -74,6 +76,7 @@ public class DumpStorageManager {
         return new File(storageDir, hprofFileName);
     }
 
+    //创建文件夹
     private File prepareStorageDirectory() {
         final File storageDir = getStorageDirectory();
         if (!storageDir.exists() && (!storageDir.mkdirs() || !storageDir.canWrite())) {
@@ -97,6 +100,7 @@ public class DumpStorageManager {
         return storageDir;
     }
 
+    //获取存储位置
     private File getStorageDirectory() {
         final String sdcardState = Environment.getExternalStorageState();
         File root = null;

@@ -1,0 +1,19 @@
+1.为什么通过堆栈信息定位不到oom为什么产生
+2.oom产生原因 内存不足/内存碎片  view的onDraw对象里不要创建对象(内存抖动会产生大量的内存碎片)
+3.标记/清除 复制算法
+4.Apm matrix/dokit/qapm
+5.jvmti动态内存分配监听 创建，回收=》可视化图表
+    5.1重新定义类
+        apply change
+    。。
+6.jvmti接口 是c++的接口
+7.Jvm->jvmti接口
+        写程序
+
+8.Ndk-》so文件
+.jar
+.so
+
+9.反射
+
+jvmti 8.0以上，qapm，抖音kenzo

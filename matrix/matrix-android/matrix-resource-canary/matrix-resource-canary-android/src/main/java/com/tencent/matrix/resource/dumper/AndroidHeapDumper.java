@@ -42,7 +42,9 @@ public class AndroidHeapDumper {
     private static final String TAG = "Matrix.AndroidHeapDumper";
 
     private final Context mContext;
+    //文件相关
     private final DumpStorageManager mDumpStorageManager;
+    //主线程handler
     private final Handler mMainHandler;
 
     public AndroidHeapDumper(Context context, DumpStorageManager dumpStorageManager) {
@@ -55,7 +57,9 @@ public class AndroidHeapDumper {
         mMainHandler = mainHandler;
     }
 
+    //dump方法
     public File dumpHeap(boolean isShowToast) {
+        //得到hprof文件
         final File hprofFile = mDumpStorageManager.newHprofFile();
 
         if (null == hprofFile) {
@@ -74,11 +78,13 @@ public class AndroidHeapDumper {
             return null;
         }
 
+        //1.5G 小于1.5G 空间返回
         if (hprofDir.getFreeSpace() < 1.5 * 1024 * 1024 * 1024) {
             MatrixLog.w(TAG, "hprof file path: %s free space not enough", hprofDir.getAbsolutePath());
             return null;
         }
 
+        //isShowToast 在AutoDumpProcessor模式会弹窗
         if (isShowToast) {
             final FutureResult<Toast> waitingForToast = new FutureResult<>();
             showToast(waitingForToast);
