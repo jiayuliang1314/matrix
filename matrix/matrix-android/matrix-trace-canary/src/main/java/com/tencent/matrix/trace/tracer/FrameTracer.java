@@ -42,11 +42,11 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
     private final long highThreshold;   //24
     private final long middleThreshold; //9
     private final long normalThreshold; //3
-    private final Map<String, Long> lastResumeTimeMap = new HashMap<>();//activity和其最后一次可见resume时间的map
+    private final Map<String, Long> lastResumeTimeMap = new HashMap<>();//activity和其最后一次可见resume时间的map，没用到
     private DropFrameListener dropFrameListener;//没设置
     private int dropFrameListenerThreshold = 0;//没设置
     private int droppedSum = 0;     //掉帧数量
-    private long durationSum = 0;   //掉帧时间累计
+    private long durationSum = 0;   //帧时间累计(所有)没用到
     //endregion
 
     public FrameTracer(TraceConfig config) {
@@ -142,7 +142,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         try {
             final long jiter = endNs - intendedFrameTimeNs;
             final int dropFrame = (int) (jiter / frameIntervalNs);//这里是long整型运算，所以大于16s将会计算出来掉帧数量大于1，否则小于16s则为0
-            if (dropFrameListener != null) {
+            if (dropFrameListener != null) {//这里没有设置，没有进入
                 if (dropFrame > dropFrameListenerThreshold) {
                     try {
                         if (AppActiveMatrixDelegate.getTopActivityName() != null) {
@@ -156,7 +156,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
             }
             //掉帧数量
             droppedSum += dropFrame;
-            //掉帧时间
+            //所有时间
             durationSum += Math.max(jiter, frameIntervalNs);
 
             synchronized (listeners) {
