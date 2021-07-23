@@ -47,8 +47,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 /**
- * ActivityRefWatcher继承于FilePublisher，将检测出来的泄漏activity保存到SharedPreferences里，设置了一天过期日期
- *
+ * ActivityRefWatcher继承于FilePublisher，可以将检测出来的泄漏activity保存到SharedPreferences里，设置了一天过期日期
  */
 public class ActivityRefWatcher extends FilePublisher implements Watcher {
     private static final String TAG = "Matrix.ActivityRefWatcher";
