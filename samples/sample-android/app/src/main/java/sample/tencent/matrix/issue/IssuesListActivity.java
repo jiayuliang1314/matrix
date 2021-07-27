@@ -103,10 +103,11 @@ public class IssuesListActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 
-                    if (!holder.isShow)
+                    if (!holder.isShow) {
                         holder.showIssue(issue);
-                    else
+                    } else {
                         holder.hideIssue();
+                    }
                 }
             });
         }
@@ -146,18 +147,25 @@ public class IssuesListActivity extends AppCompatActivity {
             Date date = new Date(Long.parseLong(issue.getContent().optString("time")));
             tvTime.setText("IssueTime -> " + simpleDateFormat.format(date));
 
-            if (TextUtils.isEmpty(issue.getTag())) tvTag.setVisibility(View.GONE);
-            else tvTag.setText("TAG -> " + issue.getTag());
+            if (TextUtils.isEmpty(issue.getTag())) {
+                tvTag.setVisibility(View.GONE);
+            } else {
+                tvTag.setText("TAG -> " + issue.getTag());
+            }
 
-            if (TextUtils.isEmpty(issue.getKey())) tvKey.setVisibility(View.GONE);
-            else tvKey.setText("KEY -> " + issue.getKey());
+            if (TextUtils.isEmpty(issue.getKey())) {
+                tvKey.setVisibility(View.GONE);
+            } else {
+                tvKey.setText("KEY -> " + issue.getKey());
+            }
 
             tvIndex.setText((IssuesMap.getCount() - position) + "");
             tvIndex.setTextColor(getColor(position));
-            if (isShow)
+            if (isShow) {
                 showIssue(issue);
-            else
+            } else {
                 hideIssue();
+            }
         }
 
         public void readMappingFile(Map<Integer, String> methoMap) {

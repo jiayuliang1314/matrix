@@ -7,7 +7,7 @@ import android.content.Intent;
 import com.tencent.matrix.util.MatrixLog;
 
 import static sample.tencent.matrix.MatrixApplication.getContext;
-
+//nouse
 public class StartUpBroadcastReceiver extends BroadcastReceiver {
     private static final String TAG = "Matrix.StartUpBroadcastReceiver";
 

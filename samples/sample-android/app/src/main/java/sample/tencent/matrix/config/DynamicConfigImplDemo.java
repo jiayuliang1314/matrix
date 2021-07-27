@@ -48,15 +48,16 @@ public class DynamicConfigImplDemo implements IDynamicConfig {
     }
 
     @Override
+    //在demo里没用到
     public String get(String key, String defStr) {
         //TODO here return default value which is inside sdk, you can change it as you wish. matrix-sdk-key in class MatrixEnum.
 
-        // for Activity leak detect
+        // for Activity leak detect no use
         if ((ExptEnum.clicfg_matrix_resource_detect_interval_millis.name().equals(key) || ExptEnum.clicfg_matrix_resource_detect_interval_millis_bg.name().equals(key))) {
             Log.d("DynamicConfig", "Matrix.ActivityRefWatcher: clicfg_matrix_resource_detect_interval_millis 10s");
             return String.valueOf(TimeUnit.SECONDS.toMillis(5));
         }
-
+        //no use
         if (ExptEnum.clicfg_matrix_resource_max_detect_times.name().equals(key)) {
             Log.d("DynamicConfig", "Matrix.ActivityRefWatcher: clicfg_matrix_resource_max_detect_times 5");
             return String.valueOf(3);
@@ -75,10 +76,11 @@ public class DynamicConfigImplDemo implements IDynamicConfig {
             return 2;//new value
         }
 
+        //没有用到
         if (MatrixEnum.clicfg_matrix_trace_fps_report_threshold.name().equals(key)) {
             return 10000;
         }
-
+        //上报掉帧超过12s才上报
         if (MatrixEnum.clicfg_matrix_trace_fps_time_slice.name().equals(key)) {
             return 12000;
         }
@@ -90,10 +92,11 @@ public class DynamicConfigImplDemo implements IDynamicConfig {
     @Override
     public long get(String key, long defLong) {
         //TODO here return default value which is inside sdk, you can change it as you wish. matrix-sdk-key in class MatrixEnum.
+        //没有用到
         if (MatrixEnum.clicfg_matrix_trace_fps_report_threshold.name().equals(key)) {
             return 10000L;
         }
-
+        //2s一次检测内存泄漏
         if (MatrixEnum.clicfg_matrix_resource_detect_interval_millis.name().equals(key)) {
             MatrixLog.i(TAG, key + ", before change:" + defLong + ", after change, value:" + 2000);
             return 2000;

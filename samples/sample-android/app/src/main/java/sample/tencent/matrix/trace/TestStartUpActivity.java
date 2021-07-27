@@ -11,6 +11,7 @@ import com.tencent.matrix.util.MatrixLog;
 
 import static sample.tencent.matrix.MatrixApplication.getContext;
 
+//nouse
 public class TestStartUpActivity extends Activity {
 
     private static final String TAG = "TestStartUpActivity";
