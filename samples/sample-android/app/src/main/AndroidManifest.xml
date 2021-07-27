@@ -31,7 +31,8 @@
         </activity>
         <activity android:name=".resource.ManualDumpActivity"/>
         <activity android:name=".io.TestIOActivity" />
-        <activity android:name=".resource.TestLeakActivity"/>
+        <activity android:name=".resource.TestLeakActivity"
+            android:process=":leaktest"/>
         <activity android:name=".trace.TestTraceMainActivity" />
         <activity android:name=".trace.nouse.TestTraceFragmentActivity" />
         <activity android:name=".trace.TestEnterActivity" />
