@@ -46,11 +46,13 @@ import sample.tencent.matrix.issue.IssueFilter;
 /**
  * Created by caichongyang on 2017/11/14.
  */
+//耗时10s，才上报问题
 
 public class TestFpsActivity extends Activity {
     private static final String TAG = "Matrix.TestFpsActivity";
+    //只是用于埋了个点，没啥实际意义
     private static final HandlerThread sHandlerThread = new HandlerThread("test");
-
+    //只是用于埋了个点，没啥实际意义
     static {
         sHandlerThread.start();
     }
@@ -59,6 +61,7 @@ public class TestFpsActivity extends Activity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private int count;
     private long time = System.currentTimeMillis();
+    //只是埋了个点，没啥实际意义
     private final IDoFrameListener mDoFrameListener = new IDoFrameListener(new Executor() {
         final Handler handler = new Handler(sHandlerThread.getLooper());
 
@@ -71,6 +74,11 @@ public class TestFpsActivity extends Activity {
         @Override
         public void doFrameAsync(String focusedActivity, long startNs, long endNs, int dropFrame, boolean isVsyncFrame, long intendedFrameTimeNs, long inputCostNs, long animationCostNs, long traversalCostNs) {
             super.doFrameAsync(focusedActivity, startNs, endNs, dropFrame, isVsyncFrame, intendedFrameTimeNs, inputCostNs, animationCostNs, traversalCostNs);
+            //costMs 花费时间
+            //dropFrame 掉帧
+            //isVsyncFrame 是否是vsync帧
+            //offsetVsync 开始时间和帧开始时间的offset，偏移时间
+            //input/anim/渲染时间
             MatrixLog.i(TAG, "[doFrameAsync]" + " costMs=" + (endNs - intendedFrameTimeNs) / Constants.TIME_MILLIS_TO_NANO
                     + " dropFrame=" + dropFrame + " isVsyncFrame=" + isVsyncFrame + " offsetVsync=" + ((startNs - intendedFrameTimeNs) / Constants.TIME_MILLIS_TO_NANO) + " [%s:%s:%s]", inputCostNs, animationCostNs, traversalCostNs);
         }
@@ -80,9 +88,9 @@ public class TestFpsActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        //一个列表
         setContentView(R.layout.test_fps_layout);
-
+        //过滤问题
         IssueFilter.setCurrentFilter(IssueFilter.ISSUE_TRACE);
 
         Matrix.with().getPluginByClass(TracePlugin.class).getFrameTracer().onStartTrace();

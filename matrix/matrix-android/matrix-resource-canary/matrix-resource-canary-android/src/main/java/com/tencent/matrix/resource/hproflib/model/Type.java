@@ -35,13 +35,16 @@ public enum Type {
     INT(10, 4),
     LONG(11, 8);
 
+    //保存id，Type的map
     private static Map<Integer, Type> sTypeMap = new HashMap<>();
 
+    //两个成员变量，mId
     private int mId;
-
+    //两个成员变量，mSize
     private int mSize;
 
     static {
+        //保存id，Type的map
         for (Type type : Type.values()) {
             sTypeMap.put(type.mId, type);
         }
@@ -52,6 +55,7 @@ public enum Type {
         mSize = size;
     }
 
+    //根据id获取type
     public static Type getType(int id) {
         return sTypeMap.get(id);
     }
@@ -64,6 +68,7 @@ public enum Type {
         return mId;
     }
 
+    //Primitive 原始的，没有用到这个方法
     public static String getClassNameOfPrimitiveArray(Type type) {
         switch (type) {
             case BOOLEAN: return "boolean[]";

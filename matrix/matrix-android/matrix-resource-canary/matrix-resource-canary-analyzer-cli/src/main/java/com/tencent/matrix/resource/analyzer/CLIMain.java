@@ -295,6 +295,7 @@ public final class CLIMain {
             final ExcludedBmps excludedBmps = AndroidExcludedBmpRefs.createDefaults().build();
             duplicatedBmpResult = new DuplicatedBitmapAnalyzer(mMinBmpLeakSize, excludedBmps).analyze(heapSnapshot);
         } else {
+            //对 bitmap 的分析，需要在低于 26 的 sdk version 中才有用,报错信息如下
             System.err.println("\n ! SDK version of target device is larger or equal to 26, "
                     + "which is not supported by DuplicatedBitmapAnalyzer.");
         }

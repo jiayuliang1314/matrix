@@ -30,6 +30,7 @@ public final class ID {
         return new ID(new byte[size]);
     }
 
+    //深度copy
     public ID(byte[] idBytes) {
         final int len = idBytes.length;
         mIdBytes = new byte[len];

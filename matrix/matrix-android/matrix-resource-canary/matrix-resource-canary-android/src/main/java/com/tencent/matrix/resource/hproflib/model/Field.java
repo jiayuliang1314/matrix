@@ -22,6 +22,7 @@ package com.tencent.matrix.resource.hproflib.model;
 
 /**
  * A field with an associated type and name.
+ * field type和名字和其静态值
  * ok
  */
 public final class Field {

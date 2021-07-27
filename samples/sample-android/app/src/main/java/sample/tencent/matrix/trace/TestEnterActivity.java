@@ -30,7 +30,7 @@ import sample.tencent.matrix.issue.IssueFilter;
 /**
  * Created by caichongyang on 2017/11/14.
  */
-
+//在oncreate里sleep了3000ms
 public class TestEnterActivity extends Activity {
 
     @Override

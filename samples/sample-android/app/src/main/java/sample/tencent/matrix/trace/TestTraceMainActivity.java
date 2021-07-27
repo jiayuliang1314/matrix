@@ -43,7 +43,7 @@ import sample.tencent.matrix.issue.IssueFilter;
 
 public class TestTraceMainActivity extends Activity implements IAppForeground {
     private static String TAG = "Matrix.TestTraceMainActivity";
-    FrameDecorator decorator;
+    FrameDecorator decorator;//FPS 帧率检测窗口
     private static final int PERMISSION_REQUEST_CODE = 0x02;
 
     @Override
@@ -57,6 +57,7 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
             MatrixLog.i(TAG, "plugin-trace start");
             plugin.start();
         }
+        //FPS 帧率检测窗口
         decorator = FrameDecorator.getInstance(this);
         if (!canDrawOverlays()) {
             requestWindowPermission();
@@ -74,7 +75,7 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
         MatrixLog.i(TAG, "requestCode:%s resultCode:%s", requestCode, resultCode);
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (canDrawOverlays()) {
-                decorator.show();
+                decorator.show();//FPS 帧率检测窗口
             } else {
                 Toast.makeText(this, "fail to request ACTION_MANAGE_OVERLAY_PERMISSION", Toast.LENGTH_LONG).show();
             }
@@ -111,12 +112,13 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
         startActivityForResult(intent, PERMISSION_REQUEST_CODE);
     }
 
-
+    ///在oncreate里sleep了3000ms
     public void testEnter(View view) {
         Intent intent = new Intent(this, TestEnterActivity.class);
         startActivity(intent);
     }
 
+    //丢帧耗时10s，才上报问题
     public void testFps(View view) {
         Intent intent = new Intent(this, TestFpsActivity.class);
         startActivity(intent);
@@ -241,9 +243,9 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
             return;
         }
         if (!isForeground) {
-            decorator.dismiss();
+            decorator.dismiss();//FPS 帧率检测窗口
         } else {
-            decorator.show();
+            decorator.show();//FPS 帧率检测窗口
         }
     }
 }
