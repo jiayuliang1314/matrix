@@ -31,6 +31,7 @@ import sample.tencent.matrix.issue.IssuesMap;
 import sample.tencent.matrix.zp.base.BaseFragment;
 import sample.tencent.matrix.zp.data.IssuesTagNum;
 import sample.tencent.matrix.zp.event.MessageEventChangeMainTab;
+import sample.tencent.matrix.zp.event.MessageEventChangeMainTabCategory;
 import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
 import sample.tencent.matrix.zp.utils.TimeUtils;
 
@@ -97,6 +98,7 @@ public class InfosFragment extends BaseFragment<MainFragmentViewModel>
             startFragment(StartupInfosFragment.newInstance());
         });
         issues_more.setOnClickListener(view -> {
+            EventBus.getDefault().post(new MessageEventChangeMainTabCategory("All"));
             EventBus.getDefault().post(new MessageEventChangeMainTab(1));
         });
         sub_fps_more.setOnClickListener(view -> {
@@ -166,6 +168,8 @@ public class InfosFragment extends BaseFragment<MainFragmentViewModel>
                 item_num.setText(item.getNum() + "");
                 item_more.setOnClickListener(view -> {
                     //todo筛选用
+
+                    EventBus.getDefault().post(new MessageEventChangeMainTabCategory(item.getTag()));
                     EventBus.getDefault().post(new MessageEventChangeMainTab(1));
                 });
             }

@@ -3,6 +3,15 @@ package sample.tencent.matrix.zp.data;
 public class IssuesTagNum {
     private String tag;
     private int num;
+    private boolean select;
+
+    public boolean isSelect() {
+        return select;
+    }
+
+    public void setSelect(boolean select) {
+        this.select = select;
+    }
 
     public IssuesTagNum(String tag, int num) {
         this.tag = tag;

@@ -16,6 +16,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.strong.tools.recyclerview.BaseRecyclerViewAdapter;
+import com.strong.tools.recyclerview.BaseRecyclerViewCallbackAdapter;
+import com.strong.tools.recyclerview.BaseViewHolder;
 import com.tencent.matrix.report.Issue;
 
 import org.greenrobot.eventbus.EventBus;
@@ -29,18 +32,24 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import sample.tencent.matrix.R;
 import sample.tencent.matrix.issue.IssuesMap;
 import sample.tencent.matrix.issue.ParseIssueUtil;
 import sample.tencent.matrix.zp.base.BaseFragment;
+import sample.tencent.matrix.zp.data.IssuesTagNum;
+import sample.tencent.matrix.zp.event.MessageEventChangeMainTabCategory;
 import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
 import sample.tencent.matrix.zp.utils.TimeUtils;
+import sample.tencent.matrix.zp.view.rv.FlowLayoutManager;
 
 public class IssuesFragment extends BaseFragment<MainFragmentViewModel> implements
         IssuesFragmentCallback {
     private final static File methodFilePath = new File(Environment.getExternalStorageDirectory(), "Debug.methodmap");
+    private static String tag;
+    RecyclerView filterRv;
     private Adapter adapter;
 
     public IssuesFragment() {
@@ -68,10 +77,54 @@ public class IssuesFragment extends BaseFragment<MainFragmentViewModel> implemen
     public Object getCallback() {
         return this;
     }
-
+    BaseRecyclerViewAdapter<IssuesTagNum> tagAdapter;
     @Override
     public void initView() {
         super.initView();
+//        tag = "All";
+        filterRv = getRootView().findViewById(R.id.filter_rv);
+        tagAdapter = new BaseRecyclerViewAdapter<IssuesTagNum>();
+        tagAdapter.setBaseRecyclerViewCallback(new BaseRecyclerViewCallbackAdapter<IssuesTagNum>() {
+            @Override
+            public void onBindView(BaseViewHolder holder, int position, IssuesTagNum item) {
+                TextView title = holder.itemView.findViewById(R.id.title);
+                title.setText(item.getTag());
+                if (
+                        (tag == null && item.getTag().equals("All")) ||
+                                (tag != null && tag.equals(item.getTag()))
+                ) {
+                    ((TextView) title).setTextColor(0xffffffff);
+                    title.setBackgroundResource(R.drawable.bg_black_desired_child);
+                } else {
+                    ((TextView) title).setTextColor(0xff484848);
+                    title.setBackgroundResource(R.drawable.bg_gray_desired_child);
+                }
+                holder.itemView.setOnClickListener(view -> {
+                    int positionWhenOnClick = holder.getAdapterPosition();
+                    if (positionWhenOnClick == RecyclerView.NO_POSITION) {
+                        return;
+                    }
+                    List<IssuesTagNum> issuesTagNums = IssuesMap.getIssuesAllFenlei();
+                    for (IssuesTagNum issuesTagNum : issuesTagNums) {
+                        issuesTagNum.setSelect(false);
+                    }
+                    IssuesTagNum issuesTagNum = issuesTagNums.get(positionWhenOnClick);
+                    issuesTagNum.setSelect(true);
+                    tag = issuesTagNum.getTag();
+                    adapter.notifyDataSetChanged();
+                    tagAdapter.notifyDataSetChanged();
+                });
+            }
+
+            @Override
+            public int getViewRes(int viewType) {
+                return R.layout.matrix_kanzhun_item_filter;
+            }
+        });
+        filterRv.setAdapter(tagAdapter);
+        filterRv.setLayoutManager(new FlowLayoutManager(getBaseFragmentActivity(), false));
+//        RecyclerViewUtils.setStaggeredGridLayoutManager(getBaseFragmentActivity(), filterRv, 3, StaggeredGridLayoutManager.VERTICAL, false);
+        tagAdapter.setItemsDirectly(IssuesMap.getIssuesAllFenlei());
 
         RecyclerView recyclerVideoView = getRootView().findViewById(R.id.recycler_view_video);
         final SwipeRefreshLayout refreshVideoLayout = getRootView().findViewById(R.id.refresh_video);
@@ -98,6 +151,7 @@ public class IssuesFragment extends BaseFragment<MainFragmentViewModel> implemen
 
     public void reloadData() {
         adapter.notifyDataSetChanged();
+        tagAdapter.setItemsDirectly(IssuesMap.getIssuesAllFenlei());
     }
 
     @Override
@@ -114,6 +168,12 @@ public class IssuesFragment extends BaseFragment<MainFragmentViewModel> implemen
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEventIssueHappen event) {
+        reloadData();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(MessageEventChangeMainTabCategory event) {
+        tag = event.category;
         reloadData();
     }
 
@@ -141,7 +201,7 @@ public class IssuesFragment extends BaseFragment<MainFragmentViewModel> implemen
         public void onBindViewHolder(final ViewHolder holder, int position) {
 
             holder.bindPosition(position);
-            final Issue issue = IssuesMap.getIssuesAll().get(position);
+            final Issue issue = getIssues().get(position);
             holder.bind(issue);
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -159,7 +219,15 @@ public class IssuesFragment extends BaseFragment<MainFragmentViewModel> implemen
 
         @Override
         public int getItemCount() {
-            return IssuesMap.getIssuesAll().size();
+            return getIssues().size();
+        }
+
+        public List<Issue> getIssues() {
+            if (tag == null || tag.equals("All")) {
+                return IssuesMap.getIssuesAll();
+            } else {
+                return IssuesMap.getIssuesFenlei(tag);
+            }
         }
     }
 

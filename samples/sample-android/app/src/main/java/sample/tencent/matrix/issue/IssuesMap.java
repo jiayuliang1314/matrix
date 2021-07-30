@@ -47,20 +47,24 @@ public class IssuesMap {
 //        issues.put(filter, list);
 
 
-        List<Issue> list = issuesFenlei.get(issue.getTag());
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-        list.add(0, issue);
-
         if ("Trace_EvilMethod".equals(issue.getTag())) {
             try {
                 String detail = issue.getContent().getString("detail");
+                List<Issue> list = issuesFenlei.get(issue.getTag() + " " + detail);
+                if (list == null) {
+                    list = new ArrayList<>();
+                }
+                list.add(0, issue);
                 issuesFenlei.put(issue.getTag() + " " + detail, list);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         } else {
+            List<Issue> list = issuesFenlei.get(issue.getTag());
+            if (list == null) {
+                list = new ArrayList<>();
+            }
+            list.add(0, issue);
             issuesFenlei.put(issue.getTag(), list);
         }
 
@@ -117,19 +121,30 @@ public class IssuesMap {
         return issues;
     }
 
+    public static List<Issue> getIssuesFenlei(String category) {
+        List<Issue> issues = issuesFenlei.get(category);
+//        Log.i("IssuesMap", "getIssuesAll " + issues.size());
+        return issues;
+    }
+
+
     public static List<IssuesTagNum> getIssuesAllFenlei() {
 //        List<Issue> issues = getInfos(false, "Trace_FPS", "Trace_StartUp");
 //        Log.i("IssuesMap", "getIssuesAll " + issues.size());
         List<IssuesTagNum> list = new ArrayList<>();
+        int sizeAll = 0;
         for (Map.Entry<String, List<Issue>> entry : issuesFenlei.entrySet()) {
             if (entry.getKey().equals("Trace_FPS") || entry.getKey().equals("Trace_StartUp")) {
                 continue;
             }
             System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue().size());
             list.add(new IssuesTagNum(entry.getKey(), entry.getValue().size()));
+            sizeAll += entry.getValue().size();
         }
+        list.add(0, new IssuesTagNum("All", sizeAll));
         return list;
     }
+
 
     public static List<Issue> getInfos(boolean include, String... tags) {
         List<Issue> fpsList = new ArrayList<>();

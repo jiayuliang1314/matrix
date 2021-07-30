@@ -67,7 +67,7 @@
             android:gravity="center"
             android:layout_gravity="center_vertical"
             android:textColor="#ff1282F0"
-            android:text="查看更多(todo筛选)" />
+            android:text="查看更多" />
 
         <View
             android:layout_width="1dp"
