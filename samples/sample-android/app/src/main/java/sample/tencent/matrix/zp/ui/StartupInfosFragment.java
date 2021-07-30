@@ -28,6 +28,7 @@ import sample.tencent.matrix.R;
 import sample.tencent.matrix.issue.IssuesMap;
 import sample.tencent.matrix.zp.base.BaseFragment;
 import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
+import sample.tencent.matrix.zp.utils.TimeUtils;
 
 public class StartupInfosFragment extends BaseFragment<MainFragmentViewModel>
         implements InfosFragmentCallback, CompoundButton.OnCheckedChangeListener,
@@ -86,10 +87,10 @@ public class StartupInfosFragment extends BaseFragment<MainFragmentViewModel>
                 TextView first_activity_create = holder.itemView.findViewById(R.id.first_activity_create);
                 TextView startup_duration = holder.itemView.findViewById(R.id.startup_duration);
                 TextView cold_hot = holder.itemView.findViewById(R.id.cold_hot);
+                TextView scence = holder.itemView.findViewById(R.id.scence);
 
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
-                Date date = new Date(Long.parseLong(item.getContent().optString("time")));
-                item_time.setText(simpleDateFormat.format(date));
+                long time = Long.parseLong(item.getContent().optString("time"));
+                item_time.setText(TimeUtils.formatTime(time));
 
                 try {
                     application_create.setText(item.getContent().getString("application_create"));
@@ -103,6 +104,11 @@ public class StartupInfosFragment extends BaseFragment<MainFragmentViewModel>
                 }
                 try {
                     startup_duration.setText(item.getContent().getString("startup_duration"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    scence.setText(item.getContent().getInt("application_create_scene") + "");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

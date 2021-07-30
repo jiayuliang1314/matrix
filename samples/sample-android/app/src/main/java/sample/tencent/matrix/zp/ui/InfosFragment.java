@@ -32,6 +32,7 @@ import sample.tencent.matrix.zp.base.BaseFragment;
 import sample.tencent.matrix.zp.data.IssuesTagNum;
 import sample.tencent.matrix.zp.event.MessageEventChangeMainTab;
 import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
+import sample.tencent.matrix.zp.utils.TimeUtils;
 
 public class InfosFragment extends BaseFragment<MainFragmentViewModel>
         implements InfosFragmentCallback, CompoundButton.OnCheckedChangeListener,
@@ -101,6 +102,7 @@ public class InfosFragment extends BaseFragment<MainFragmentViewModel>
         sub_fps_more.setOnClickListener(view -> {
             EventBus.getDefault().post(new MessageEventChangeMainTab(2));
         });
+        //region startup
         startAdapter = new BaseRecyclerViewAdapter<>();
         startAdapter.setBaseRecyclerViewCallback(new BaseRecyclerViewCallbackAdapter<Issue>() {
             @Override
@@ -111,10 +113,8 @@ public class InfosFragment extends BaseFragment<MainFragmentViewModel>
                 TextView startup_duration = holder.itemView.findViewById(R.id.startup_duration);
                 TextView cold_hot = holder.itemView.findViewById(R.id.cold_hot);
                 TextView scence = holder.itemView.findViewById(R.id.scence);
-
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd HH:mm:ss");
-                Date date = new Date(Long.parseLong(item.getContent().optString("time")));
-                item_time.setText(simpleDateFormat.format(date));
+                long time = Long.parseLong(item.getContent().optString("time"));
+                item_time.setText(TimeUtils.formatTime(time));
 
                 try {
                     application_create.setText(item.getContent().getString("application_create"));
@@ -151,7 +151,9 @@ public class InfosFragment extends BaseFragment<MainFragmentViewModel>
         startup_rv.setAdapter(startAdapter);
         RecyclerViewUtils.setLinearLayoutManager(getBaseFragmentActivity(), startup_rv, LinearLayoutManager.VERTICAL, false);
         startAdapter.setItemsDirectly(IssuesMap.getStartupInfosLimit5());
+        //endregion
 
+        //region issue
         issuesAdapter = new BaseRecyclerViewAdapter<>();
         issuesAdapter.setBaseRecyclerViewCallback(new BaseRecyclerViewCallbackAdapter<IssuesTagNum>() {
             @Override
@@ -176,8 +178,9 @@ public class InfosFragment extends BaseFragment<MainFragmentViewModel>
         issues_rv.setAdapter(issuesAdapter);
         RecyclerViewUtils.setLinearLayoutManager(getBaseFragmentActivity(), issues_rv, LinearLayoutManager.VERTICAL, false);
         issuesAdapter.setItemsDirectly(IssuesMap.getIssuesAllFenlei());
+        //endregion
 
-
+        //region fps
         fpsAdapter = new BaseRecyclerViewAdapter<>();
         fpsAdapter.setBaseRecyclerViewCallback(new BaseRecyclerViewCallbackAdapter<Issue>() {
             @Override
@@ -239,7 +242,8 @@ public class InfosFragment extends BaseFragment<MainFragmentViewModel>
         });
         fps_rv.setAdapter(fpsAdapter);
         RecyclerViewUtils.setLinearLayoutManager(getBaseFragmentActivity(), fps_rv, LinearLayoutManager.VERTICAL, false);
-        fpsAdapter.setItemsDirectly(IssuesMap.getFpsInfos());
+        fpsAdapter.setItemsDirectly(IssuesMap.getFpsInfosLimit5());
+        //endregion
     }
 
     @Override
@@ -258,7 +262,7 @@ public class InfosFragment extends BaseFragment<MainFragmentViewModel>
     public void onMessageEvent(MessageEventIssueHappen event) {
         startAdapter.setItemsDirectly(IssuesMap.getStartupInfosLimit5());
         issuesAdapter.setItemsDirectly(IssuesMap.getIssuesAllFenlei());
-        fpsAdapter.setItemsDirectly(IssuesMap.getFpsInfos());
+        fpsAdapter.setItemsDirectly(IssuesMap.getFpsInfosLimit5());
     }
 
     @Override

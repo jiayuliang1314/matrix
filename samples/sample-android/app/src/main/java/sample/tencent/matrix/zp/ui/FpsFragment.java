@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +16,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.strong.tools.recyclerview.BaseRecyclerViewAdapter;
+import com.strong.tools.recyclerview.BaseRecyclerViewCallbackAdapter;
+import com.strong.tools.recyclerview.BaseViewHolder;
+import com.strong.tools.recyclerview.RecyclerViewUtils;
 import com.tencent.matrix.report.Issue;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,7 +48,9 @@ public class FpsFragment extends BaseFragment<MainFragmentViewModel>
         implements InfosFragmentCallback, CompoundButton.OnCheckedChangeListener,
         View.OnClickListener {
     private final static File methodFilePath = new File(Environment.getExternalStorageDirectory(), "Debug.methodmap");
-    private Adapter adapter;
+    BaseRecyclerViewAdapter<Issue> fpsAdapter;
+    RecyclerView fps_rv;
+//    private Adapter adapter;
 
     public FpsFragment() {
         super();
@@ -74,11 +82,77 @@ public class FpsFragment extends BaseFragment<MainFragmentViewModel>
     public void initView() {
         super.initView();
 
-        RecyclerView recyclerVideoView = getRootView().findViewById(R.id.recycler_view_video);
+        fps_rv = getRootView().findViewById(R.id.recycler_view_video);
         final SwipeRefreshLayout refreshVideoLayout = getRootView().findViewById(R.id.refresh_video);
-        recyclerVideoView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new Adapter(getBaseFragmentActivity());
-        recyclerVideoView.setAdapter(adapter);
+//        fps_rv.setLayoutManager(new LinearLayoutManager(getContext()));
+//        adapter = new Adapter(getBaseFragmentActivity());
+//        recyclerVideoView.setAdapter(adapter);
+
+        //region fps
+        fpsAdapter = new BaseRecyclerViewAdapter<>();
+        fpsAdapter.setBaseRecyclerViewCallback(new BaseRecyclerViewCallbackAdapter<Issue>() {
+            @Override
+            public void onBindView(BaseViewHolder holder, int position, Issue item) {
+                Log.i("InfosFragment", "onBindView " + item);
+                TextView item_tag = holder.itemView.findViewById(R.id.item_tag);
+                TextView item_num = holder.itemView.findViewById(R.id.item_num);
+
+                TextView level_normal = holder.itemView.findViewById(R.id.level_normal);
+                TextView level_middle = holder.itemView.findViewById(R.id.level_middle);
+                TextView level_high = holder.itemView.findViewById(R.id.level_high);
+                TextView level_frozen = holder.itemView.findViewById(R.id.level_frozen);
+                TextView sum_level_normal = holder.itemView.findViewById(R.id.sum_level_normal);
+                TextView sum_level_middle = holder.itemView.findViewById(R.id.sum_level_middle);
+                TextView sum_level_high = holder.itemView.findViewById(R.id.sum_level_high);
+                TextView sum_level_frozen = holder.itemView.findViewById(R.id.sum_level_frozen);
+//                TextView drop_frame = holder.itemView.findViewById(R.id.drop_frame);
+//                TextView item_more = holder.itemView.findViewById(R.id.item_more);
+//                item_tag.setText(item.getTag());
+//                item_num.setText(item.getNum() + "");
+
+                try {
+                    String scene = item.getContent().getString("scene");
+                    item_tag.setText(scene.substring(scene.lastIndexOf(".") + 1));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    item_num.setText((int) (item.getContent().getDouble("fps")) + "");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    JSONObject dropLevelObject = item.getContent().getJSONObject("dropLevel");
+                    JSONObject dropSum = item.getContent().getJSONObject("dropSum");
+                    level_normal.setText(dropLevelObject.getInt("DROPPED_NORMAL") + "");
+                    level_middle.setText(dropLevelObject.getInt("DROPPED_MIDDLE") + "");
+                    level_high.setText(dropLevelObject.getInt("DROPPED_HIGH") + "");
+                    level_frozen.setText(dropLevelObject.getInt("DROPPED_FROZEN") + "");
+
+                    sum_level_normal.setText(dropSum.getInt("DROPPED_NORMAL") + "");
+                    sum_level_middle.setText(dropSum.getInt("DROPPED_MIDDLE") + "");
+                    sum_level_high.setText(dropSum.getInt("DROPPED_HIGH") + "");
+                    sum_level_frozen.setText(dropSum.getInt("DROPPED_FROZEN") + "");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+//                item_more.setOnClickListener(view -> {
+//                    EventBus.getDefault().post(new MessageEventChangeMainTab(2));
+//                });
+            }
+
+            @Override
+            public int getViewRes(int viewType) {
+                return R.layout.matrix_kanzhun_item_fps_info;
+            }
+        });
+        fps_rv.setAdapter(fpsAdapter);
+        RecyclerViewUtils.setLinearLayoutManager(getBaseFragmentActivity(), fps_rv, LinearLayoutManager.VERTICAL, false);
+        fpsAdapter.setItemsDirectly(IssuesMap.getFpsInfos());
+        //endregion
+
 
         refreshVideoLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -98,7 +172,7 @@ public class FpsFragment extends BaseFragment<MainFragmentViewModel>
     }
 
     public void reloadData() {
-        adapter.notifyDataSetChanged();
+        fpsAdapter.setItemsDirectly(IssuesMap.getFpsInfos());
     }
 
     @Override

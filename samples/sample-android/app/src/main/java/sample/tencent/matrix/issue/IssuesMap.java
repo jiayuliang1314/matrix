@@ -69,6 +69,14 @@ public class IssuesMap {
         return getInfos(true, "Trace_FPS");
     }
 
+    public static List<Issue> getFpsInfosLimit5() {
+        List<Issue> issues = getInfos(true, "Trace_FPS");
+        if (issues.size() <= 3) {
+            return issues;
+        }
+        return issues.subList(0, 3);
+    }
+
     /**
      * 返回Startup相关的信息，启动耗时 ok
      *

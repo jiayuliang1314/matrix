@@ -142,8 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/screenrecorder_gt"
                 android:layout_marginLeft="24dp"
-
-                android:text="最近启动时间" />
+                android:text="最近3次启动时间" />
 
             <TextView
                 android:id="@+id/startup_more"
