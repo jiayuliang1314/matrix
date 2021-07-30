@@ -16,27 +16,128 @@
 
 package sample.tencent.matrix.issue;
 
+import android.util.Log;
+
 import com.tencent.matrix.report.Issue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import sample.tencent.matrix.zp.data.IssuesTagNum;
 
 public class IssuesMap {
 
     private static final ConcurrentHashMap<String, List<Issue>> issues = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, List<Issue>> issuesFenlei = new ConcurrentHashMap<>();
+    private static final CopyOnWriteArrayList<Issue> issuesList = new CopyOnWriteArrayList<>();
 
     public static void put(@IssueFilter.FILTER String filter, Issue issue) {
-        List<Issue> list = issues.get(filter);
+        Log.i("IssuesMap", "put " + issue.getTag() + " issue " + issue);
+//        List<Issue> list = issues.get(filter);
+//        if (list == null) {
+//            list = new ArrayList<>();
+//        }
+//        list.add(0, issue);
+//
+//        issues.put(filter, list);
+
+
+        List<Issue> list = issuesFenlei.get(issue.getTag());
         if (list == null) {
             list = new ArrayList<>();
         }
         list.add(0, issue);
-        issues.put(filter, list);
+
+        issuesFenlei.put(issue.getTag(), list);
+
+        issuesList.add(0, issue);
     }
 
     public static List<Issue> get(@IssueFilter.FILTER String filter) {
         return issues.get(filter);
+    }
+
+    /**
+     * 返回FPS相关的信息 ok
+     *
+     * @return
+     */
+    public static List<Issue> getFpsInfos() {
+        return getInfos(true, "Trace_FPS");
+    }
+
+    /**
+     * 返回Startup相关的信息，启动耗时 ok
+     *
+     * @return
+     */
+    public static List<Issue> getStartupInfos() {
+        return getInfos(true, "Trace_StartUp");
+    }
+
+    public static List<Issue> getStartupInfosLimit5() {
+        List<Issue> issues = getInfos(true, "Trace_StartUp");
+        if (issues.size() <= 3) {
+            return issues;
+        }
+        return issues.subList(0, 3);
+    }
+
+    /**
+     * 返回其他异常信息，包括ANR，超时方法，超时消息，启动超时，io，sqlite，battery
+     * ANR,NORMAL,LAG,STARTUP
+     *
+     * @return
+     */
+    public static List<Issue> getIssuesAll() {
+        List<Issue> issues = getInfos(false, "Trace_FPS", "Trace_StartUp");
+//        Log.i("IssuesMap", "getIssuesAll " + issues.size());
+        return issues;
+    }
+
+    public static List<IssuesTagNum> getIssuesAllFenlei() {
+//        List<Issue> issues = getInfos(false, "Trace_FPS", "Trace_StartUp");
+//        Log.i("IssuesMap", "getIssuesAll " + issues.size());
+        List<IssuesTagNum> list = new ArrayList<>();
+        for (Map.Entry<String, List<Issue>> entry : issuesFenlei.entrySet()) {
+            if (entry.getKey().equals("Trace_FPS") || entry.getKey().equals("Trace_StartUp")) {
+                continue;
+            }
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue().size());
+            list.add(new IssuesTagNum(entry.getKey(), entry.getValue().size()));
+        }
+        return list;
+    }
+
+    public static List<Issue> getInfos(boolean include, String... tags) {
+        List<Issue> fpsList = new ArrayList<>();
+        if (tags == null || tags.length == 0) {
+            return fpsList;
+        }
+        if (issuesList != null) {
+            for (Issue issue : issuesList) {
+//                Log.i("IssuesMap", "getInfos issue " + issue);
+                boolean findSame = false;
+                for (String tag : tags) {
+                    if (issue != null &&
+                            issue.getTag() != null &&
+                            issue.getTag().equals(tag)) {
+                        if (include) {
+                            fpsList.add(issue);
+                        }
+                        findSame = true;
+                    }
+                }
+                if (!include && !findSame) {
+//                    Log.i("IssuesMap", "getInfos !include !findSame " + issue);
+                    fpsList.add(issue);
+                }
+            }
+        }
+        return fpsList;
     }
 
     public static int getCount() {

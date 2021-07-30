@@ -38,4 +38,20 @@ dependencies {
             type = 'exe'
         }
     }
+
+
+
+    implementation "androidx.constraintlayout:constraintlayout:1.1.3"
+    implementation "androidx.preference:preference:1.1.1"
+
+    implementation "androidx.lifecycle:lifecycle-runtime:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+    annotationProcessor "androidx.lifecycle:lifecycle-compiler:2.2.0"
+
+    implementation "com.google.android.material:material:1.0.0"
+    implementation "androidx.cardview:cardview:1.0.0"
+
+    implementation "org.greenrobot:eventbus:3.2.0"//混淆ok
+
+    implementation 'com.github.jiayuliang1314:StrongToolsRecyclerView:3.0'
 }

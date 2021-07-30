@@ -24,11 +24,14 @@ import com.tencent.matrix.plugin.DefaultPluginListener;
 import com.tencent.matrix.report.Issue;
 import com.tencent.matrix.util.MatrixLog;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.lang.ref.SoftReference;
 
 import sample.tencent.matrix.issue.IssueFilter;
 import sample.tencent.matrix.issue.IssuesListActivity;
 import sample.tencent.matrix.issue.IssuesMap;
+import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
 
 /**
  * Created by zhangshaowen on 17/6/15.
@@ -51,7 +54,9 @@ public class TestPluginListener extends DefaultPluginListener {
         MatrixLog.e(TAG, issue.toString());
 
         IssuesMap.put(IssueFilter.getCurrentFilter(), issue);
-        jumpToIssueActivity();
+//        jumpToIssueActivity();
+
+        EventBus.getDefault().post(new MessageEventIssueHappen(issue.getTag()));
     }
 
     public void jumpToIssueActivity() {

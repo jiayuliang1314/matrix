@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-
+    xmlns:tools="http://schemas.android.com/tools"
           package="sample.tencent.matrix">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -31,14 +31,30 @@
         </activity>
         <activity android:name=".resource.ManualDumpActivity"/>
         <activity android:name=".io.TestIOActivity" />
-        <activity android:name=".resource.TestLeakActivity"
-            android:process=":leaktest"/>
+<!--        <activity android:name=".resource.TestLeakActivity"-->
+<!--            android:process=":leaktest"/>-->
+<!--        跨进程的泄漏TestPluginListener收不到通知-->
+        <activity android:name=".resource.TestLeakActivity"/>
+
         <activity android:name=".trace.TestTraceMainActivity" />
         <activity android:name=".trace.nouse.TestTraceFragmentActivity" />
         <activity android:name=".trace.TestEnterActivity" />
         <activity android:name=".trace.TestFpsActivity" />
         <activity android:name=".sqlitelint.TestSQLiteLintActivity" />
         <activity android:name=".battery.TestBatteryActivity" />
+
+        <activity
+            android:name="sample.tencent.matrix.zp.ui.MainActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/screenrecorderMainTheme"
+            android:windowSoftInputMode="adjustResize">
+                        <intent-filter>
+                            <action android:name="android.intent.action.MAIN" />
+
+                            <category android:name="android.intent.category.LAUNCHER" />
+                        </intent-filter>
+        </activity>
     </application>
 
 </manifest>

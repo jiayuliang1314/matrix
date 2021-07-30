@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?><!--<layout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:tools="http://schemas.android.com/tools">-->
+
+<!--    <data>-->
+
+<!--        <import type="android.view.View" />-->
+
+<!--        <import type="android.text.TextUtils" />-->
+
+<!--        <variable-->
+<!--            name="viewModel"-->
+<!--            type="com.stone.cold.screenrecorder.rain.mainmodule.ui.main.MainFragmentViewModel" />-->
+
+<!--        <variable-->
+<!--            name="callback"-->
+<!--            type="com.stone.cold.screenrecorder.rain.mainmodule.ui.f1.IssuesFragmentCallback" />-->
+<!--    </data>-->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/screenrecorder_ci"
+        tools:context=".VideoFragment">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_video"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <ImageView
+        android:id="@+id/empty_view"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_gravity="center"
+        android:visibility="gone">
+
+    </ImageView>
+</FrameLayout><!--</layout>-->

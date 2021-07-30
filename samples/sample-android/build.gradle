@@ -33,10 +33,14 @@ buildscript {
     }
 
     repositories {
-        mavenLocal()
+//        mavenLocal()
         google()
         mavenCentral()
         jcenter()
+        maven { url "https://jitpack.io" }
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.0'
@@ -46,15 +50,20 @@ buildscript {
             changing = true
             exclude group: 'com.android.tools.build', module: 'gradle'
         }
+        classpath 'io.github.jiayuliang1314:ResTools:1.0.5'
     }
 }
 
 allprojects {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         mavenCentral()
         google()
         jcenter()
+        maven { url "https://jitpack.io" }
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }
     }
 }
 

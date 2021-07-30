@@ -3,4 +3,27 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="screenrecorder_colorPrimary">#008577</color>
+    <color name="screenrecorder_black">#ff000000</color>
+    <color name="screenrecorder_black_87">#de000000</color>
+    <!--    <color name="screenrecorder_colorPrimary">#008577</color>-->
+    <color name="screenrecorder_at">#ff636363</color>
+    <color name="screenrecorder_au">#ffff7e2e</color>
+    <color name="screenrecorder_bd">#ff333333</color>
+    <color name="screenrecorder_bj">#ff444444</color>
+    <color name="screenrecorder_c0">#ff666666</color>
+    <color name="screenrecorder_c9">#ff999999</color>
+    <color name="screenrecorder_cd">#fff27832</color>
+    <color name="screenrecorder_ci">#fff7f7f7</color>
+    <color name="screenrecorder_ct">#fffbfd0a</color>
+    <color name="screenrecorder_cv">#fffd6f33</color>
+    <color name="screenrecorder_d4">#ffff2424</color>
+    <color name="screenrecorder_d7">#ffff5a12</color>
+    <color name="screenrecorder_dl">#ffffcd48</color>
+    <color name="screenrecorder_eh">#ffffffff</color>
+    <color name="screenrecorder_ij">#7fffffff</color>
+    <color name="screenrecorder_kr">#fff1f1f1</color>
+    <color name="screenrecorder_viewfinder_mask">#b3000000</color>
+    <color name="screenrecorder_white">#ffffffff</color>
+    <!--    <color name="screenrecorder_colorPrimary">#53CAC3</color>-->
 </resources>

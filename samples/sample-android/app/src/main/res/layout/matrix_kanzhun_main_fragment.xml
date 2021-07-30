@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".activity.screenrecorder.MainActivity">
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/activity_main"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appBarLayout"
+                android:layout_width="fill_parent"
+                android:layout_height="56.0dip"
+                android:background="@android:color/white"
+                android:orientation="vertical"
+                android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
+
+                <FrameLayout
+                    android:id="@+id/toolbar_container"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_scrollFlags="enterAlways|scroll">
+
+                    <androidx.appcompat.widget.Toolbar
+                        android:id="@+id/toolbar"
+                        android:layout_width="fill_parent"
+                        android:layout_height="56.0dip"
+                        android:animateLayoutChanges="true"
+                        android:background="@color/screenrecorder_au"
+                        android:gravity="center_vertical"
+                        android:titleTextColor="@color/screenrecorder_white"
+                        app:contentInsetStart="0.0dip"
+                        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                        app:theme="@style/screenrecorderToolbarTheme"
+                        app:titleTextColor="@color/screenrecorder_white">
+
+                        <ImageView
+                            android:id="@+id/pro_image"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_gravity="right"
+                            android:layout_marginRight="15dp"
+                            android:padding="5dp"
+                            android:visibility="gone">
+
+                        </ImageView>
+                    </androidx.appcompat.widget.Toolbar>
+
+                    <RelativeLayout
+                        android:id="@+id/header_select"
+                        android:layout_width="match_parent"
+                        android:layout_height="56.0dip"
+                        android:layout_gravity="bottom"
+                        android:background="@color/screenrecorder_au"
+                        android:visibility="gone">
+
+                        <ImageButton
+                            android:id="@+id/close_button"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerVertical="true"
+                            android:layout_marginLeft="0dp"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:padding="8dp"
+                            android:scaleType="fitXY">
+
+                        </ImageButton>
+
+                        <TextView
+                            android:id="@+id/select_info_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_marginLeft="55dp"
+                            android:textColor="@color/screenrecorder_white"
+                            android:textSize="15dp">
+
+                        </TextView>
+
+                        <ImageButton
+                            android:id="@+id/add_issue_button"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerVertical="true"
+                            android:layout_marginRight="0dp"
+                            android:layout_toLeftOf="@id/share_button"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:padding="15dp"
+                            android:src="@drawable/screenrecorder_ic_add_grey_24dp"
+                            android:tint="@color/screenrecorder_white">
+
+                        </ImageButton>
+
+                        <ImageButton
+                            android:id="@+id/share_button"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerVertical="true"
+                            android:layout_marginRight="0dp"
+                            android:layout_toLeftOf="@id/delete_button"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:padding="15dp">
+
+                        </ImageButton>
+
+                        <ImageButton
+                            android:id="@+id/delete_button"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerVertical="true"
+                            android:layout_marginRight="10dp"
+                            android:layout_toLeftOf="@id/select_all_checkbox"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:padding="15dp">
+
+                        </ImageButton>
+
+                        <androidx.appcompat.widget.AppCompatCheckBox
+                            android:id="@+id/select_all_checkbox"
+                            android:layout_width="35.0dip"
+                            android:layout_height="50.0dip"
+                            android:layout_alignParentRight="true"
+                            android:layout_centerVertical="true"
+                            android:background="@null"
+                            android:button="@drawable/screenrecorder_check_box_select"
+                            android:gravity="center"
+                            android:padding="10dp" />
+                    </RelativeLayout>
+                </FrameLayout>
+
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/screenrecorder_tab_bar_height"
+                android:orientation="vertical"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+                <RelativeLayout
+                    android:id="@+id/h0"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/screenrecorder_ci">
+
+                </RelativeLayout>
+
+                <androidx.viewpager.widget.ViewPager
+                    android:id="@+id/main_view_pager"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                </androidx.viewpager.widget.ViewPager>
+
+            </LinearLayout>
+
+            <com.google.android.material.bottomappbar.BottomAppBar
+                android:id="@+id/bottom_app_bar"
+                android:layout_width="fill_parent"
+                android:layout_height="@dimen/screenrecorder_tab_bar_height"
+                android:layout_gravity="bottom"
+                app:backgroundTint="@android:color/white"
+                app:contentInsetStart="0.0dip">
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/main_tab_layout"
+                    android:layout_width="fill_parent"
+                    android:layout_height="@dimen/screenrecorder_tab_bar_height"
+                    android:layout_alignParentBottom="true"
+                    android:background="@android:color/transparent"
+                    app:tabGravity="fill"
+                    app:tabIndicatorHeight="0.0dip"
+                    app:tabMode="fixed" />
+            </com.google.android.material.bottomappbar.BottomAppBar>
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </RelativeLayout>
+</FrameLayout><!--</layout>-->

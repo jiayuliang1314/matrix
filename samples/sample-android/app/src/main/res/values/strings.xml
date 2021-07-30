@@ -1,4 +1,67 @@
 <resources>
     <string name="app_name">matrix-android</string>
-    <string name="unused_string">unused</string>
+
+
+    <string name="screenrecorder_screen_recorder_resolution">Resolution</string>
+    <string name="screenrecorder_user_image_take_photo">Take photo</string>
+    <string name="screenrecorder_master_clear_desc_pictures">Pictures</string>
+    <string name="screenrecorder_settings_edit">Edit</string>
+    <string name="screenrecorder_people_permission_noti_setting">Settings</string>
+    <string name="screenrecorder_storage_detail_videos">Videos</string>
+
+    <string name="screenrecorder_aw">Allow</string>
+    <string name="screenrecorder_be">Audio Source</string>
+    <string name="screenrecorder_bm">Turn off the system battery optimization for %s to strengthen stability.</string>
+    <string name="screenrecorder_bn">Avoid Abnormal Stop</string>
+    <string name="screenrecorder_ca" formatted="false">%s available/%s total</string>
+    <string name="screenrecorder_df">Countdown Before Start</string>
+    <string name="screenrecorder_dz">Debug Log</string>
+    <string name="screenrecorder_e0">Only use for reporting bugs</string>
+    <string name="screenrecorder_gc">Meet %s users around the world</string>
+    <string name="screenrecorder_gl">Join Facebook Group</string>
+    <string name="screenrecorder_gn">Feedback</string>
+    <string name="screenrecorder_h9">Allow the pop-up permission to enjoy the floating window and other convenient operations.</string>
+    <string name="screenrecorder_hd">FPS</string>
+    <string name="screenrecorder_he">Higher FPS means smoother video but use more CPU</string>
+    <string name="screenrecorder_ht">Hide Record Window During Recording</string>
+    <string name="screenrecorder_ii">Keep Recording When Screen Is Off</string>
+    <string name="screenrecorder_ij">Know More</string>
+    <string name="screenrecorder_im">Language</string>
+    <string name="screenrecorder_k9">Microphone</string>
+    <string name="screenrecorder_kj">Normal Mode</string>
+    <string name="screenrecorder_m1">Landscape or Portrait</string>
+    <string name="screenrecorder_m9">Others</string>
+    <string name="screenrecorder_mi">Performance Mode</string>
+    <string name="screenrecorder_mk">Permission</string>
+    <string name="screenrecorder_nb">Privacy Policy</string>
+    <string name="screenrecorder_ne">Pro</string>
+    <string name="screenrecorder_ns">No Ads. Enjoy Unlimited Features.</string>
+    <string name="screenrecorder_nu">Quality</string>
+    <string name="screenrecorder_nv">Higher quality means larger size</string>
+    <string name="screenrecorder_ob">Recording internal audio is not allowed by Android. Use microphone to record.</string>
+    <string name="screenrecorder_on">Recording Mode</string>
+    <string name="screenrecorder_p5">Repair System UI Crash</string>
+    <string name="screenrecorder_p6">Open the permission to repair system UI crash</string>
+    <string name="screenrecorder_p_">To record videos and take screenshots, please allow us to access media on your device.</string>
+    <string name="screenrecorder_pj">Pop Up Window After Taking Screenshot</string>
+    <string name="screenrecorder_qy">FAQ</string>
+    <string name="screenrecorder_qz">Report bugs and tell us what to improve</string>
+    <string name="screenrecorder_r0">Terms</string>
+    <string name="screenrecorder_r6">Shake Phone To Stop Recording</string>
+    <string name="screenrecorder_r9">Share</string>
+    <string name="screenrecorder_r_">Share %s with your friends</string>
+    <string name="screenrecorder_rk">Show On Top</string>
+    <string name="screenrecorder_rm">Show Touch</string>
+    <string name="screenrecorder_sj">Internal Audio Supported Apps</string>
+    <string name="screenrecorder_sk">List of Apps that support internal audio recording</string>
+    <string name="screenrecorder_sw">Brush</string>
+    <string name="screenrecorder_tk">Version: %s</string>
+    <item type="string" name="APKTOOL_DUMMY_2a0">false</item>
+    <item type="string" name="APKTOOL_DUMMY_2a5">false</item>
+    <string name="screenrecorder_settings_orientation">Screen orientation</string>
+    <string name="screenrecorder_save_dir">Save Directory</string>
+    <string name="screenrecorder_custom_setting">Custom Setting</string>
+    <string name="screenrecorder_cat_name_utilities">Tool</string>
+    <string name="screenrecorder_smart_capture_title">Smart capture</string>
+    <string name="screenrecorder_usage_type_audio">Audio</string>
 </resources>

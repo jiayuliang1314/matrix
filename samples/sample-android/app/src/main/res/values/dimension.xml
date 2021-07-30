@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="screenrecorder_theme_fab_elevation">0.0dip</dimen>
+    <dimen name="screenrecorder_tab_bar_height">52.0dip</dimen>
+
+    <dimen name="screenrecorder_a">16.0dip</dimen>
+    <item type="dimen" name="s">@dimen/screenrecorder_z</item>
+    <item type="dimen" name="v">@dimen/screenrecorder_a0</item>
+    <dimen name="screenrecorder_z">4.0dip</dimen>
+    <dimen name="screenrecorder_a0">4.0dip</dimen>
+    <item type="dimen" name="a2">79.99999%</item>
+    <item type="dimen" name="a3">100.0%</item>
+    <item type="dimen" name="a8">65.0%</item>
+    <item type="dimen" name="a9">94.99999%</item>
+    <item type="dimen" name="ac">0.3</item>
+    <item type="dimen" name="ad">0.26</item>
+    <item type="dimen" name="al">@dimen/screenrecorder_a</item>
+    <item type="dimen" name="d7">0.3</item>
+    <item type="dimen" name="d8">0.26</item>
+    <item type="dimen" name="gm">0.26</item>
+    <item type="dimen" name="gn">0.2</item>
+    <item type="dimen" name="go">0.12</item>
+    <item type="dimen" name="gp">0.5</item>
+    <item type="dimen" name="gq">0.38</item>
+    <item type="dimen" name="gr">0.7</item>
+    <item type="dimen" name="gs">0.54</item>
+    <dimen name="screenrecorder_gt">24.0dip</dimen>
+    <item type="dimen" name="hs">0.07</item>
+    <dimen name="screenrecorder_js">110.0dip</dimen>
+</resources>

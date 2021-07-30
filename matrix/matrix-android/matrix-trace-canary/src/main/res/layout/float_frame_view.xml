@@ -72,7 +72,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/sum_qi_wang_tv"
         android:gravity="left"
-        android:text="sum:"
+        android:text="掉帧数量:"
         android:textColor="@color/dark_text"
         android:textSize="8dp" />
 
@@ -136,7 +136,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="left"
-        android:text="current:"
+        android:text="掉帧次数:"
         android:textColor="@color/dark_text"
         android:id="@+id/qi_wang_tv"
         android:textSize="8dp" />

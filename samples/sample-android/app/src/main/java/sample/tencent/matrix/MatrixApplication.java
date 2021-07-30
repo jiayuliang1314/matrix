@@ -85,7 +85,7 @@ public class MatrixApplication extends Application {
                 .enableStartup(traceEnable)
                 .splashActivities("sample.tencent.matrix.SplashActivity;")
                 .isDebug(true)
-                .isDevEnv(false)
+                .isDevEnv(false)//如果是true的话也只是在打印一些log
                 .build();
 
         TracePlugin tracePlugin = (new TracePlugin(traceConfig));
@@ -103,10 +103,12 @@ public class MatrixApplication extends Application {
                     .setAutoDumpHprofMode(mode)
 //                .setDetectDebuger(true) //matrix test code
 //                    .set(intent)
-                    .setManualDumpTargetActivity(ManualDumpActivity.class.getName())
+                    .setManualDumpTargetActivity(ManualDumpActivity.class.getName())//如果是manual的话，要设置一个activity
                     .build();
             builder.plugin(new ResourcePlugin(resourceConfig));
-            ResourcePlugin.activityLeakFixer(this);
+//            Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'void android.graphics.drawable.Drawable.setAlpha(int)' on a null object reference
+//            at androidx.swiperefreshlayout.widget.SwipeRefreshLayout.setColorViewAlpha(SwipeRefreshLayout.java:234)
+//            ResourcePlugin.activityLeakFixer(this);//会引起fatal问题
 
             //io
             IOCanaryPlugin ioCanaryPlugin = new IOCanaryPlugin(new IOConfig.Builder()

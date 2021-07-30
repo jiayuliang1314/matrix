@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+
+
+
+
+
+
+
+
+    <array name="screenrecorder_ld_activityScreenIcons">
+<!--        <item>@drawable/screenrecorder_ic_home_outline_grey600_24dp</item>-->
+<!--        <item>@drawable/screenrecorder_ic_account_outline_grey600_24dp</item>-->
+<!--        <item>@drawable/screenrecorder_ic_email_outline_grey600_24dp</item>-->
+<!--        <item>@drawable/screenrecorder_ic_logout_grey600_24dp</item>-->
+    </array>
+    <array name="screenrecorder_ld_activityScreenTitles">
+        <item>Dashboard</item>
+<!--        <item>Rate us</item>-->
+<!--        <item>Pro</item>-->
+<!--        <item>Share</item>-->
+    </array>
+</resources>

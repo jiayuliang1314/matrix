@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/screenrecorder_c9">
+
+    </View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/screenrecorder_c9">
+
+        </View>
+
+        <TextView
+            android:id="@+id/item_tag"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            tools:text="item_tag" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/screenrecorder_c9">
+
+        </View>
+
+        <TextView
+            android:id="@+id/item_num"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:gravity="center"
+            tools:text="item_num" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/screenrecorder_c9">
+
+        </View>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/qi_wang_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left"
+                android:text="掉帧次数:"
+                android:textColor="@color/dark_text"
+                android:textSize="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:orientation="horizontal"
+                android:weightSum="4">
+
+                <TextView
+                    android:id="@+id/level_normal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/level_normal_color"
+                    android:gravity="center"
+                    android:maxHeight="20dp"
+                    android:text="0"
+                    android:textColor="@android:color/white"
+                    android:textSize="8dp" />
+
+                <TextView
+                    android:id="@+id/level_middle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/level_middle_color"
+                    android:gravity="center"
+                    android:maxHeight="20dp"
+                    android:text="0"
+                    android:textColor="@android:color/white"
+                    android:textSize="8dp" />
+
+                <TextView
+                    android:id="@+id/level_high"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/level_high_color"
+                    android:gravity="center"
+                    android:maxHeight="20dp"
+                    android:text="0"
+                    android:textColor="@android:color/white"
+                    android:textSize="8dp" />
+
+                <TextView
+                    android:id="@+id/level_frozen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/level_frozen_color"
+                    android:gravity="center"
+                    android:maxHeight="20dp"
+                    android:text="0"
+                    android:textColor="@android:color/white"
+                    android:textSize="8dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/sum_qi_wang_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left"
+                android:text="掉帧数量:"
+                android:textColor="@color/dark_text"
+                android:textSize="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:orientation="horizontal"
+                android:weightSum="4">
+
+                <TextView
+                    android:id="@+id/sum_level_normal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/level_normal_color"
+                    android:gravity="center"
+                    android:maxHeight="20dp"
+                    android:text="0"
+                    android:textColor="@android:color/white"
+                    android:textSize="8dp" />
+
+                <TextView
+                    android:id="@+id/sum_level_middle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/level_middle_color"
+                    android:gravity="center"
+                    android:maxHeight="20dp"
+                    android:text="0"
+                    android:textColor="@android:color/white"
+                    android:textSize="8dp" />
+
+                <TextView
+                    android:id="@+id/sum_level_high"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/level_high_color"
+                    android:gravity="center"
+                    android:maxHeight="20dp"
+                    android:text="0"
+                    android:textColor="@android:color/white"
+                    android:textSize="8dp" />
+
+                <TextView
+                    android:id="@+id/sum_level_frozen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/level_frozen_color"
+                    android:gravity="center"
+                    android:maxHeight="20dp"
+                    android:text="0"
+                    android:textColor="@android:color/white"
+                    android:textSize="8dp" />
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/screenrecorder_c9">
+
+        </View>
+
+        <!--        <TextView-->
+        <!--            android:id="@+id/item_more"-->
+        <!--            android:layout_width="0dp"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_gravity="center_vertical"-->
+        <!--            android:layout_weight="1"-->
+        <!--            android:gravity="center"-->
+        <!--            android:text="查看更多" />-->
+
+        <!--        <View-->
+        <!--            android:layout_width="1dp"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:background="@color/screenrecorder_c9">-->
+
+        <!--        </View>-->
+
+        <!--        <TextView-->
+        <!--            android:id="@+id/startup_duration"-->
+        <!--            android:layout_width="0dp"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_weight="1"-->
+        <!--            android:gravity="center"-->
+        <!--            android:layout_gravity="center_vertical"-->
+        <!--            tools:text="startup" />-->
+
+        <!--        <View-->
+        <!--            android:layout_width="1dp"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:background="@color/screenrecorder_c9">-->
+
+        <!--        </View>-->
+        <!--        <TextView-->
+        <!--            android:id="@+id/cold_hot"-->
+        <!--            android:layout_width="0dp"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_weight="1"-->
+        <!--            android:gravity="center"-->
+        <!--            android:layout_gravity="center_vertical"-->
+        <!--            tools:text="冷/热启动" />-->
+
+        <!--        <View-->
+        <!--            android:layout_width="1dp"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:background="@color/screenrecorder_c9">-->
+
+        <!--        </View>-->
+    </LinearLayout>
+
+
+</RelativeLayout>

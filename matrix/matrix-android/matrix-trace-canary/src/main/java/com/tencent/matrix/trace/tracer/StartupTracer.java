@@ -48,6 +48,13 @@ import static android.os.SystemClock.uptimeMillis;
  * <p>
  * applicationCost 通过ActivityThreadHacker获取
  * firstScreenCost
+ *
+ * 1、冷启动：当启动应用时，后台没有该应用的进程，这时系统会重新创建一个新的进程分配给该应用，这个启动方式就是冷启动。
+ * 2、热启动：当启动应用时，后台已有该应用的进程（例：按back键、home键，应用虽然会退出，但是该应用的进程是依然会保留在后台，可进入任务列表查看），所以在已有进程的情况下，这种启动会从已有的进程中来启动应用，这个方式叫热启动。
+ *
+ * ————————————————
+ * 版权声明：本文为CSDN博主「Mr1_liu」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+ * 原文链接：https://blog.csdn.net/laizixingxingdewo/article/details/78927861
  * </p>
  */
 
