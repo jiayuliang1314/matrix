@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,8 +28,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +36,7 @@ import sample.tencent.matrix.issue.IssuesMap;
 import sample.tencent.matrix.issue.ParseIssueUtil;
 import sample.tencent.matrix.zp.base.BaseFragment;
 import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
+import sample.tencent.matrix.zp.utils.TimeUtils;
 
 public class IssuesFragment extends BaseFragment<MainFragmentViewModel> implements
         IssuesFragmentCallback {
@@ -166,17 +166,18 @@ public class IssuesFragment extends BaseFragment<MainFragmentViewModel> implemen
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         public int position;
-        TextView tvTime, tvTag, tvKey, tvType, tvContent, tvIndex;
+        TextView tvTime, tvTag, tvKey, tvScene, tvContent, tvStackKey;
         private boolean isShow = false;
 
         public ViewHolder(View itemView) {
             super(itemView);
             tvTime = itemView.findViewById(R.id.item_time);
             tvTag = itemView.findViewById(R.id.item_tag);
+            tvStackKey = itemView.findViewById(R.id.stack_key);
             tvKey = itemView.findViewById(R.id.item_key);
-            tvType = itemView.findViewById(R.id.item_type);
+            tvScene = itemView.findViewById(R.id.item_scene);
             tvContent = itemView.findViewById(R.id.item_content);
-            tvIndex = itemView.findViewById(R.id.item_index);
+//            tvIndex = itemView.findViewById(R.id.item_index);
         }
 
         public void bindPosition(int position) {
@@ -185,24 +186,63 @@ public class IssuesFragment extends BaseFragment<MainFragmentViewModel> implemen
 
         public void bind(Issue issue) {
 
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss:SSS");
-            Date date = new Date(Long.parseLong(issue.getContent().optString("time")));
-            tvTime.setText("IssueTime -> " + simpleDateFormat.format(date));
+            tvTime.setText(TimeUtils.formatTime(Long.parseLong(issue.getContent().optString("time"))));
 
             if (TextUtils.isEmpty(issue.getTag())) {
                 tvTag.setVisibility(View.GONE);
             } else {
-                tvTag.setText("TAG -> " + issue.getTag());
+                tvTag.setVisibility(View.VISIBLE);
+                if ("Trace_EvilMethod".equals(issue.getTag())) {
+                    try {
+                        String detail = issue.getContent().getString("detail");
+                        tvTag.setText(issue.getTag() + " " + detail);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        tvTag.setText(issue.getTag());
+                    }
+                } else {
+                    tvTag.setText(issue.getTag());
+                }
             }
 
             if (TextUtils.isEmpty(issue.getKey())) {
                 tvKey.setVisibility(View.GONE);
             } else {
-                tvKey.setText("KEY -> " + issue.getKey());
+                tvKey.setVisibility(View.VISIBLE);
+                tvKey.setText("Key " + issue.getKey() + " (Anr is time)");
             }
 
-            tvIndex.setText((IssuesMap.getIssuesAll().size() - position) + "");
-            tvIndex.setTextColor(getColor(position));
+            try {
+                String stackKey = issue.getContent().getString("stackKey");
+                Log.i("IssuesFragment", "stackKey " + stackKey);
+                if (TextUtils.isEmpty(stackKey)) {
+                    tvStackKey.setVisibility(View.GONE);
+                } else {
+                    tvStackKey.setVisibility(View.VISIBLE);
+                    if (stackKey.endsWith("|")) {
+                        stackKey = stackKey.substring(0, stackKey.length() - 1);
+                    }
+                    tvStackKey.setText(stackKey);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                tvStackKey.setVisibility(View.GONE);
+            }
+            try {
+                String scene = issue.getContent().getString("scene");
+                if (TextUtils.isEmpty(scene)) {
+                    tvScene.setVisibility(View.GONE);
+                } else {
+                    tvScene.setVisibility(View.VISIBLE);
+                    tvScene.setText(scene.substring(scene.lastIndexOf(".") + 1));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                tvScene.setVisibility(View.GONE);
+            }
+
+//            tvIndex.setText((IssuesMap.getIssuesAll().size() - position) + "");
+//            tvIndex.setTextColor(getColor(position));
             if (isShow) {
                 showIssue(issue);
             } else {

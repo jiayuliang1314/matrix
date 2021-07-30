@@ -1,58 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:padding="10dp">
 
-    <TextView
-        android:id="@+id/item_index"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginRight="10dp"
-        android:textSize="24sp" />
+    <!--    <TextView-->
+    <!--        android:id="@+id/item_index"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_alignParentRight="true"-->
+    <!--        android:layout_marginTop="10dp"-->
+    <!--        android:layout_marginRight="10dp"-->
+    <!--        android:textSize="24sp" />-->
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/colorAccent" />
-
         <TextView
-            android:id="@+id/item_time"
+            android:id="@+id/item_scene"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="time"/>
+            tools:text="item_scene" />
+
+        <TextView
+            android:id="@+id/stack_key"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="stack_key" />
 
         <TextView
             android:id="@+id/item_tag"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="tag"/>
+            tools:text="tag" />
 
         <TextView
-            android:id="@+id/item_type"
+            android:id="@+id/item_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="type"/>
+            tools:text="time" />
 
         <TextView
             android:id="@+id/item_key"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="key"/>
+            tools:text="key" />
 
         <TextView
             android:id="@+id/item_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            tools:text="content"/>
+            tools:text="content" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="10dp"
+            android:background="#ffBBBBBB" />
+
     </LinearLayout>
+
+
 </RelativeLayout>

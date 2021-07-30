@@ -58,7 +58,7 @@ public class FpsFragment extends BaseFragment<MainFragmentViewModel>
 
     @Override
     public int getLayoutId() {
-        return R.layout.matrix_kanzhun_issue_fragment;
+        return R.layout.matrix_kanzhun_fps_fragment;
     }
 
     /**

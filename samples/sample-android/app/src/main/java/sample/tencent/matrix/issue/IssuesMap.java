@@ -20,6 +20,8 @@ import android.util.Log;
 
 import com.tencent.matrix.report.Issue;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +53,16 @@ public class IssuesMap {
         }
         list.add(0, issue);
 
-        issuesFenlei.put(issue.getTag(), list);
+        if ("Trace_EvilMethod".equals(issue.getTag())) {
+            try {
+                String detail = issue.getContent().getString("detail");
+                issuesFenlei.put(issue.getTag() + " " + detail, list);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            issuesFenlei.put(issue.getTag(), list);
+        }
 
         issuesList.add(0, issue);
     }
