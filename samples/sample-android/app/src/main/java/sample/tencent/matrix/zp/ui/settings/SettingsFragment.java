@@ -10,11 +10,14 @@ import android.widget.TextView;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.lifecycle.ViewModelProviders;
 
-import org.w3c.dom.Text;
-
 import sample.tencent.matrix.R;
 import sample.tencent.matrix.zp.base.BaseFragment;
 import sample.tencent.matrix.zp.ui.MainFragmentViewModel;
+
+import static sample.tencent.matrix.zp.ui.settings.CustomDialog.ResourceCanaryBackTime;
+import static sample.tencent.matrix.zp.ui.settings.CustomDialog.ResourceCanaryCheckTime;
+import static sample.tencent.matrix.zp.ui.settings.CustomDialog.ResourceCanaryForegroundTime;
+import static sample.tencent.matrix.zp.ui.settings.CustomDialog.ResourceCanaryModeType;
 
 public class SettingsFragment extends BaseFragment<MainFragmentViewModel>
         implements SettingsFragmentCallback, CompoundButton.OnCheckedChangeListener,
@@ -41,6 +44,10 @@ public class SettingsFragment extends BaseFragment<MainFragmentViewModel>
     public AppCompatCheckBox trace_canary_float_open_value;
     //notification
     public AppCompatCheckBox matrix_notification_open_value;
+    CustomDialog customDialogReCanaryMode;
+    CustomDialog customDialogReCanaryFor;
+    CustomDialog customDialogReCanaryBack;
+    CustomDialog customDialogReCanaryNum;
 
     public static SettingsFragment newInstance() {
         Bundle args = new Bundle();
@@ -108,13 +115,9 @@ public class SettingsFragment extends BaseFragment<MainFragmentViewModel>
         matrix_notification_open_value.setOnCheckedChangeListener(this);
 
         resource_canary_model_rl.setOnClickListener(this);
-        resource_canary_model_value.setOnClickListener(this);
         resource_canary_foregroundtime_rl.setOnClickListener(this);
-        resource_canary_foregroundtime_value.setOnClickListener(this);
         resource_canary_background_time_rl.setOnClickListener(this);
-        resource_canary_background_time_value.setOnClickListener(this);
         resource_canary_num_rl.setOnClickListener(this);
-        resource_canary_num_value.setOnClickListener(this);
 
     }
 
@@ -147,22 +150,42 @@ public class SettingsFragment extends BaseFragment<MainFragmentViewModel>
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.resource_canary_model_rl:
-                break;
-            case R.id.resource_canary_model_value:
+                if (this.customDialogReCanaryMode == null) {
+                    this.customDialogReCanaryMode = new CustomDialog(this.getBaseFragmentActivity(), "检测模式", ResourceCanaryModeType, resource_canary_model_value);
+                }
+                if (!this.customDialogReCanaryMode.isShowing()) {
+                    this.customDialogReCanaryMode.show();
+                    return;
+                }
                 break;
             case R.id.resource_canary_foregroundtime_rl:
-                break;
-            case R.id.resource_canary_foregroundtime_value:
+                if (this.customDialogReCanaryFor == null) {
+                    this.customDialogReCanaryFor = new CustomDialog(this.getBaseFragmentActivity(), "前台检测时间", ResourceCanaryForegroundTime, resource_canary_foregroundtime_value);
+                }
+                if (!this.customDialogReCanaryFor.isShowing()) {
+                    this.customDialogReCanaryFor.show();
+                    return;
+                }
                 break;
             case R.id.resource_canary_background_time_rl:
-                break;
-            case R.id.resource_canary_background_time_value:
+                if (this.customDialogReCanaryBack == null) {
+                    this.customDialogReCanaryBack = new CustomDialog(this.getBaseFragmentActivity(), "后台检测时间", ResourceCanaryBackTime, resource_canary_background_time_value);
+                }
+                if (!this.customDialogReCanaryBack.isShowing()) {
+                    this.customDialogReCanaryBack.show();
+                    return;
+                }
                 break;
             case R.id.resource_canary_num_rl:
-                break;
-            case R.id.resource_canary_num_value:
+                if (this.customDialogReCanaryNum == null) {
+                    this.customDialogReCanaryNum = new CustomDialog(this.getBaseFragmentActivity(), "检测多少次才算泄漏", ResourceCanaryCheckTime, resource_canary_num_value);
+                }
+                if (!this.customDialogReCanaryNum.isShowing()) {
+                    this.customDialogReCanaryNum.show();
+                    return;
+                }
                 break;
         }
     }
@@ -171,4 +194,13 @@ public class SettingsFragment extends BaseFragment<MainFragmentViewModel>
     public void onActivityResult(int i2, int i3, Intent intent) {
         super.onActivityResult(i2, i3, intent);
     }
+
+    public void restoreData() {
+
+    }
+
+    public void storeData() {
+
+    }
+
 }

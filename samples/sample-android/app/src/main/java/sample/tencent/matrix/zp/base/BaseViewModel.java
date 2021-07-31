@@ -162,7 +162,7 @@ public abstract class BaseViewModel extends ViewModel {
 
 //    public LiveData<ApiResponse> getMostMatchExpectId(String jobId) {
 //        MutableLiveData<ApiResponse> liveData = new MutableLiveData<>();
-//        addSubscription(BaseRepository.getInstance().getMostMatchExpectId(jobId), b -> liveData.setValue(b), throwable -> {
+//        addSubscription(BaseRepository.getInstance().getMostMatchExpectId(jobId), OnItemOnClickListener -> liveData.setValue(OnItemOnClickListener), throwable -> {
 //            liveData.setValue(null);
 //        });
 //        return liveData;
@@ -170,7 +170,7 @@ public abstract class BaseViewModel extends ViewModel {
 //
 //    public LiveData<ApiResponse> getMostMatchJobId(String expectId) {
 //        MutableLiveData<ApiResponse> liveData = new MutableLiveData<>();
-//        addSubscription(BaseRepository.getInstance().getMostMatchJobId(expectId), b -> liveData.setValue(b), throwable -> {
+//        addSubscription(BaseRepository.getInstance().getMostMatchJobId(expectId), OnItemOnClickListener -> liveData.setValue(OnItemOnClickListener), throwable -> {
 //            liveData.setValue(null);
 //        });
 //        return liveData;

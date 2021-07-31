@@ -118,6 +118,7 @@
                     android:layout_marginStart="@dimen/screenrecorder_gt"
                     android:layout_marginEnd="4.0dip"
                     android:textSize="10dp"
+                    android:visibility="gone"
                     android:layout_toStartOf="@id/resource_canary_model_value"
                     android:layout_toEndOf="@id/resource_canary_model_image"
                     android:text="4种,Auto,NoDump,ManualDump,SilenceAnalyse" />

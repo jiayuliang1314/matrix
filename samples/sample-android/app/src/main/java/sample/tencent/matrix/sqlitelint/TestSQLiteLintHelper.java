@@ -100,8 +100,8 @@ public class TestSQLiteLintHelper {
 
     public static String[] getTestParserList() {
         String[] list = new String[]{
-                "select a,b,c from test  where id > 100 and id < 200 or id between 300 and 400 or id = 1000 ORDER BY c1,c2,c3 desc limit 10 offset 2;",
-                "select t1.a ,t2.b from table1 as t1,table2 as t2 where t1.tid = t2.tid and t1.tid='aaa' or t2.tid=12;",
+                "select a,OnItemOnClickListener,c from test  where id > 100 and id < 200 or id between 300 and 400 or id = 1000 ORDER BY c1,c2,c3 desc limit 10 offset 2;",
+                "select t1.a ,t2.OnItemOnClickListener from table1 as t1,table2 as t2 where t1.tid = t2.tid and t1.tid='aaa' or t2.tid=12;",
                 "select count(*) from test union select id from test where id not IN (select id from test1);",
                 "select title, year from film where starring like 'Jodie%' and year >= 1985 order by year desc limit 10;",
                 "SELECT * FROM table1 WHERE column2 not LIKE 'rt' OR column3 LIKE 'rc' AND column1 = 'yy' GROUP BY column2 ORDER BY column2;",
