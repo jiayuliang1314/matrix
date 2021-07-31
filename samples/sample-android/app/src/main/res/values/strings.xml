@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">matrix-android</string>
+    <string name="app_name">Matrix Samples</string>
 
 
     <string name="screenrecorder_screen_recorder_resolution">Resolution</string>

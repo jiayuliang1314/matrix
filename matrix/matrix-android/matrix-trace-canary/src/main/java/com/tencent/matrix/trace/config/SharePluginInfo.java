@@ -33,10 +33,10 @@ public class SharePluginInfo {
     public static final String ISSUE_DROP_SUM = "dropSum";      //掉帧数量
     public static final String ISSUE_FPS = "fps";               //帧率
     public static final String ISSUE_SUM_TASK_FRAME = "dropTaskFrameSum";
-
     public static final String ISSUE_TRACE_STACK = "stack";
     public static final String ISSUE_THREAD_STACK = "threadStack";
     public static final String ISSUE_PROCESS_PRIORITY = "processPriority";
+    public static final String ISSUE_PROCESS_TIMER_SLACK = "processTimerSlack";
     //使用nice value（以下成为nice值）来设定一个进程的优先级，系统任务调度器根据nice值合理安排调度。
 //    nice的值越大，进程的优先级就越低，获得CPU调用的机会越少，nice值越小，进程的优先级则越高，获得CPU调用的机会越多。
     public static final String ISSUE_PROCESS_NICE = "processNice";//https://blog.csdn.net/caonima0001112/article/details/50379738

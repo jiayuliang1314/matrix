@@ -286,9 +286,9 @@ public class UnzipTask extends ApkTask {
 
     @Override
     public TaskResult call() throws TaskExecuteException {
-
+        ZipFile zipFile = null;
         try {
-            ZipFile zipFile = new ZipFile(inputFile);
+            zipFile = new ZipFile(inputFile);
             if (outputFile.isDirectory() && outputFile.exists()) {
                 Log.i(TAG, "%s exists, delete it.", outputFile.getAbsolutePath());
                 FileUtils.deleteDirectory(outputFile);
@@ -346,6 +346,14 @@ public class UnzipTask extends ApkTask {
             return taskResult;
         } catch (Exception e) {
             throw new TaskExecuteException(e.getMessage(), e);
+        } finally {
+            if (zipFile != null) {
+                try {
+                    zipFile.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

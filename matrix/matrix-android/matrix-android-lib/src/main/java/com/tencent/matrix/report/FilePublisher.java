@@ -19,6 +19,7 @@ package com.tencent.matrix.report;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.tencent.matrix.util.MatrixLog;
 import com.tencent.matrix.util.MatrixUtil;
 
 import java.util.HashMap;
@@ -42,7 +43,8 @@ public class FilePublisher extends IssuePublisher {
         super(issueDetectListener);
         this.mContext = context;
         mExpiredTime = expire;//1天过期日期
-        SharedPreferences sharedPreferences = context.getSharedPreferences(tag + MatrixUtil.getProcessName(context), Context.MODE_PRIVATE);
+        final String spName = "Matrix_" + tag + MatrixUtil.getProcessName(context);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(spName, Context.MODE_PRIVATE);
         mPublishedMap = new HashMap<>();//activity名字和发生泄漏的时间
         long current = System.currentTimeMillis();
         mEditor = sharedPreferences.edit();
@@ -52,12 +54,16 @@ public class FilePublisher extends IssuePublisher {
         }
         if (null != spKeys) {
             for (String key : spKeys) {
-                long start = sharedPreferences.getLong(key, 0);
-                long costTime = current - start;
-                if (start <= 0 || costTime > mExpiredTime) {
-                    mEditor.remove(key);//超时则删除
-                } else {
-                    mPublishedMap.put(key, start);//没有的话，添加到map里
+                try {
+                    long start = sharedPreferences.getLong(key, 0);
+                    long costTime = current - start;
+                    if (start <= 0 || costTime > mExpiredTime) {
+                        mEditor.remove(key);//超时则删除
+                    } else {
+                        mPublishedMap.put(key, start);//没有的话，添加到map里
+                    }
+                } catch (ClassCastException e) {
+                    MatrixLog.printErrStackTrace(TAG, e, "might be polluted - sp: %s, key: %s, value : %s", spName, key, sharedPreferences.getAll().get(key));
                 }
             }
         }
@@ -110,7 +116,6 @@ public class FilePublisher extends IssuePublisher {
             return false;
         }
         long start = mPublishedMap.get(key);
-        //时间判断，超过1天删除，并返回false
         if (start <= 0 || (System.currentTimeMillis() - start) > mExpiredTime) {
             SharedPreferences.Editor e = mEditor.remove(key);
             if (null != e) {

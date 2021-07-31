@@ -33,39 +33,43 @@ import sample.tencent.matrix.zp.data.IssuesTagNum;
 public class IssuesMap {
 
     private static final ConcurrentHashMap<String, List<Issue>> issues = new ConcurrentHashMap<>();
+    private static final ArrayList<Issue> allIssues = new ArrayList<>();
     private static final ConcurrentHashMap<String, List<Issue>> issuesFenlei = new ConcurrentHashMap<>();
     private static final CopyOnWriteArrayList<Issue> issuesList = new CopyOnWriteArrayList<>();
 
     public static void put(@IssueFilter.FILTER String filter, Issue issue) {
+        List<Issue> list = issues.get(filter);
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        list.add(0, issue);
+        issues.put(filter, list);
+
+        synchronized (allIssues) {
+            allIssues.add(issue);
+        }
         Log.i("IssuesMap", "put " + issue.getTag() + " issue " + issue);
-//        List<Issue> list = issues.get(filter);
-//        if (list == null) {
-//            list = new ArrayList<>();
-//        }
-//        list.add(0, issue);
-//
-//        issues.put(filter, list);
 
 
         if ("Trace_EvilMethod".equals(issue.getTag())) {
             try {
                 String detail = issue.getContent().getString("detail");
-                List<Issue> list = issuesFenlei.get(issue.getTag() + " " + detail);
-                if (list == null) {
-                    list = new ArrayList<>();
+                List<Issue> list1 = issuesFenlei.get(issue.getTag() + " " + detail);
+                if (list1 == null) {
+                    list1 = new ArrayList<>();
                 }
-                list.add(0, issue);
-                issuesFenlei.put(issue.getTag() + " " + detail, list);
+                list1.add(0, issue);
+                issuesFenlei.put(issue.getTag() + " " + detail, list1);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         } else {
-            List<Issue> list = issuesFenlei.get(issue.getTag());
-            if (list == null) {
-                list = new ArrayList<>();
+            List<Issue> list2 = issuesFenlei.get(issue.getTag());
+            if (list2 == null) {
+                list2 = new ArrayList<>();
             }
-            list.add(0, issue);
-            issuesFenlei.put(issue.getTag(), list);
+            list2.add(0, issue);
+            issuesFenlei.put(issue.getTag(), list2);
         }
 
         issuesList.add(0, issue);
@@ -181,6 +185,22 @@ public class IssuesMap {
 
     public static void clear() {
         issues.clear();
+    }
+
+    public static Issue getIssueReverse(int index) {
+        synchronized (allIssues) {
+            if (allIssues.size() <= index) {
+                return null;
+            }
+
+            return allIssues.get(allIssues.size() - index - 1);
+        }
+    }
+
+    public static int amountOfIssues() {
+        synchronized (allIssues) {
+            return allIssues.size();
+        }
     }
 
 }

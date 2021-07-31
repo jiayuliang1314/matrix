@@ -36,9 +36,10 @@ public class Constants {
     public static final int DEFAULT_FPS_TIME_SLICE_ALIVE_MS = 10 * 1000;    //掉帧累计10s，就上报
     public static final int TIME_MILLIS_TO_NANO = 1000000;
     public static final int DEFAULT_INPUT_EXPIRED_TIME = 500;
-    public static final int DEFAULT_ANR = 5 * 1000;             //anr 5s
-    public static final int DEFAULT_NORMAL_LAG = 2 * 1000;      //lag 消息 2s
-    public static final int DEFAULT_ANR_INVALID = 6 * 1000;     //无效anr，anr倒计时线程，没有在5s唤醒
+    public static final int DEFAULT_ANR = 5 * 1000;//anr 5s
+    public static final int DEFAULT_NORMAL_LAG = 2 * 1000;//lag 消息 2s
+    public static final int DEFAULT_IDLE_HANDLER_LAG = 2 * 1000;
+    public static final int DEFAULT_ANR_INVALID = 6 * 1000;//无效anr，anr倒计时线程，没有在5s唤醒
     public static final long DEFAULT_FRAME_DURATION = 16666667L;//一帧时间
 
     public static final int DEFAULT_DROPPED_NORMAL = 3; //ok 掉帧
@@ -55,7 +56,8 @@ public class Constants {
 
     public static final int LIMIT_WARM_THRESHOLD_MS = 5 * 1000;
 
+
     public enum Type {
-        NORMAL, ANR, STARTUP, LAG
+        NORMAL, ANR, STARTUP, LAG, SIGNAL_ANR, LAG_IDLE_HANDLER, PRIORITY_MODIFIED, TIMERSLACK_MODIFIED
     }
 }

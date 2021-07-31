@@ -274,6 +274,7 @@ public class FileUtil {
                     bos.write(data, 0, count);
                 }
                 bos.flush();
+                closeQuietly(bos);
             }
         } catch (Exception e) {
             // ignore
