@@ -647,13 +647,13 @@
                     android:layout_below="@id/trace_canary_notification_open_title"
                     android:layout_marginStart="@dimen/screenrecorder_gt"
                     android:layout_marginEnd="4.0dip"
-                    android:layout_toStartOf="@id/trace_canary_notification_open_value"
+                    android:layout_toStartOf="@id/matrix_notification_open_value"
                     android:layout_toEndOf="@id/trace_canary_notification_open_image"
                     android:text="4种,Auto,NoDump,ManualDump,SilenceAnalyse"
                     android:visibility="gone" />
 
                 <androidx.appcompat.widget.AppCompatCheckBox
-                    android:id="@+id/trace_canary_notification_open_value"
+                    android:id="@+id/matrix_notification_open_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"

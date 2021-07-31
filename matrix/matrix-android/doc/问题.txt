@@ -1,3 +1,2 @@
-1.合并最新
-2.掉帧10s才上报，clicfg_matrix_trace_fps_time_slice  ？
-3.热启动，冷启动                                     ？
+1.掉帧10s才上报，clicfg_matrix_trace_fps_time_slice  ？
+2.热启动，冷启动                                     ？
