@@ -23,7 +23,7 @@
 
     <style name="screenrecordergf">
         <item name="android:textSize">14.0sp</item>
-        <item name="android:textColor">#04B5A5</item>
+        <item name="android:textColor">@color/screenrecorder_au</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 

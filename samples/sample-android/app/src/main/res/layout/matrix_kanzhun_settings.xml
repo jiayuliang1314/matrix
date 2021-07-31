@@ -21,7 +21,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8.0dip"
             android:text="Resource Canary"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:textColor="@color/screenrecorder_au" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -32,6 +33,57 @@
             android:layout_marginBottom="14.0dip"
             android:background="@drawable/screenrecorder_du"
             android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/resource_canary_open_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/resource_canary_open_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/resource_canary_open_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/resource_canary_open_image"
+                    android:text="开启" />
+
+                <TextView
+                    android:id="@+id/resource_canary_open_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/resource_canary_open_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:visibility="gone"
+                    android:layout_toStartOf="@id/resource_canary_open_value"
+                    android:layout_toEndOf="@id/resource_canary_open_image"
+                    android:text="4种,Auto,NoDump,ManualDump,SilenceAnalyse" />
+
+
+
+                <androidx.appcompat.widget.AppCompatCheckBox
+                    android:id="@+id/resource_canary_open_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:button="@drawable/screenrecorder_bk"
+                    android:checked="false"
+                    android:minWidth="40.0dip" />
+            </RelativeLayout>
+
 
             <RelativeLayout
                 android:id="@+id/resource_canary_model_rl"
@@ -65,9 +117,23 @@
                     android:layout_below="@id/resource_canary_model_title"
                     android:layout_marginStart="@dimen/screenrecorder_gt"
                     android:layout_marginEnd="4.0dip"
+                    android:textSize="10dp"
                     android:layout_toStartOf="@id/resource_canary_model_value"
                     android:layout_toEndOf="@id/resource_canary_model_image"
                     android:text="4种,Auto,NoDump,ManualDump,SilenceAnalyse" />
+
+                <TextView
+                    android:id="@+id/resource_canary_open_manual_dump_activity"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/resource_canary_model_subtitle"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/resource_canary_model_value"
+                    android:layout_toEndOf="@id/resource_canary_model_image"
+                    android:textSize="10dp"
+                    android:text="ManualDump跳转ManualDumpActivity"/>
 
                 <TextView
                     android:id="@+id/resource_canary_model_value"
@@ -75,7 +141,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true" />
+                    android:layout_centerVertical="true"
+                    android:text="Auto"/>
             </RelativeLayout>
 
             <RelativeLayout
@@ -120,7 +187,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true" />
+                    android:layout_centerVertical="true"
+                    android:text="10s"/>
             </RelativeLayout>
 
             <RelativeLayout
@@ -165,7 +233,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true" />
+                    android:layout_centerVertical="true"
+                    android:text="20min"/>
             </RelativeLayout>
 
             <RelativeLayout
@@ -210,7 +279,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true" />
+                    android:layout_centerVertical="true"
+                    android:text="10"/>
             </RelativeLayout>
 
             <RelativeLayout
@@ -262,5 +332,338 @@
 
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/trace_canary_title"
+            style="@style/screenrecordergc"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8.0dip"
+            android:text="Resource Canary"
+            android:textAllCaps="false"
+            android:textColor="@color/screenrecorder_au" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10.0dip"
+            android:layout_marginTop="14.0dip"
+            android:layout_marginEnd="10.0dip"
+            android:layout_marginBottom="14.0dip"
+            android:background="@drawable/screenrecorder_du"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/trace_canary_anr_open_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/trace_canary_anr_open_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/trace_canary_anr_open_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/trace_canary_anr_open_image"
+                    android:text="开启Anr检测" />
+
+                <TextView
+                    android:id="@+id/trace_canary_anr_open_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/trace_canary_anr_open_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/trace_canary_anr_open_value"
+                    android:layout_toEndOf="@id/trace_canary_anr_open_image"
+                    android:text="4种,Auto,NoDump,ManualDump,SilenceAnalyse"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatCheckBox
+                    android:id="@+id/trace_canary_anr_open_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:button="@drawable/screenrecorder_bk"
+                    android:checked="false"
+                    android:minWidth="40.0dip" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/trace_canary_fps_open_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/trace_canary_fps_open_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/trace_canary_fps_open_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/trace_canary_fps_open_image"
+                    android:text="开启FPS检测" />
+
+                <TextView
+                    android:id="@+id/trace_canary_fps_open_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/trace_canary_fps_open_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/trace_canary_fps_open_value"
+                    android:layout_toEndOf="@id/trace_canary_fps_open_image"
+                    android:text="4种,Auto,NoDump,ManualDump,SilenceAnalyse"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatCheckBox
+                    android:id="@+id/trace_canary_fps_open_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:button="@drawable/screenrecorder_bk"
+                    android:checked="false"
+                    android:minWidth="40.0dip" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/trace_canary_startup_open_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/trace_canary_startup_open_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/trace_canary_startup_open_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/trace_canary_startup_open_image"
+                    android:text="启动耗时检测" />
+
+                <TextView
+                    android:id="@+id/trace_canary_startup_open_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/trace_canary_startup_open_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/trace_canary_startup_open_value"
+                    android:layout_toEndOf="@id/trace_canary_startup_open_image"
+                    android:text="SplashActivity" />
+
+                <androidx.appcompat.widget.AppCompatCheckBox
+                    android:id="@+id/trace_canary_startup_open_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:button="@drawable/screenrecorder_bk"
+                    android:checked="false"
+                    android:minWidth="40.0dip" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/trace_canary_evilmethod_open_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/trace_canary_evilmethod_open_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/trace_canary_evilmethod_open_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/trace_canary_evilmethod_open_image"
+                    android:text="耗时方法检测" />
+
+                <TextView
+                    android:id="@+id/trace_canary_evilmethod_open_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/trace_canary_evilmethod_open_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/trace_canary_evilmethod_open_value"
+                    android:layout_toEndOf="@id/trace_canary_evilmethod_open_image"
+                    android:text="4种,Auto,NoDump,ManualDump,SilenceAnalyse"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatCheckBox
+                    android:id="@+id/trace_canary_evilmethod_open_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:button="@drawable/screenrecorder_bk"
+                    android:checked="false"
+                    android:minWidth="40.0dip" />
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/other_title"
+            style="@style/screenrecordergc"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8.0dip"
+            android:text="其他"
+            android:textAllCaps="false"
+            android:textColor="@color/screenrecorder_au" />
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10.0dip"
+            android:layout_marginTop="14.0dip"
+            android:layout_marginEnd="10.0dip"
+            android:layout_marginBottom="14.0dip"
+            android:background="@drawable/screenrecorder_du"
+            android:orientation="vertical">
+
+
+
+            <RelativeLayout
+                android:id="@+id/trace_canary_float_open_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/trace_canary_float_open_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/trace_canary_float_open_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/trace_canary_float_open_image"
+                    android:text="FPS悬浮窗口" />
+
+                <TextView
+                    android:id="@+id/trace_canary_float_open_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/trace_canary_float_open_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:visibility="gone"
+                    android:layout_toStartOf="@id/trace_canary_float_open_value"
+                    android:layout_toEndOf="@id/trace_canary_float_open_image"
+                    android:text="SplashActivity" />
+
+                <androidx.appcompat.widget.AppCompatCheckBox
+                    android:id="@+id/trace_canary_float_open_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:button="@drawable/screenrecorder_bk"
+                    android:checked="false"
+                    android:minWidth="40.0dip" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/trace_canary_notification_open_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/trace_canary_notification_open_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/trace_canary_notification_open_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/trace_canary_notification_open_image"
+                    android:text="通知" />
+
+                <TextView
+                    android:id="@+id/trace_canary_notification_open_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/trace_canary_notification_open_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/trace_canary_notification_open_value"
+                    android:layout_toEndOf="@id/trace_canary_notification_open_image"
+                    android:text="4种,Auto,NoDump,ManualDump,SilenceAnalyse"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatCheckBox
+                    android:id="@+id/trace_canary_notification_open_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:button="@drawable/screenrecorder_bk"
+                    android:checked="false"
+                    android:minWidth="40.0dip" />
+            </RelativeLayout>
+
+        </LinearLayout>
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

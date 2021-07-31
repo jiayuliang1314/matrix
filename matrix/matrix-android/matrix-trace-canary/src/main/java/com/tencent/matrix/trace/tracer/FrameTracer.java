@@ -141,7 +141,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         long traceBegin = System.currentTimeMillis();
         try {
             final long jiter = endNs - intendedFrameTimeNs;
-            final int dropFrame = (int) (jiter / frameIntervalNs);//这里是long整型运算，所以大于16s将会计算出来掉帧数量大于1，否则小于16s则为0
+            final int dropFrame = (int) (jiter / frameIntervalNs);//这里是long整型运算，所以大于16ms将会计算出来掉帧数量大于1，否则小于16ms则为0，需要debug
             if (dropFrameListener != null) {//这里没有设置，没有进入
                 if (dropFrame > dropFrameListenerThreshold) {
                     try {

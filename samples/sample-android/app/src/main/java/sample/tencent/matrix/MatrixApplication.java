@@ -84,7 +84,7 @@ public class MatrixApplication extends Application {
                 .enableAnrTrace(traceEnable)
                 .enableStartup(traceEnable)
                 .splashActivities("sample.tencent.matrix.SplashActivity;")
-                .isDebug(true)
+                .isDebug(true)//如果是true的话也只是在打印一些log
                 .isDevEnv(false)//如果是true的话也只是在打印一些log
                 .build();
 
