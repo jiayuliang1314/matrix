@@ -1,4 +1,4 @@
-package sample.tencent.matrix.zp.ui;
+package sample.tencent.matrix.zp.ui.fps;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -43,6 +43,9 @@ import sample.tencent.matrix.issue.IssuesMap;
 import sample.tencent.matrix.issue.ParseIssueUtil;
 import sample.tencent.matrix.zp.base.BaseFragment;
 import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
+import sample.tencent.matrix.zp.ui.InfosFragmentCallback;
+import sample.tencent.matrix.zp.ui.MainActivityViewModel;
+import sample.tencent.matrix.zp.ui.MainFragmentViewModel;
 
 public class FpsFragment extends BaseFragment<MainFragmentViewModel>
         implements InfosFragmentCallback, CompoundButton.OnCheckedChangeListener,

@@ -1,4 +1,4 @@
-package sample.tencent.matrix.zp.ui;
+package sample.tencent.matrix.zp.ui.issues;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -42,6 +42,8 @@ import sample.tencent.matrix.zp.base.BaseFragment;
 import sample.tencent.matrix.zp.data.IssuesTagNum;
 import sample.tencent.matrix.zp.event.MessageEventChangeMainTabCategory;
 import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
+import sample.tencent.matrix.zp.ui.MainActivityViewModel;
+import sample.tencent.matrix.zp.ui.MainFragmentViewModel;
 import sample.tencent.matrix.zp.utils.TimeUtils;
 import sample.tencent.matrix.zp.view.rv.FlowLayoutManager;
 

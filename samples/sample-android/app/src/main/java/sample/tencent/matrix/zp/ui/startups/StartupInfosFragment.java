@@ -1,4 +1,4 @@
-package sample.tencent.matrix.zp.ui;
+package sample.tencent.matrix.zp.ui.startups;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,13 +21,12 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import sample.tencent.matrix.R;
 import sample.tencent.matrix.issue.IssuesMap;
 import sample.tencent.matrix.zp.base.BaseFragment;
 import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
+import sample.tencent.matrix.zp.ui.InfosFragmentCallback;
+import sample.tencent.matrix.zp.ui.MainFragmentViewModel;
 import sample.tencent.matrix.zp.utils.TimeUtils;
 
 public class StartupInfosFragment extends BaseFragment<MainFragmentViewModel>

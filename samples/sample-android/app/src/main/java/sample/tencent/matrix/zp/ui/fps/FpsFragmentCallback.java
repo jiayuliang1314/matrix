@@ -1,4 +1,4 @@
-package sample.tencent.matrix.zp.ui;
+package sample.tencent.matrix.zp.ui.fps;
 
 public interface FpsFragmentCallback {
 }

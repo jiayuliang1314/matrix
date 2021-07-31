@@ -1,4 +1,4 @@
-package sample.tencent.matrix.zp.ui;
+package sample.tencent.matrix.zp.ui.settings;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,15 +9,16 @@ import androidx.lifecycle.ViewModelProviders;
 
 import sample.tencent.matrix.R;
 import sample.tencent.matrix.zp.base.BaseFragment;
+import sample.tencent.matrix.zp.ui.MainFragmentViewModel;
 
-public class FpsDetailFragment extends BaseFragment<MainFragmentViewModel>
-        implements InfosFragmentCallback, CompoundButton.OnCheckedChangeListener,
+public class SettingsFragment extends BaseFragment<MainFragmentViewModel>
+        implements SettingsFragmentCallback, CompoundButton.OnCheckedChangeListener,
         View.OnClickListener {
     public static final String TAG = "SettingsFragment";
 
-    public static FpsDetailFragment newInstance() {
+    public static SettingsFragment newInstance() {
         Bundle args = new Bundle();
-        FpsDetailFragment fragment = new FpsDetailFragment();
+        SettingsFragment fragment = new SettingsFragment();
         fragment.setArguments(args);
         return fragment;
     }

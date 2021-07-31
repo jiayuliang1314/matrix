@@ -1,10 +1,15 @@
 Trace_StartUp
 tag[Trace_StartUp]type[0];key[null];content[{"machine":"MIDDLE","cpu_app":0,"mem":3510583296,"mem_free":1414500,"application_create":76,"application_create_scene":159,"first_activity_create":356,"startup_duration":988,"is_warm_start_up":false,"tag":"Trace_StartUp","process":"sample.tencent.matrix","time":1627634019702}]
+tag[Trace_StartUp]type[0];key[null];content[{"machine":"MIDDLE","cpu_app":0,"mem":3510583296,"mem_free":1419644,"application_create":0,"application_create_scene":159,"first_activity_create":0,"startup_duration":873,"is_warm_start_up":true,"tag":"Trace_StartUp","process":"sample.tencent.matrix","time":1627694684774}]
 
 Trace_FPS
 tag[Trace_FPS]type[0];key[null];content[{"machine":"MIDDLE","cpu_app":0,"mem":3510583296,"mem_free":1455832,"scene":"sample.tencent.matrix.trace.TestFpsActivity","dropLevel":{"DROPPED_FROZEN":0,"DROPPED_HIGH":0,"DROPPED_MIDDLE":11,"DROPPED_NORMAL":4,"DROPPED_BEST":554},"dropSum":{"DROPPED_FROZEN":0,"DROPPED_HIGH":0,"DROPPED_MIDDLE":159,"DROPPED_NORMAL":22,"DROPPED_BEST":4},"fps":46.66611862182617,"tag":"Trace_FPS","process":"sample.tencent.matrix","time":1627634155767}]
 
-memory
+io 还差一个leak
+tag[io]type[2];key[null];content[{"path":"\/sdcard\/a_long.txt","size":40960000,"op":80000,"buffer":512,"cost":413,"opType":2,"opSize":40960000,"thread":"main","stack":"sample.tencent.matrix.io.TestIOActivity.writeLongSth(TestIOActivity.java:129)\nsample.tencent.matrix.io.TestIOActivity.onClick(TestIOActivity.java:99)\njava.lang.reflect.Method.invoke(Native Method)\nandroid.view.View$DeclaredOnClickListener.onClick(View.java:6079)\nandroid.view.View.performClick(View.java:7352)\nandroid.widget.TextView.performClick(TextView.java:14230)\nandroid.view.View.performClickInternal(View.java:7318)\nandroid.view.View.access$3200(View.java:846)\nandroid.view.View$PerformClick.run(View.java:27800)\nandroid.app.ActivityThread.main(ActivityThread.java:7050)\n","repeat":0,"tag":"io","type":2,"process":"sample.tencent.matrix","time":1627694884833}]
+tag[io]type[2];key[null];content[{"path":"\/sdcard\/a.txt","size":40960,"op":102505,"buffer":400,"cost":298,"opType":1,"opSize":41002000,"thread":"main","stack":"sample.tencent.matrix.io.TestIOActivity.leakSth(TestIOActivity.java:190)\nsample.tencent.matrix.io.TestIOActivity.onClick(TestIOActivity.java:103)\njava.lang.reflect.Method.invoke(Native Method)\nandroid.view.View$DeclaredOnClickListener.onClick(View.java:6079)\nandroid.view.View.performClick(View.java:7352)\nandroid.widget.TextView.performClick(TextView.java:14230)\nandroid.view.View.performClickInternal(View.java:7318)\nandroid.view.View.access$3200(View.java:846)\nandroid.view.View$PerformClick.run(View.java:27800)\nandroid.app.ActivityThread.main(ActivityThread.java:7050)\n","repeat":0,"tag":"io","type":2,"process":"sample.tencent.matrix","time":1627694898034}]
+
+memory 四种模式不一样
 tag[memory]type[0];key[null];content[{"dump_mode":"MANUAL_DUMP","activity":"sample.tencent.matrix.resource.TestLeakActivity","ref_key":"MATRIX_RESCANARY_REFKEY_sample.tencent.matrix.resource.TestLeakActivity_b4da4724e34d4bd1a48ccd408a028893","leak_detail":"manual_dump","cost_millis":"0","tag":"memory","process":"sample.tencent.matrix","time":1627633766228}]
 
 Trace_EvilMethod

@@ -28,6 +28,9 @@ import java.util.List;
 import sample.tencent.matrix.R;
 import sample.tencent.matrix.zp.base.BaseFragment;
 import sample.tencent.matrix.zp.event.MessageEventChangeMainTab;
+import sample.tencent.matrix.zp.ui.fps.FpsFragment;
+import sample.tencent.matrix.zp.ui.issues.IssuesFragment;
+import sample.tencent.matrix.zp.ui.settings.SettingsFragment;
 import sample.tencent.matrix.zp.view.vp.BaseFragmentAdapter;
 
 public class MainFragment extends BaseFragment<MainFragmentViewModel> implements MainFragmentCallback/*, DrawerAdapter.OnItemSelectedListener */ {

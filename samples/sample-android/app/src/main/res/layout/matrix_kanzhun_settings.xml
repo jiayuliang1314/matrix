@@ -14,29 +14,253 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/resource_canary_title"
+            style="@style/screenrecordergc"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="8.0dip"
+            android:text="Resource Canary"
+            android:textAllCaps="false" />
 
-            <TextView
-                android:id="@+id/startup_title"
-                style="@style/screenrecorderge"
-                android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10.0dip"
+            android:layout_marginTop="14.0dip"
+            android:layout_marginEnd="10.0dip"
+            android:layout_marginBottom="14.0dip"
+            android:background="@drawable/screenrecorder_du"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/resource_canary_model_rl"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/screenrecorder_gt"
-                android:layout_marginLeft="24dp"
-                android:text="最近启动时间" />
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
 
-            <TextView
-                android:id="@+id/startup_more"
-                style="@style/screenrecorderge"
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:id="@+id/resource_canary_model_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/resource_canary_model_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/resource_canary_model_image"
+                    android:text="检测模式" />
+
+                <TextView
+                    android:id="@+id/resource_canary_model_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/resource_canary_model_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/resource_canary_model_value"
+                    android:layout_toEndOf="@id/resource_canary_model_image"
+                    android:text="4种,Auto,NoDump,ManualDump,SilenceAnalyse" />
+
+                <TextView
+                    android:id="@+id/resource_canary_model_value"
+                    style="@style/screenrecordergf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/resource_canary_foregroundtime_rl"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginRight="24dp"
-                android:text="查看更多" />
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
 
-        </RelativeLayout>
+                <ImageView
+                    android:id="@+id/resource_canary_foregroundtime_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/resource_canary_foregroundtime_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/resource_canary_foregroundtime_image"
+                    android:text="前台检测时间" />
+
+                <TextView
+                    android:id="@+id/resource_canary_foregroundtime_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/resource_canary_foregroundtime_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/resource_canary_foregroundtime_value"
+                    android:layout_toEndOf="@id/resource_canary_foregroundtime_image"
+                    android:text="应用处于前台时，多长时间检测一次泄漏" />
+
+                <TextView
+                    android:id="@+id/resource_canary_foregroundtime_value"
+                    style="@style/screenrecordergf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/resource_canary_background_time_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/resource_canary_background_time_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/resource_canary_background_time_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/resource_canary_background_time_image"
+                    android:text="后台检测时间" />
+
+                <TextView
+                    android:id="@+id/resource_canary_background_time_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/resource_canary_background_time_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/resource_canary_background_time_value"
+                    android:layout_toEndOf="@id/resource_canary_background_time_image"
+                    android:text="应用处于后台时，多长时间检测一次泄漏" />
+
+                <TextView
+                    android:id="@+id/resource_canary_background_time_value"
+                    style="@style/screenrecordergf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/resource_canary_num_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/resource_canary_num_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/resource_canary_num_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/resource_canary_num_image"
+                    android:text="检测多少次才算泄漏" />
+
+                <TextView
+                    android:id="@+id/resource_canary_num_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/resource_canary_num_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/resource_canary_num_value"
+                    android:layout_toEndOf="@id/resource_canary_num_image"
+                    android:text="为了防止gc之后并没有回收，需要检测多次" />
+
+                <TextView
+                    android:id="@+id/resource_canary_num_value"
+                    style="@style/screenrecordergf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/resource_canary_function_beat_io_rl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:selectableItemBackground"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/resource_canary_function_beat_io_image"
+                    android:layout_width="@dimen/screenrecorder_gt"
+                    android:layout_height="@dimen/screenrecorder_gt"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitXY"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/resource_canary_function_beat_io_title"
+                    style="@style/screenrecorderge"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_toEndOf="@id/resource_canary_function_beat_io_image"
+                    android:text="统计方法耗时开关" />
+
+                <TextView
+                    android:id="@+id/resource_canary_function_beat_io_subtitle"
+                    style="@style/screenrecordergd"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/resource_canary_function_beat_io_title"
+                    android:layout_marginStart="@dimen/screenrecorder_gt"
+                    android:layout_marginEnd="4.0dip"
+                    android:layout_toStartOf="@id/resource_canary_function_beat_io_value"
+                    android:layout_toEndOf="@id/resource_canary_function_beat_io_image"
+                    android:text="在方法前后使用插桩埋点，统计方法耗时" />
+
+                <androidx.appcompat.widget.AppCompatCheckBox
+                    android:id="@+id/resource_canary_function_beat_io_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:button="@drawable/screenrecorder_bk"
+                    android:checked="false"
+                    android:minWidth="40.0dip" />
+            </RelativeLayout>
+
+
+        </LinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

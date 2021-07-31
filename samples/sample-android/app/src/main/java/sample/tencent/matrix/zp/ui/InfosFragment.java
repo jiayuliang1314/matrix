@@ -23,9 +23,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import sample.tencent.matrix.R;
 import sample.tencent.matrix.issue.IssuesMap;
 import sample.tencent.matrix.zp.base.BaseFragment;
@@ -33,6 +30,7 @@ import sample.tencent.matrix.zp.data.IssuesTagNum;
 import sample.tencent.matrix.zp.event.MessageEventChangeMainTab;
 import sample.tencent.matrix.zp.event.MessageEventChangeMainTabCategory;
 import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
+import sample.tencent.matrix.zp.ui.startups.StartupInfosFragment;
 import sample.tencent.matrix.zp.utils.TimeUtils;
 
 public class InfosFragment extends BaseFragment<MainFragmentViewModel>
