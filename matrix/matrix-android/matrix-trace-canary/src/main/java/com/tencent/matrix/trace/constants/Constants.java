@@ -38,7 +38,7 @@ public class Constants {
     public static final int DEFAULT_INPUT_EXPIRED_TIME = 500;
     public static final int DEFAULT_ANR = 5 * 1000;//anr 5s
     public static final int DEFAULT_NORMAL_LAG = 2 * 1000;//lag 消息 2s
-    public static final int DEFAULT_IDLE_HANDLER_LAG = 2 * 1000;
+    public static final int DEFAULT_IDLE_HANDLER_LAG = 2 * 1000;//IDLE_HANDLER_LAG idlehandler超时阈值2s
     public static final int DEFAULT_ANR_INVALID = 6 * 1000;//无效anr，anr倒计时线程，没有在5s唤醒
     public static final long DEFAULT_FRAME_DURATION = 16666667L;//一帧时间
 
