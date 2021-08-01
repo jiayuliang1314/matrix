@@ -54,20 +54,16 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
         setContentView(R.layout.test_trace);
         IssueFilter.setCurrentFilter(IssueFilter.ISSUE_TRACE);
 
-        Plugin plugin = Matrix.with().getPluginByClass(TracePlugin.class);
-        if (!plugin.isPluginStarted()) {
-            MatrixLog.i(TAG, "plugin-trace start");
-            plugin.start();
-        }
+
         //FPS 帧率检测窗口
         decorator = FrameDecorator.getInstance(this);
         if (!canDrawOverlays()) {
-            requestWindowPermission();
+            requestWindowPermission();//
         } else {
             decorator.show();
         }
 
-        AppActiveMatrixDelegate.INSTANCE.addListener(this);
+        AppActiveMatrixDelegate.INSTANCE.addListener(this);//onForeground
     }
 
 
@@ -91,12 +87,13 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
         Plugin plugin = Matrix.with().getPluginByClass(TracePlugin.class);
         if (plugin.isPluginStarted()) {
             MatrixLog.i(TAG, "plugin-trace stop");
+            //这里调用了stop，注意此处
             plugin.stop();
         }
         if (canDrawOverlays()) {
             decorator.dismiss();
         }
-        AppActiveMatrixDelegate.INSTANCE.removeListener(this);
+        AppActiveMatrixDelegate.INSTANCE.removeListener(this);//onForeground
     }
 
     private boolean canDrawOverlays() {
@@ -146,6 +143,7 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
         }
     }
 
+    //region 耗时方法
     private void A() {//11s
         B();//380
         H();//56
@@ -205,6 +203,7 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
     private void L() {
         SystemClock.sleep(10000);
     }
+    //endregion
 
     private boolean isStop = false;
 

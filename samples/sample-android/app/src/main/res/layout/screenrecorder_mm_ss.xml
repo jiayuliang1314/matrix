@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/iz"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/screenrecorder_bg">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/t_"
+        android:layout_width="34.0dip"
+        android:layout_height="34.0dip"
+        android:layout_marginLeft="18.0dip"
+        android:layout_marginTop="3.0dip"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="3.0dip"
+        android:padding="8.0dip"
+        app:srcCompat="@drawable/screenrecorder_h9" />
+
+    <TextView
+        android:id="@+id/sv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/t_"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="14.0dip"
+        android:textColor="@color/screenrecorder_bd"
+        android:textSize="16.0sp" />
+
+    <TextView
+        android:id="@+id/pro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15.0dip"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/sv"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:paddingStart="8.0dip"
+        android:paddingEnd="8.0dip"
+        android:singleLine="true"
+        android:text="@string/screenrecorder_ne"
+        android:textAllCaps="true"
+        android:visibility="gone"
+        android:textColor="@color/screenrecorder_au"
+        android:textSize="12.0sp" />
+
+
+</RelativeLayout>

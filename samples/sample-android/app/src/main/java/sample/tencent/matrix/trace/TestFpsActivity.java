@@ -88,6 +88,9 @@ public class TestFpsActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        MatrixLog.i(TAG, "onCreate");
+
         //一个列表
         setContentView(R.layout.test_fps_layout);
         //过滤问题
@@ -134,6 +137,7 @@ public class TestFpsActivity extends Activity {
         super.onDestroy();
         MatrixLog.i(TAG, "[onDestroy] count:" + count + " time:" + (System.currentTimeMillis() - time) + "");
         Matrix.with().getPluginByClass(TracePlugin.class).getFrameTracer().removeListener(mDoFrameListener);
+        //这里调用了getFrameTracer的onCloseTrace，注意此处
         Matrix.with().getPluginByClass(TracePlugin.class).getFrameTracer().onCloseTrace();
     }
 }

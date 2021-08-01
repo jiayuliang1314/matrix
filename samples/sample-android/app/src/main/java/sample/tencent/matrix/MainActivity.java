@@ -30,6 +30,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.tencent.matrix.Matrix;
+import com.tencent.matrix.plugin.Plugin;
+import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.view.FrameDecorator;
 import com.tencent.matrix.util.MatrixLog;
 
@@ -60,6 +63,11 @@ public class MainActivity extends AppCompatActivity {
         testTrace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Plugin plugin = Matrix.with().getPluginByClass(TracePlugin.class);
+                if (!plugin.isPluginStarted()) {
+                    MatrixLog.i(TAG, "plugin-trace start");
+                    plugin.start();
+                }
                 Intent intent = new Intent(MainActivity.this, TestTraceMainActivity.class);
                 startActivity(intent);
             }
