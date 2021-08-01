@@ -1,2 +1,3 @@
 1.掉帧10s才上报，clicfg_matrix_trace_fps_time_slice  ？ 所有时间累计，算上本来的16ms，总共超时帧所占时间，如果没超过16ms，则是16ms
-2.热启动，冷启动                                     ？ ok
+2.热启动，冷启动                                     ？ ok https://github.com/Tencent/matrix/issues/628
+3.startup 热启动慢会传方法堆栈吗

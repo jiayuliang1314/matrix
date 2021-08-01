@@ -64,14 +64,12 @@ import static android.os.SystemClock.uptimeMillis;
  * <p>
  * applicationCost 通过ActivityThreadHacker获取
  * firstScreenCost
- *
+ * <p>
+ * https://www.jianshu.com/p/eb3b410cce49
+ * https://blog.csdn.net/laizixingxingdewo/article/details/78927861
+ * <p>
  * 1、冷启动：当启动应用时，后台没有该应用的进程，这时系统会重新创建一个新的进程分配给该应用，这个启动方式就是冷启动。
  * 2、热启动：当启动应用时，后台已有该应用的进程（例：按back键、home键，应用虽然会退出，但是该应用的进程是依然会保留在后台，可进入任务列表查看），所以在已有进程的情况下，这种启动会从已有的进程中来启动应用，这个方式叫热启动。
- *
- * ————————————————
- * 版权声明：本文为CSDN博主「Mr1_liu」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
- * 原文链接：https://blog.csdn.net/laizixingxingdewo/article/details/78927861
- * </p>
  */
 
 public class StartupTracer extends Tracer implements IAppMethodBeatListener, ActivityThreadHacker.IApplicationCreateListener, Application.ActivityLifecycleCallbacks {
@@ -127,7 +125,7 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
         super.onAlive();
         MatrixLog.i(TAG, "[onAlive] isStartupEnable:%s", isStartupEnable);
         if (isStartupEnable) {
-            AppMethodBeat.getInstance().addListener(this);
+            AppMethodBeat.getInstance().addListener(this);//onActivityFocused为了回调这个方法
             Matrix.with().getApplication().registerActivityLifecycleCallbacks(this);
         }
     }
@@ -136,7 +134,7 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
     protected void onDead() {
         super.onDead();
         if (isStartupEnable) {
-            AppMethodBeat.getInstance().removeListener(this);
+            AppMethodBeat.getInstance().removeListener(this);//onActivityFocused为了回调这个方法
             Matrix.with().getApplication().unregisterActivityLifecycleCallbacks(this);
         }
     }
@@ -146,6 +144,7 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
         if (!isHasActivity) {
             long applicationCost = ActivityThreadHacker.getApplicationCost();
             MatrixLog.i(TAG, "onApplicationCreateEnd, applicationCost:%d", applicationCost);
+            //if there not have activity,so,application cost is all cost
             analyse(applicationCost, 0, applicationCost, false);
         }
     }
@@ -179,16 +178,18 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
 
             // 若firstScreenCost为初始值0，则说明这是第一个获取焦点的Activity，记录时间差为首屏启动耗时
             if (firstScreenCost == 0) {
+//                 **** 带splash的情况，第一步
                 this.firstScreenCost = uptimeMillis() - ActivityThreadHacker.getEggBrokenTime();
             }
 
             // 若已经展示过了首屏Activity，则此Activity是真正的MainActivity，记录此时时间差为冷启动耗时
             if (hasShowSplashActivity) {
+                //  **** 带splash的情况，第三步
                 coldCost = uptimeMillis() - ActivityThreadHacker.getEggBrokenTime();
             } else {
                 // 若还没有展示过首屏Activity
                 if (splashActivities.contains(activityName)) {
-                    // 且声明的首屏Activity列表中包含此Activity，则设置标志位
+                    // 且声明的首屏Activity列表中包含此Activity，则设置标志位 **** 带splash的情况，第二步
                     hasShowSplashActivity = true;
                 } else if (splashActivities.isEmpty()) { //
                     // process which is has activity but not main UI process
@@ -245,8 +246,8 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
         if (!isWarmStartUp && allCost >= coldStartupThresholdMs) { // for cold startup
             data = AppMethodBeat.getInstance().copyData(ActivityThreadHacker.sApplicationCreateBeginMethodIndex);
             ActivityThreadHacker.sApplicationCreateBeginMethodIndex.release();
-
-        } else if (isWarmStartUp && allCost >= warmStartupThresholdMs) {
+        } else if (isWarmStartUp && allCost >= warmStartupThresholdMs) {//for warm startup
+            //这里会有问题吧？sLastLaunchActivityMethodIndex IndexRecord的isValid为false吧？
             data = AppMethodBeat.getInstance().copyData(ActivityThreadHacker.sLastLaunchActivityMethodIndex);
             ActivityThreadHacker.sLastLaunchActivityMethodIndex.release();
         }
@@ -260,22 +261,25 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
     // ActivityLifecycleCallbacks onActivityCreated首先被调用
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-        MatrixLog.i(TAG, "activeActivityCount:%d, coldCost:%d", activeActivityCount, coldCost);
-        if (activeActivityCount == 0 && coldCost > 0) {
+        MatrixLog.i(TAG, "onActivityCreated before activeActivityCount:%d, coldCost:%d " + activity.getLocalClassName(), activeActivityCount, coldCost);
+        if (activeActivityCount == 0 && coldCost > 0) {//这个情况说明是热启动
             lastCreateActivity = uptimeMillis();
             MatrixLog.i(TAG, "lastCreateActivity:%d, activity:%s", lastCreateActivity, activity.getClass().getName());
             isWarmStartUp = true;
         }
         activeActivityCount++;
+        //一直是true，记录时间
         if (isShouldRecordCreateTime) {
             createdTimeMap.put(activity.getClass().getName() + "@" + activity.hashCode(), uptimeMillis());
         }
+        MatrixLog.i(TAG, "onActivityCreated after activeActivityCount:%d, coldCost:%d " + activity.getLocalClassName(), activeActivityCount, coldCost);
     }
 
     @Override
     public void onActivityDestroyed(Activity activity) {
-        MatrixLog.i(TAG, "activeActivityCount:%d", activeActivityCount);
+        MatrixLog.i(TAG, "onActivityDestroyed before activeActivityCount:%d " + activity.getLocalClassName(), activeActivityCount);
         activeActivityCount--;
+        MatrixLog.i(TAG, "onActivityDestroyed after activeActivityCount:%d " + activity.getLocalClassName(), activeActivityCount);
     }
 
     @Override
