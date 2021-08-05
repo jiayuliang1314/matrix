@@ -1,0 +1,13 @@
+https://mp.weixin.qq.com/s/3dubi2GVW_rVFZZztCpsKg
+
+SyncBarrierWatchDogPlus
+package com.tencent.matrix.f;
+    multiProcessMMKV = MultiProcessMMKV.getDefault();
+    str = "clicfg_detect_syncbarrier_leak";
+    bool1 = multiProcessMMKV.decodeBool(str, false);
+    if (bool1) {
+      String str1 = "MatrixDelegate";
+      str = "SyncBarrierWatchDogPlus start";
+      Log.i(str1, str);
+      a.aAO();
+    }
