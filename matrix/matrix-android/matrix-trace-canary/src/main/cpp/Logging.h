@@ -34,7 +34,7 @@ namespace Logging {
 
 static constexpr const char *kLogTag = "MatrixTracer";
 
-#if defined(__GNUC__)
+#if defined(__GNUC__)       //todo
 __attribute__((__format__(printf, 1, 2)))
 #endif
 static inline void ALOGV(const char *fmt, ...) {

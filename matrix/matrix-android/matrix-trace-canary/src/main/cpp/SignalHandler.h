@@ -25,22 +25,30 @@
 
 namespace MatrixTracer {
 
-class SignalHandler {
- public:
-    SignalHandler();
-    virtual ~SignalHandler();
+    class SignalHandler {
+    public:
+        SignalHandler();
 
- protected:
-    enum Result { NOT_HANDLED = 0, HANDLED, HANDLED_NO_RETRIGGER };
-    virtual Result handleSignal(int sig, const siginfo_t *info, void *uc) = 0;
+        virtual ~SignalHandler();//析构函数：
+//    当一个类的对象离开作用域时，析构函数将被调用(系统自动调用)。析构函数的名字和类名一样，不过要在前面加上 ~ 。
+//    对一个类来说，只能允许一个析构函数，析构函数不能有参数，并且也没有返回值。
+//    析构函数的作用是完成一个清理工作，如释放从堆中分配的内存。
 
- private:
-    static void signalHandler(int sig, siginfo_t* info, void* uc);
-    static bool installHandlersLocked();
+    protected:
+        enum Result {
+            NOT_HANDLED = 0, HANDLED, HANDLED_NO_RETRIGGER
+        };//retrigger
+        virtual Result handleSignal(int sig, const siginfo_t *info, void *uc) = 0;
 
-    SignalHandler(const SignalHandler &) = delete;
-    SignalHandler &operator= (const SignalHandler &) = delete;
-};
+    private:
+        static void signalHandler(int sig, siginfo_t *info, void *uc);
+
+        static bool installHandlersLocked();
+
+        //https://blog.csdn.net/lmb1612977696/article/details/80035487
+        SignalHandler(const SignalHandler &) = delete;//禁止生成该函数，默认拷贝构造函数
+        SignalHandler &operator=(const SignalHandler &) = delete;//禁止生成该函数，默认赋值函数
+    };
 
 }   // namespace MatrixTracer
 

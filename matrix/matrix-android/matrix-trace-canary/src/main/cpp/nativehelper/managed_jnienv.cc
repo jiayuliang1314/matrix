@@ -30,21 +30,25 @@ namespace JniInvocation {
     static pthread_once_t g_onceInitTls = PTHREAD_ONCE_INIT;
     static pthread_key_t g_tlsJavaEnv;
 
-    void init(JavaVM *vm) {
+    void init(JavaVM *vm) {//ok
         if (g_VM) return;
         g_VM = vm;
     }
 
-    JavaVM *getJavaVM() {
+    JavaVM *getJavaVM() {//ok
         return g_VM;
     }
 
     JNIEnv *getEnv() {
         JNIEnv *env;
+        //JavaVM通过JavaVM来获取JNIEnv
         int ret = g_VM->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
+        //获取不成功
         if (ret != JNI_OK) {
-            pthread_once(&g_onceInitTls, []() {
-                pthread_key_create(&g_tlsJavaEnv, [](void *d) {
+//            本函数使用初值为PTHREAD_ONCE_INIT的once_control变量保证init_routine()函数在本进程执行序列中仅执行一次。
+            pthread_once(&g_onceInitTls, []() {//todo
+                //在线程内部，私有数据可以被各个函数访问。但他对其他线程是屏蔽的。
+                pthread_key_create(&g_tlsJavaEnv, [](void *d) {//todo
                     if (d && g_VM)
                         g_VM->DetachCurrentThread();
                 });

@@ -17,6 +17,7 @@
 // Author: leafjia@tencent.com
 //
 // managed_jnienv.h
+//Invocation (向神或权威人士的)求助; 祈祷; 调用; 启用;
 
 #ifndef LAGDETECTOR_LAG_DETECTOR_MAIN_CPP_NATIVEHELPER_MANAGED_JNIENV_H_
 #define LAGDETECTOR_LAG_DETECTOR_MAIN_CPP_NATIVEHELPER_MANAGED_JNIENV_H_

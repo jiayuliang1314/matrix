@@ -48,46 +48,51 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 public class SignalAnrTracer extends Tracer {
+    //region 参数
     private static final String TAG = "SignalAnrTracer";
-
+    //检测anr线程名字
+    //监控到SIGQUIT后，我们在20秒内（20秒是ANR dump的timeout时间）不断轮询自己是否有NOT_RESPONDING flag
+    //一旦发现有这个flag，那么马上就可以认定发生了一次ANR。
     private static final String CHECK_ANR_STATE_THREAD_NAME = "Check-ANR-State-Thread";
+    //检测NOT_RESPONDING flag间隔时间
     private static final int CHECK_ERROR_STATE_INTERVAL = 500;
+    //dump最长时间20s
     private static final int ANR_DUMP_MAX_TIME = 20000;
+    //检测error次数
     private static final int CHECK_ERROR_STATE_COUNT =
             ANR_DUMP_MAX_TIME / CHECK_ERROR_STATE_INTERVAL;
+    //前台消息，超时2s的时候，说明卡住了
     private static final long FOREGROUND_MSG_THRESHOLD = -2000;
+    //后台消息，超时2s的时候，说明卡住了
     private static final long BACKGROUND_MSG_THRESHOLD = -10000;
-    private static boolean currentForeground = false;
-    private static String sAnrTraceFilePath = "";
-    private static String sPrintTraceFilePath = "";
-    private static SignalAnrDetectedListener sSignalAnrDetectedListener;
-    private static Application sApplication;
-    private static boolean hasInit = false;
+    //是否hasInstance
     public static boolean hasInstance = false;
+    //是否是前台状态
+    private static boolean currentForeground = false;
+    //anr trace 文件路径
+    private static String sAnrTraceFilePath = "";
+    //    这个Hook Trace的方案，不仅仅可以用来查ANR问题，任何时候我们都可以手动向自己发送一个SIGQUIT信号，
+//    从而hook到当时的Trace。Trace的内容对于我们排查线程死锁，线程异常，耗电等问题都非常有帮助。
+    //打印trace 文件路径 ，自己触发的
+    private static String sPrintTraceFilePath = "";
+    //监听
+    private static SignalAnrDetectedListener sSignalAnrDetectedListener;
+    //sApplication
+    private static Application sApplication;
+    //是否初始化了
+    private static boolean hasInit = false;
+    //anr发生时间，负值
     private static long anrMessageWhen = 0L;
+    //anr发生时主线程处理的消息
     private static String anrMessageString = "";
+    //endregion
 
     static {
+        //加载trace-canary lib
         System.loadLibrary("trace-canary");
     }
 
-    @Override
-    protected void onAlive() {
-        super.onAlive();
-        if (!hasInit) {
-            nativeInitSignalAnrDetective(sAnrTraceFilePath, sPrintTraceFilePath);
-            AppForegroundUtil.INSTANCE.init();
-            hasInit = true;
-        }
-
-    }
-
-    @Override
-    protected void onDead() {
-        super.onDead();
-        nativeFreeSignalAnrDetective();
-    }
-
+    //region 构造函数
     public SignalAnrTracer(TraceConfig traceConfig) {
         hasInstance = true;
         sAnrTraceFilePath = traceConfig.anrTraceFilePath;
@@ -105,24 +110,30 @@ public class SignalAnrTracer extends Tracer {
         sPrintTraceFilePath = printTraceFilePath;
         sApplication = application;
     }
+    //endregion
 
-    public void setSignalAnrDetectedListener(SignalAnrDetectedListener listener) {
-        sSignalAnrDetectedListener = listener;
-    }
-
-
+    /**
+     * AnrDumper.cc里 handleSignal
+     */
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Keep
     private static void onANRDumped() {
+        //是否是前台
         currentForeground = AppForegroundUtil.isInterestingToUser();
+        //是否是主线程堵塞了，需要report
         boolean needReport = isMainThreadBlocked();
 
+        //有两种情况，主线程消息已经堵住了，或者开启一个线程检测状态 NOT_RESPONDING
+        //需要report
         if (needReport) {
             report(false);
         } else {
+//            监控到SIGQUIT后，我们在20秒内（20秒是ANR dump的timeout时间）不断轮询自己是否有NOT_RESPONDING flag
+//            ，一旦发现有这个flag，那么马上就可以认定发生了一次ANR。
             new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    //开启了一个线程检查
                     checkErrorStateCycle();
                 }
             }, CHECK_ANR_STATE_THREAD_NAME).start();
@@ -137,6 +148,7 @@ public class SignalAnrTracer extends Tracer {
             MatrixLog.e(TAG, "onANRDumpTrace error: %s", t.getMessage());
         }
     }
+    //endregion
 
     @Keep
     private static void onPrintTrace() {
@@ -147,6 +159,9 @@ public class SignalAnrTracer extends Tracer {
         }
     }
 
+    /**
+     * @param fromProcessErrorState false代表主线程阻塞了
+     */
     private static void report(boolean fromProcessErrorState) {
         try {
             String stackTrace = Utils.getMainThreadJavaStackTrace();
@@ -180,7 +195,7 @@ public class SignalAnrTracer extends Tracer {
         }
     }
 
-
+    //通过消息时间，来判断是否到超出阈值
     @RequiresApi(api = Build.VERSION_CODES.M)
     private static boolean isMainThreadBlocked() {
         try {
@@ -208,9 +223,9 @@ public class SignalAnrTracer extends Tracer {
         return false;
     }
 
-
     private static void checkErrorStateCycle() {
         int checkErrorStateCount = 0;
+        //开启一个循环检测
         while (checkErrorStateCount < CHECK_ERROR_STATE_COUNT) {
             try {
                 checkErrorStateCount++;
@@ -228,15 +243,20 @@ public class SignalAnrTracer extends Tracer {
         }
     }
 
+    //用来判断anr发生了
+//    在ANR弹窗前，会执行到makeAppNotRespondingLocked方法中，在这里会给发生ANR进程标记一个NOT_RESPONDING的flag。
+//    而这个flag我们可以通过ActivityManager来获取：
     private static boolean checkErrorState() {
         try {
             Application application =
                     sApplication == null ? Matrix.with().getApplication() : sApplication;
             ActivityManager am = (ActivityManager) application
                     .getSystemService(Context.ACTIVITY_SERVICE);
-
+            //从ActivityManager 获取ProcessErrorStateInfo
             List<ActivityManager.ProcessErrorStateInfo> procs = am.getProcessesInErrorState();
-            if (procs == null) return false;
+            if (procs == null) {
+                return false;
+            }
 
             for (ActivityManager.ProcessErrorStateInfo proc : procs) {
                 MatrixLog.i(TAG, "[checkErrorState] found Error State proccessName = %s, proc.condition = %d", proc.processName, proc.condition);
@@ -251,7 +271,7 @@ public class SignalAnrTracer extends Tracer {
                 if (proc.condition != ActivityManager.ProcessErrorStateInfo.NOT_RESPONDING) {
                     continue;
                 }
-
+                //只有是自己进程，并且是NOT_RESPONDING的时候，才返回true
                 return true;
             }
             return false;
@@ -261,6 +281,7 @@ public class SignalAnrTracer extends Tracer {
         return false;
     }
 
+    //ok
     public static void printTrace() {
         if (!hasInstance) {
             MatrixLog.e(TAG, "SignalAnrTracer has not been initialize");
@@ -278,6 +299,29 @@ public class SignalAnrTracer extends Tracer {
     private static native void nativeFreeSignalAnrDetective();
 
     private static native void nativePrintTrace();
+
+    @Override
+    protected void onAlive() {
+        super.onAlive();
+        if (!hasInit) {
+            //调用native方法启动监听
+            nativeInitSignalAnrDetective(sAnrTraceFilePath, sPrintTraceFilePath);
+            //主要用来判断是否是前台
+            AppForegroundUtil.INSTANCE.init();
+            hasInit = true;
+        }
+    }
+
+    @Override
+    protected void onDead() {
+        super.onDead();
+        //free anr检测
+        nativeFreeSignalAnrDetective();
+    }
+
+    public void setSignalAnrDetectedListener(SignalAnrDetectedListener listener) {
+        sSignalAnrDetectedListener = listener;
+    }
 
     public interface SignalAnrDetectedListener {
         void onAnrDetected(String stackTrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState);
