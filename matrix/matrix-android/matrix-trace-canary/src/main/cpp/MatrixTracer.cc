@@ -65,25 +65,29 @@ static int signalCatcherTid;                //signalCatcherTid的线程id
 //一个结构体，用来保存java层 类，方法地址
 static struct StacktraceJNI {
     jclass AnrDetective;                    //SignalAnrTracer
-    jclass ThreadPriorityDetective;
+    jclass ThreadPriorityDetective;         //ThreadPriorityTracer
     jmethodID AnrDetector_onANRDumped;      //SignalAnrTracer 里的
     jmethodID AnrDetector_onANRDumpTrace;   //SignalAnrTracer 里的
     jmethodID AnrDetector_onPrintTrace;     //SignalAnrTracer 里的
 
-    jmethodID ThreadPriorityDetective_onMainThreadPriorityModified;
-    jmethodID ThreadPriorityDetective_onMainThreadTimerSlackModified;
+    jmethodID ThreadPriorityDetective_onMainThreadPriorityModified;     //修改了优先级
+    jmethodID ThreadPriorityDetective_onMainThreadTimerSlackModified;   //修改了TimerSlack
 } gJ;
 
 //region MainThreadPriorityModified相关的东西
+//原来的方法句柄
 int (*original_setpriority)(int __which, id_t __who, int __priority);
 
 int my_setpriority(int __which, id_t __who, int __priority) {
-
+    //优先级<=0的时候不上报
     if (__priority <= 0) {
         return original_setpriority(__which, __who, __priority);
     }
+    //其他情况上报
+//    首先我们需要确保住主线程优先级不被设置的过低，hook系统调用setpriority，如果对主线程设置过低的优先级（过高的nice值），则直接报错：
     if (__who == 0 && getpid() == gettid()) {
         JNIEnv *env = JniInvocation::getEnv();
+
         env->CallStaticVoidMethod(gJ.ThreadPriorityDetective,
                                   gJ.ThreadPriorityDetective_onMainThreadPriorityModified,
                                   __priority);
@@ -100,6 +104,7 @@ int my_setpriority(int __which, id_t __who, int __priority) {
 int (*original_prctl)(int option, unsigned long arg2, unsigned long arg3,
                       unsigned long arg4, unsigned long arg5);
 
+//我们还hook了设置TimerSlack的prctl方法，确保主线程的TimerSlack值不被设置的过大：
 int my_prctl(int option, unsigned long arg2, unsigned long arg3,
              unsigned long arg4, unsigned long arg5) {
 
@@ -325,8 +330,10 @@ static void nativeFreeSignalAnrDetective(JNIEnv *env, jclass) {
 
 //region MainThreadPriority相关 ，先不看
 static void nativeInitMainThreadPriorityDetective(JNIEnv *env, jclass) {
+    //setpriority是修改priority的
     xhook_register(".*\\.so$", "setpriority", (void *) my_setpriority,
                    (void **) (&original_setpriority));
+    //修改TimerSlack的prctl方法
     xhook_register(".*\\.so$", "prctl", (void *) my_prctl, (void **) (&original_prctl));
     xhook_refresh(true);
 }
@@ -385,11 +392,14 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     env->DeleteLocalRef(anrDetectiveCls);
 
 
+//    ThreadPriorityTracer
     jclass threadPriorityDetectiveCls = env->FindClass(
             "com/tencent/matrix/trace/tracer/ThreadPriorityTracer");
     if (!threadPriorityDetectiveCls)
         return -1;
+    //保存java类
     gJ.ThreadPriorityDetective = static_cast<jclass>(env->NewGlobalRef(threadPriorityDetectiveCls));
+    //java方法
     gJ.ThreadPriorityDetective_onMainThreadPriorityModified =
             env->GetStaticMethodID(threadPriorityDetectiveCls, "onMainThreadPriorityModified",
                                    "(I)V");
@@ -397,7 +407,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
             env->GetStaticMethodID(threadPriorityDetectiveCls, "onMainThreadTimerSlackModified",
                                    "(J)V");
 
-
+    //让java可以调用native的nativeInitMainThreadPriorityDetective
     if (env->RegisterNatives(
             threadPriorityDetectiveCls, THREAD_PRIORITY_METHODS,
             static_cast<jint>(NELEM(THREAD_PRIORITY_METHODS))) != 0)
