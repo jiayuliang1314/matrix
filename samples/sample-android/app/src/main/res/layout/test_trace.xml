@@ -13,7 +13,7 @@
         android:layout_marginTop="16dp"
         android:minWidth="200dp"
         android:onClick="testFps"
-        android:text="Monitor FPS"
+        android:text="Monitor FPS ok"
         style="@style/EntryButton" />
 
     <Button
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:onClick="testEnter"
-        android:text="Monitor Activity Startup Duration"
+        android:text="Monitor Activity Startup Duration ok"
         style="@style/EntryButton" />
 
     <Button
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:onClick="testANR"
-        android:text="Catch ANR"
+        android:text="Catch ANR Looper Anr ok"
         style="@style/EntryButton" />
 
 <!--    <Button-->
@@ -59,7 +59,7 @@
         android:layout_marginTop="16dp"
         android:minWidth="200dp"
         android:onClick="testPrintTrace"
-        android:text="Print Trace"
+        android:text="Print Trace ok只是打印trace"
         style="@style/EntryButton" />
 
     <Button
@@ -69,7 +69,7 @@
         android:layout_marginTop="16dp"
         android:minWidth="200dp"
         android:onClick="testSignalANR"
-        android:text="Catch ANR Signal"
+        android:text="Catch ANR Signal 三星s8手机上没有发生anr"
         style="@style/EntryButton" />
 
     <TextView

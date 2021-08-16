@@ -137,7 +137,7 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
 
     public void testSignalANR(final View view) {
         try {
-            Thread.sleep(20000);
+            Thread.sleep(30000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
