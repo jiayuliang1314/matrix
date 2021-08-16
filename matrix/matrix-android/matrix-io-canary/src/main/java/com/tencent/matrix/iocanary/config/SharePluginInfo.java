@@ -41,12 +41,12 @@ public class SharePluginInfo {
     public static final String ISSUE_FILE_PATH            = "path";
     public static final String ISSUE_FILE_SIZE            = "size";
     public static final String ISSUE_FILE_COST_TIME       = "cost";
-    public static final String ISSUE_FILE_STACK           = "stack";
+    public static final String ISSUE_FILE_STACK           = "stack";//todo？ IOCanaryUtil.getThrowableStack(throwable)
     public static final String ISSUE_FILE_OP_TIMES        = "op";
     public static final String ISSUE_FILE_BUFFER          = "buffer";
     public static final String ISSUE_FILE_THREAD          = "thread";
     public static final String ISSUE_FILE_READ_WRITE_TYPE = "opType";
-    public static final String ISSUE_FILE_OP_SIZE         = "opSize";
+    public static final String ISSUE_FILE_OP_SIZE         = "opSize";//todo？
 
     public static final String ISSUE_FILE_REPEAT_COUNT = "repeat";
 }

@@ -166,7 +166,7 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
             if (!isReflectLoggingError) {
                 //拿到originPrinter
                 originPrinter = ReflectUtils.get(looper.getClass(), "mLogging", looper);
-                if (originPrinter == printer && null != printer) {//不是很清楚这个？？？ todo 干哈的
+                if (originPrinter == printer && null != printer) {//已经代理了，不用再设置了
                     return;
                 }
                 // Fix issues that printer loaded by different classloader

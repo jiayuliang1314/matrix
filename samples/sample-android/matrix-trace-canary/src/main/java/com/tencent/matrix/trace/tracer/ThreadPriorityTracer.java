@@ -41,6 +41,7 @@ public class ThreadPriorityTracer extends Tracer {
     @Override
     protected void onAlive() {
         super.onAlive();
+        //初始化，开启hook
         nativeInitMainThreadPriorityDetective();
     }
 
@@ -55,6 +56,10 @@ public class ThreadPriorityTracer extends Tracer {
 
     private static native void nativeInitMainThreadPriorityDetective();
 
+    /**
+     * 修改了优先级
+     * @param priority
+     */
     @Keep
     private static void onMainThreadPriorityModified(int priority) {
         try {
@@ -87,6 +92,10 @@ public class ThreadPriorityTracer extends Tracer {
         }
     }
 
+    /**
+     * 修改了timerslack
+     * @param timerSlack
+     */
     @Keep
     private static void onMainThreadTimerSlackModified(long timerSlack) {
         try {

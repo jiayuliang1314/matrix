@@ -57,9 +57,13 @@ public class IdleHandlerLagTracer extends Tracer {
     @Override
     public void onAlive() {
         super.onAlive();
+        //如果支持isIdleHandlerEnable
         if (traceConfig.isIdleHandlerEnable()) {
+            //新建一个HandlerThread，一个新线程检测是否超时处理
             idleHandlerLagHandlerThread = new HandlerThread("IdleHandlerLagThread");
+            //idleHanlderLagRunnable是一个Runnable
             idleHanlderLagRunnable = new IdleHandlerLagRunable();
+            //开启检测
             detectIdleHandler();
         }
     }
@@ -68,6 +72,7 @@ public class IdleHandlerLagTracer extends Tracer {
     public void onDead() {
         super.onDead();
         if (traceConfig.isIdleHandlerEnable()) {
+            //取消检测
             idleHandlerLagHandler.removeCallbacksAndMessages(null);
         }
     }
@@ -76,6 +81,7 @@ public class IdleHandlerLagTracer extends Tracer {
         @Override
         public void run() {
             try {
+//                如果执行了，则说明出问题了，IdleHandler执行超时2s
                 TracePlugin plugin = Matrix.with().getPluginByClass(TracePlugin.class);
                 if (null == plugin) {
                     return;
@@ -111,13 +117,15 @@ public class IdleHandlerLagTracer extends Tracer {
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
                 return;
             }
+            //通过反射获取主线程MessageQueue里的mIdleHandlers
             MessageQueue mainQueue = Looper.getMainLooper().getQueue();
             Field field = MessageQueue.class.getDeclaredField("mIdleHandlers");
             field.setAccessible(true);
             MyArrayList<MessageQueue.IdleHandler> myIdleHandlerArrayList = new MyArrayList<>();
+            //将MessageQueue里的mIdleHandlers替换为myIdleHandlerArrayList，代理模式
             field.set(mainQueue, myIdleHandlerArrayList);
-            idleHandlerLagHandlerThread.start();
-            idleHandlerLagHandler = new Handler(idleHandlerLagHandlerThread.getLooper());
+            idleHandlerLagHandlerThread.start();//开启检测线程
+            idleHandlerLagHandler = new Handler(idleHandlerLagHandlerThread.getLooper());//获取检测线程的handler
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -133,8 +141,11 @@ public class IdleHandlerLagTracer extends Tracer {
 
         @Override
         public boolean queueIdle() {
+            //代理模式，对原有方法增强
+            //在方法开始的时候，放出了一个idleHanlderLagRunnable，2s之后执行，执行了说明超时了
             idleHandlerLagHandler.postDelayed(idleHanlderLagRunnable, Constants.DEFAULT_IDLE_HANDLER_LAG);
             boolean ret = this.idleHandler.queueIdle();
+            //idleHandlerLagHandler清除idleHanlderLagRunnable
             idleHandlerLagHandler.removeCallbacks(idleHanlderLagRunnable);
             return ret;
         }
@@ -145,7 +156,9 @@ public class IdleHandlerLagTracer extends Tracer {
 
         @Override
         public boolean add(Object o) {
+            //重写add方法
             if (o instanceof MessageQueue.IdleHandler) {
+                //封装为代理的MyIdleHandler，并放入一个map里
                 MyIdleHandler myIdleHandler = new MyIdleHandler((MessageQueue.IdleHandler) o);
                 map.put((MessageQueue.IdleHandler) o, myIdleHandler);
                 return super.add(myIdleHandler);
@@ -156,6 +169,7 @@ public class IdleHandlerLagTracer extends Tracer {
         @Override
         public boolean remove(@Nullable Object o) {
             if (o instanceof MyIdleHandler) {
+                //如果是我们的，则从map里删除
                 MessageQueue.IdleHandler idleHandler = ((MyIdleHandler) o).idleHandler;
                 map.remove(idleHandler);
                 return super.remove(o);

@@ -21,7 +21,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
 
 import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.trace.constants.Constants;
@@ -36,37 +35,42 @@ import java.util.Set;
 
 public class AppMethodBeat implements BeatLifecycle {
 
+    public interface MethodEnterListener {
+        void enter(int method, long threadId);
+    }
+
     private static final String TAG = "Matrix.AppMethodBeat";
+    public static boolean isDev = false;
+    private static AppMethodBeat sInstance = new AppMethodBeat();//单例模式
     private static final int STATUS_DEFAULT = Integer.MAX_VALUE;//状态
     private static final int STATUS_STARTED = 2;
     private static final int STATUS_READY = 1;
     private static final int STATUS_STOPPED = -1;
     private static final int STATUS_EXPIRED_START = -2; //15秒之后，查看是否没有启动，如果没有启动则设置状态为STATUS_EXPIRED_START
     private static final int STATUS_OUT_RELEASE = -3;   //release 状态，15s之后调用，检查是否STATUS_DEFAULT,如果是则释放
-    private final static Object statusLock = new Object();//锁
-    private static final int METHOD_ID_MAX = 0xFFFFF;
-    public static final int METHOD_ID_DISPATCH = METHOD_ID_MAX - 1;
-    private static final HashSet<IAppMethodBeatListener> listeners = new HashSet<>();//onActivityFocused的监听
-    private static final Object updateTimeLock = new Object();//锁
-    public static boolean isDev = false;
-    public static MethodEnterListener sMethodEnterListener;
-    private static final AppMethodBeat sInstance = new AppMethodBeat();//单例模式
+
     private static volatile int status = STATUS_DEFAULT;
+    private final static Object statusLock = new Object();//锁
+    public static MethodEnterListener sMethodEnterListener;
     private static long[] sBuffer = new long[Constants.BUFFER_SIZE];//sMethodEnterListener
     private static int sIndex = 0;//要存入的位置
     private static int sLastIndex = -1;//上个节点
     private static boolean assertIn = false;
     private volatile static long sCurrentDiffTime = SystemClock.uptimeMillis();// 从开机到现在的毫秒数（手机睡眠的时间不包括在内）
-    private static final long sDiffTime = sCurrentDiffTime;
-    private static final long sMainThreadId = Looper.getMainLooper().getThread().getId();//主线程id
-    private static final HandlerThread sTimerUpdateThread = MatrixHandlerThread.getNewHandlerThread("matrix_time_update_thread", Thread.MIN_PRIORITY + 2);
-    private static final Handler sHandler = new Handler(sTimerUpdateThread.getLooper());//时间是维护在单独一个线程里，每5ms刷新
-    private static final Set<String> sFocusActivitySet = new HashSet<>();//处于可见状态的activity
+    private volatile static long sDiffTime = sCurrentDiffTime;
+    private static long sMainThreadId = Looper.getMainLooper().getThread().getId();//主线程id
+    private static HandlerThread sTimerUpdateThread = MatrixHandlerThread.getNewHandlerThread("matrix_time_update_thread", Thread.MIN_PRIORITY + 2);
+    private static Handler sHandler = new Handler(sTimerUpdateThread.getLooper());//时间是维护在单独一个线程里，每5ms刷新
+    private static final int METHOD_ID_MAX = 0xFFFFF;
+    public static final int METHOD_ID_DISPATCH = METHOD_ID_MAX - 1;
+    private static Set<String> sFocusActivitySet = new HashSet<>();//处于可见状态的activity
+    private static final HashSet<IAppMethodBeatListener> listeners = new HashSet<>();//onActivityFocused的监听
+    private static final Object updateTimeLock = new Object();//锁
     private static volatile boolean isPauseUpdateTime = false;//暂停更新时间
     //realExecute 之后15秒还没掉用onStart，设置状态为STATUS_EXPIRED_START
     private static Runnable checkStartExpiredRunnable = null;
     //looper监控
-    private static final LooperMonitor.LooperDispatchListener looperMonitorListener = new LooperMonitor.LooperDispatchListener() {
+    private static LooperMonitor.LooperDispatchListener looperMonitorListener = new LooperMonitor.LooperDispatchListener() {
         @Override
         public boolean isValid() {
             return status >= STATUS_READY;
@@ -86,10 +90,22 @@ public class AppMethodBeat implements BeatLifecycle {
             AppMethodBeat.dispatchEnd();
         }
     };
+
+    // 15s之后调用，检查是否STATUS_DEFAULT,如果是则释放
+    static {
+        sHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //15s之后调用，检查是否STATUS_DEFAULT,如果是则释放
+                realRelease();
+            }
+        }, Constants.DEFAULT_RELEASE_BUFFER_DELAY);
+    }
+
     /**
      * update time runnable
      */
-    private static final Runnable sUpdateDiffTimeRunnable = new Runnable() {
+    private static Runnable sUpdateDiffTimeRunnable = new Runnable() {
         @Override
         public void run() {
             try {
@@ -107,22 +123,51 @@ public class AppMethodBeat implements BeatLifecycle {
             }
         }
     };
-    private static IndexRecord sIndexRecordHead = null;
-
-    // 15s之后调用，检查是否STATUS_DEFAULT,如果是则释放
-    static {
-        sHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //15s之后调用，检查是否STATUS_DEFAULT,如果是则释放
-                realRelease();
-            }
-        }, Constants.DEFAULT_RELEASE_BUFFER_DELAY);
-    }
 
     public static AppMethodBeat getInstance() {
         return sInstance;
     }
+
+    @Override
+    public void onStart() {
+        //        这个时候status应该是STATUS_READY 1
+        synchronized (statusLock) {
+            if (status < STATUS_STARTED && status >= STATUS_EXPIRED_START) {
+                sHandler.removeCallbacks(checkStartExpiredRunnable);//检查是否过期
+                if (sBuffer == null) {
+                    throw new RuntimeException(TAG + " sBuffer == null");
+                }
+                MatrixLog.i(TAG, "[onStart] preStatus:%s", status, Utils.getStack());
+                status = STATUS_STARTED;
+            } else {
+                MatrixLog.w(TAG, "[onStart] current status:%s", status);
+            }
+        }
+    }
+
+    @Override
+    public void onStop() {
+        synchronized (statusLock) {
+            if (status == STATUS_STARTED) {
+                MatrixLog.i(TAG, "[onStop] %s", Utils.getStack());
+                status = STATUS_STOPPED;
+            } else {
+                MatrixLog.w(TAG, "[onStop] current status:%s", status);
+            }
+        }
+    }
+
+    public void forceStop() {
+        synchronized (statusLock) {
+            status = STATUS_STOPPED;
+        }
+    }
+
+    @Override
+    public boolean isAlive() {
+        return status >= STATUS_STARTED;
+    }
+
 
     public static boolean isRealTrace() {
         return status >= STATUS_READY;
@@ -255,7 +300,7 @@ public class AppMethodBeat implements BeatLifecycle {
 
     /**
      * when the special method calls,it's will be called.
-     * <p>
+     *
      * called after {@link #i(int)}
      *
      * @param activity now at which activity
@@ -279,7 +324,7 @@ public class AppMethodBeat implements BeatLifecycle {
         }
     }
 
-    //获取可见的activity，todo
+    //获取可见的activity
     public static String getVisibleScene() {
         return AppActiveMatrixDelegate.INSTANCE.getVisibleScene();
     }
@@ -307,67 +352,6 @@ public class AppMethodBeat implements BeatLifecycle {
         sLastIndex = index;
     }
 
-    //IndexRecord是一个链表
-    //校验用，指的是100万个缓存用了一遍了，头尾相撞了，让链表头部往前挪
-    private static void checkPileup(int index) {//pileup 相撞
-        IndexRecord indexRecord = sIndexRecordHead;
-        while (indexRecord != null) {
-            if (indexRecord.index == index || (indexRecord.index == -1 && sLastIndex == Constants.BUFFER_SIZE - 1)) {
-                indexRecord.isValid = false;
-                MatrixLog.w(TAG, "[checkPileup] %s", indexRecord.toString());
-                //让链表头部往前挪
-                sIndexRecordHead = indexRecord = indexRecord.next;
-            } else {
-                break;
-            }
-        }
-    }
-
-    //从开机到现在的毫秒数（手机睡眠的时间不包括在内）；
-    public static long getDiffTime() {
-        return sDiffTime;
-    }
-
-    @Override
-    public void onStart() {
-        //        这个时候status应该是STATUS_READY 1
-        synchronized (statusLock) {
-            if (status < STATUS_STARTED && status >= STATUS_EXPIRED_START) {
-                sHandler.removeCallbacks(checkStartExpiredRunnable);//检查是否过期
-                if (sBuffer == null) {
-                    throw new RuntimeException(TAG + " sBuffer == null");
-                }
-                MatrixLog.i(TAG, "[onStart] preStatus:%s", status, Utils.getStack());
-                status = STATUS_STARTED;
-            } else {
-                MatrixLog.w(TAG, "[onStart] current status:%s", status);
-            }
-        }
-    }
-
-    @Override
-    public void onStop() {
-        synchronized (statusLock) {
-            if (status == STATUS_STARTED) {
-                MatrixLog.i(TAG, "[onStop] %s", Utils.getStack());
-                status = STATUS_STOPPED;
-            } else {
-                MatrixLog.w(TAG, "[onStop] current status:%s", status);
-            }
-        }
-    }
-
-    public void forceStop() {
-        synchronized (statusLock) {
-            status = STATUS_STOPPED;
-        }
-    }
-
-    @Override
-    public boolean isAlive() {
-        return status >= STATUS_STARTED;
-    }
-
     public void addListener(IAppMethodBeatListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
@@ -379,6 +363,8 @@ public class AppMethodBeat implements BeatLifecycle {
             listeners.remove(listener);
         }
     }
+
+    private static IndexRecord sIndexRecordHead = null;
 
     //链表相关操作
     public IndexRecord maskIndex(String source) {
@@ -416,6 +402,61 @@ public class AppMethodBeat implements BeatLifecycle {
         }
     }
 
+    //IndexRecord是一个链表
+    //校验用，指的是100万个缓存用了一遍了，头尾相撞了，让链表头部往前挪
+    private static void checkPileup(int index) {//pileup 相撞
+        IndexRecord indexRecord = sIndexRecordHead;
+        while (indexRecord != null) {
+            if (indexRecord.index == index || (indexRecord.index == -1 && sLastIndex == Constants.BUFFER_SIZE - 1)) {
+                indexRecord.isValid = false;
+                MatrixLog.w(TAG, "[checkPileup] %s", indexRecord.toString());
+                //让链表头部往前挪
+                sIndexRecordHead = indexRecord = indexRecord.next;
+            } else {
+                break;
+            }
+        }
+    }
+
+    public static final class IndexRecord {
+        public IndexRecord(int index) {
+            this.index = index;
+        }
+
+        public IndexRecord() {
+            this.isValid = false;
+        }
+
+        public int index;
+        private IndexRecord next;
+        public boolean isValid = true;
+        public String source;
+
+        public void release() {
+            isValid = false;
+            IndexRecord record = sIndexRecordHead;
+            IndexRecord last = null;
+            while (null != record) {
+                if (record == this) {
+                    if (null != last) {
+                        last.next = record.next;
+                    } else {
+                        sIndexRecordHead = record.next;
+                    }
+                    record.next = null;
+                    break;
+                }
+                last = record;
+                record = record.next;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "index:" + index + ",\tisValid:" + isValid + " source:" + source;
+        }
+    }
+
     //为什么是-1
     public long[] copyData(IndexRecord startRecord) {
         return copyData(startRecord, new IndexRecord(sIndex - 1));
@@ -425,7 +466,6 @@ public class AppMethodBeat implements BeatLifecycle {
         long current = System.currentTimeMillis();
         long[] data = new long[0];
         try {
-            Log.i("MatrixJia", "startRecord.isValid " + startRecord.isValid);
             if (startRecord.isValid && endRecord.isValid) {
                 int length;
                 int start = Math.max(0, startRecord.index);//这里和0比较了一下
@@ -455,6 +495,11 @@ public class AppMethodBeat implements BeatLifecycle {
         }
     }
 
+    //从开机到现在的毫秒数（手机睡眠的时间不包括在内）；
+    public static long getDiffTime() {
+        return sDiffTime;
+    }
+
     public void printIndexRecord() {
         StringBuilder ss = new StringBuilder(" \n");
         IndexRecord record = sIndexRecordHead;
@@ -463,47 +508,6 @@ public class AppMethodBeat implements BeatLifecycle {
             record = record.next;
         }
         MatrixLog.i(TAG, "[printIndexRecord] %s", ss.toString());
-    }
-
-    public interface MethodEnterListener {
-        void enter(int method, long threadId);
-    }
-
-    public static final class IndexRecord {
-        public int index;
-        public boolean isValid = true;
-        public String source;
-        private IndexRecord next;
-        public IndexRecord(int index) {
-            this.index = index;
-        }
-        public IndexRecord() {
-            this.isValid = false;
-        }
-
-        public void release() {
-            isValid = false;
-            IndexRecord record = sIndexRecordHead;
-            IndexRecord last = null;
-            while (null != record) {
-                if (record == this) {
-                    if (null != last) {
-                        last.next = record.next;
-                    } else {
-                        sIndexRecordHead = record.next;
-                    }
-                    record.next = null;
-                    break;
-                }
-                last = record;
-                record = record.next;
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "index:" + index + ",\tisValid:" + isValid + " source:" + source;
-        }
     }
 
 }

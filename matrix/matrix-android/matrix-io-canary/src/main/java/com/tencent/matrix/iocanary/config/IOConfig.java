@@ -27,22 +27,23 @@ import com.tencent.mrs.plugin.IDynamicConfig;
 public final class IOConfig {
     private static final String TAG = "Matrix.IOConfig";
 
-    private static final int DEFAULT_FILE_MAIN_THREAD_TRIGGER_THRESHOLD = 500;
+    private static final int DEFAULT_FILE_MAIN_THREAD_TRIGGER_THRESHOLD = 500;//主线程读写文件超过500ms
     /**
      * We take 4096B(4KB) as a small size of the buffer
      */
-    private static final int DEFAULT_FILE_BUFFER_SMALL_THRESHOLD        = 4096;
+    private static final int DEFAULT_FILE_BUFFER_SMALL_THRESHOLD        = 4096;//4kb，每次读取
     /**
-     * If the count of the operation(read/write) with a small buffer, the size of which is smaller than {@link #DEFAULT_FILE_BUFFER_SMALL_THRESHOLD},
+     * If the count of the operation(read/write) with a small buffer,
+     * the size of which is smaller than {@link #DEFAULT_FILE_BUFFER_SMALL_THRESHOLD},
      * is over SMALL_BUFFER_OP_TIMES_LIMIT, a issue is published
      */
-    private static final int DEFAULT_FILE_BUFFER_SMALL_OP_TIMES         = 20;
-    private static final int DEFAULT_FILE_REPEAT_READ_TIMES_THRESHOLD   = 5;
+    private static final int DEFAULT_FILE_BUFFER_SMALL_OP_TIMES         = 20;   //小buffer操作阈值20次
+    private static final int DEFAULT_FILE_REPEAT_READ_TIMES_THRESHOLD   = 5;    //文件重复读阈值 是5次
 
-    private static final boolean DEFAULT_DETECT_MIAN_THREAD_FILE_IO     = true;
-    private static final boolean DEFAULT_DETECT_SMALL_BUFFER            = true;
-    private static final boolean DEFAULT_DETECT_REPEAT_READ_SAME_FILE   = true;
-    private static final boolean DEFAULT_DETECT_CLOSABLE_LEAK           = true;
+    private static final boolean DEFAULT_DETECT_MIAN_THREAD_FILE_IO     = true;//主线程文件读写
+    private static final boolean DEFAULT_DETECT_SMALL_BUFFER            = true;//检测读写文件的buffer小
+    private static final boolean DEFAULT_DETECT_REPEAT_READ_SAME_FILE   = true;//检测重复读一个文件
+    private static final boolean DEFAULT_DETECT_CLOSABLE_LEAK           = true;//检测closeable 泄漏，没有及时关闭
     private static final boolean DETECT_NETWORK_IO_IN_MAIN_THREAD       = true;
     private static final boolean DETECT_CURSOR_LEAK                     = true;
 
@@ -74,19 +75,22 @@ public final class IOConfig {
     }
 
 
-    //value
+    //value 500ms
     public int getFileMainThreadTriggerThreshold() {
         return mDynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_io_main_thread_enable_threshold.name(), DEFAULT_FILE_MAIN_THREAD_TRIGGER_THRESHOLD);
     }
 
+    //4k
     public int getFileBufferSmallThreshold() {
         return mDynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_io_small_buffer_threshold.name(), DEFAULT_FILE_BUFFER_SMALL_THRESHOLD);
     }
 
+    //20
     public int getFilBufferSmallOpTimes() {
         return mDynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_io_small_buffer_operator_times.name(), DEFAULT_FILE_BUFFER_SMALL_OP_TIMES);
     }
 
+    //5次读
     public int getFileRepeatReadThreshold() {
         return mDynamicConfig.get(IDynamicConfig.ExptEnum.clicfg_matrix_io_repeated_read_threshold.name(), DEFAULT_FILE_REPEAT_READ_TIMES_THRESHOLD);
     }

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.4.1)
-
+#名字
 project(TraceCanary)
-
+#路径
 include_directories(src/main/cpp)
-
+#名字和文件
 add_library(trace-canary
             SHARED
         src/main/cpp/MatrixTracer.cc
@@ -15,7 +15,7 @@ add_library(trace-canary
 
 TARGET_INCLUDE_DIRECTORIES(trace-canary PRIVATE ${EXT_DEP}/include)
 
-
+#使用的库，log相关
 find_library( log-lib
               log )
 

@@ -324,7 +324,7 @@ public class AppMethodBeat implements BeatLifecycle {
         }
     }
 
-    //获取可见的activity，todo
+    //获取可见的activity
     public static String getVisibleScene() {
         return AppActiveMatrixDelegate.INSTANCE.getVisibleScene();
     }

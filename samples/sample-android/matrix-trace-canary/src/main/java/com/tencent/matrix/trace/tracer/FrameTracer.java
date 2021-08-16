@@ -21,7 +21,6 @@ import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.util.Log;
 
 import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.Matrix;
@@ -173,8 +172,6 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
             }
             //掉帧数量
             droppedSum += dropFrame;
-            Log.i("FrameTracer", "notifyListener jiter " + jiter);
-            Log.i("FrameTracer", "dropFrame " + dropFrame);
             //所有时间
             durationSum += Math.max(jiter, frameIntervalNs);
 
@@ -222,7 +219,6 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
     //region ActivityLifecycleCallbacks ok
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-        MatrixLog.i(TAG, "onActivityCreated " + activity.getLocalClassName());
 
     }
 
@@ -327,7 +323,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
 
     private class FrameCollectItem {
         String visibleScene;    //activity
-        long sumFrameCost;      //所有时间累计，算上本来的16ms，总共超时帧所占时间，如果没超过16ms，则是16ms
+        long sumFrameCost;      //超时时间累计，算上本来的16ms，总共超时帧所占时间
         int sumFrame = 0;       //帧数
         int sumDroppedFrames;   //超时帧累计
         // record the level of frames dropped each time
@@ -343,8 +339,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         void collect(int droppedFrames) {
             float frameIntervalCost = 1f * UIThreadMonitor.getMonitor().getFrameIntervalNanos()
                     / Constants.TIME_MILLIS_TO_NANO;//16ms
-            sumFrameCost += (droppedFrames + 1) * frameIntervalCost;//这个地方+1为什么,droppedFrames为0的时候，
-            // 如果没超过16ms，则是16ms
+            sumFrameCost += (droppedFrames + 1) * frameIntervalCost;//这个地方+1为什么
             sumDroppedFrames += droppedFrames;
             sumFrame++;
             if (droppedFrames >= frozenThreshold) {
