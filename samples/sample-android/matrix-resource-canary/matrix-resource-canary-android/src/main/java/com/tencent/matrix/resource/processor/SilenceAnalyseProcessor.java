@@ -67,9 +67,15 @@ public class SilenceAnalyseProcessor extends BaseLeakProcessor {
         getWatcher().getResourcePlugin().getApplication().unregisterReceiver(mReceiver);
     }
 
+    /**
+     *
+     * @param activity
+     * @param refString mKey就是key
+     * @return
+     */
     private boolean onLeak(final String activity, final String refString) {
         MatrixLog.i(TAG, "[onLeak] activity=%s isScreenOff=%s isProcessing=%s", activity, isScreenOff, isProcessing);
-        //leak监听过了
+        //在silent模式下支持isPublished，但是不保存文件的，在ActivityRefWatcher里只有NO_DUMP，AUTO_DUMP才支持保存到文件
         if (getWatcher().isPublished(activity)) {
             MatrixLog.i(TAG, "this activity has been dumped! %s", activity);
             return true;
@@ -83,7 +89,7 @@ public class SilenceAnalyseProcessor extends BaseLeakProcessor {
             boolean res = dumpAndAnalyse(activity, refString);
 
             if (res) {
-                //又将leak删除了，因为在silent模式下不支持isPublished，在ActivityRefWatcher里只有NO_DUMP，AUTO_DUMP才支持
+                //在ActivityRefWatcher里只有NO_DUMP，AUTO_DUMP才支持保存到文件，所以这里传了false
                 getWatcher().markPublished(activity, false);
             }
 
@@ -94,7 +100,7 @@ public class SilenceAnalyseProcessor extends BaseLeakProcessor {
         return false;
     }
 
-    // todo analyse
+    // todo analyse refString mKey就是key
     private boolean dumpAndAnalyse(String activity, String refString) {
 
         long dumpBegin = System.currentTimeMillis();
