@@ -33,6 +33,8 @@ import java.util.Set;
 
 public class TraceConfig implements IDefaultConfig {
     private static final String TAG = "Matrix.TraceConfig";
+    public static final int STACK_STYLE_SIMPLE = 0;
+    public static final int STACK_STYLE_WHOLE = 1;
     public boolean defualtIdleHandlerEnable;
     public IDynamicConfig dynamicConfig;    //动态配置
     public boolean defaultFpsEnable;        //是否开启fps
@@ -43,6 +45,7 @@ public class TraceConfig implements IDefaultConfig {
     public boolean isDebug;
     public boolean isDevEnv;
     public boolean defaultSignalAnrEnable;
+    public int stackStyle = STACK_STYLE_SIMPLE;
     public boolean defaultMainThreadPriorityTraceEnable;
     public String splashActivities;         //闪屏activity，用;链接
     public Set<String> splashActivitiesSet; //闪屏activity set
@@ -88,6 +91,11 @@ public class TraceConfig implements IDefaultConfig {
 
     public boolean isDevEnv() {
         return isDevEnv;
+    }
+
+    @Override
+    public int getLooperPrinterStackStyle() {
+        return stackStyle;
     }
 
     @Override
@@ -237,6 +245,11 @@ public class TraceConfig implements IDefaultConfig {
             return this;
         }
 
+        public Builder looperPrinterStackStyle(int stackStyle) {
+            config.stackStyle = stackStyle;
+            return this;
+        }
+
         public Builder enableSignalAnrTrace(boolean enable) {
             config.defaultSignalAnrEnable = enable;
             return this;
@@ -286,6 +299,7 @@ public class TraceConfig implements IDefaultConfig {
             config.defaultMainThreadPriorityTraceEnable = enable;
             return this;
         }
+
 
         public TraceConfig build() {
             return config;

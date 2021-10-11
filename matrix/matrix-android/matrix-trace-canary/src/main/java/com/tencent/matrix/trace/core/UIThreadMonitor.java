@@ -237,25 +237,30 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         if (config.isDevEnv()) {//用于devenv记录时间打log用
             traceBegin = System.nanoTime();//用于devenv记录时间打log用
         }
-        long startNs = token;
-        long intendedFrameTimeNs = startNs;
-        if (isVsyncFrame) {
-            doFrameEnd(token);
-            intendedFrameTimeNs = getIntendedFrameTimeNs(startNs);//如果是vsyncframe的话，intendedFrameTimeNs代表vsync 帧的校对时间
-        }
 
-        long endNs = System.nanoTime();
+        if (config.isFPSEnable()) {
+            long startNs = token;
+            long intendedFrameTimeNs = startNs;
+            if (isVsyncFrame) {
+                doFrameEnd(token);
+                intendedFrameTimeNs = getIntendedFrameTimeNs(startNs);//如果是vsyncframe的话，intendedFrameTimeNs代表vsync 帧的校对时间
+            }
 
-        synchronized (observers) {
-            for (LooperObserver observer : observers) {
-                if (observer.isDispatchBegin()) {
-                    observer.doFrame(AppMethodBeat.getVisibleScene(), startNs, endNs, isVsyncFrame, intendedFrameTimeNs, queueCost[CALLBACK_INPUT], queueCost[CALLBACK_ANIMATION], queueCost[CALLBACK_TRAVERSAL]);
+            long endNs = System.nanoTime();
+
+            synchronized (observers) {
+                for (LooperObserver observer : observers) {
+                    if (observer.isDispatchBegin()) {
+                        observer.doFrame(AppMethodBeat.getVisibleScene(), startNs, endNs, isVsyncFrame, intendedFrameTimeNs, queueCost[CALLBACK_INPUT], queueCost[CALLBACK_ANIMATION], queueCost[CALLBACK_TRAVERSAL]);
+                    }
                 }
             }
         }
 
-        dispatchTimeMs[3] = SystemClock.currentThreadTimeMillis();
-        dispatchTimeMs[1] = System.nanoTime();
+        if (config.isEvilMethodTraceEnable() || config.isDevEnv()) {
+            dispatchTimeMs[3] = SystemClock.currentThreadTimeMillis();
+            dispatchTimeMs[1] = System.nanoTime();
+        }
 
         AppMethodBeat.o(AppMethodBeat.METHOD_ID_DISPATCH);
 
@@ -266,6 +271,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
                 }
             }
         }
+
         this.isVsyncFrame = false;
 
         if (config.isDevEnv()) {//用于devenv记录时间打log用
