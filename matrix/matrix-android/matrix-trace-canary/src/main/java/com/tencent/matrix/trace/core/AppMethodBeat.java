@@ -407,11 +407,21 @@ public class AppMethodBeat implements BeatLifecycle {
     //链表相关操作
     public IndexRecord maskIndex(String source) {
         if (sIndexRecordHead == null) {
-            sIndexRecordHead = new IndexRecord(sIndex - 1);//为什么是-1？因为sIndex表示要存入的位置，这里还没有数据，最初sIndex为0，sIndex-1为-1，copyData的时候和0比较了下
+            //为什么是-1？
+            // 1.UIThreadMonitor 的dispatchBegin会 调用 AppMethodBeat.i(AppMethodBeat.METHOD_ID_DISPATCH);打个点
+            // 2.EvilMethodTracer的dispatchBegin会maskIndex("EvilMethodTracer#dispatchBegin")
+            //   LooperAnrTrace的dispatchBegin会maskIndex("AnrTracer#dispatchBegin")
+            // 3.为了将METHOD_ID_DISPATCH算入进去这里需要-1
+            sIndexRecordHead = new IndexRecord(sIndex - 1);
             sIndexRecordHead.source = source;
             return sIndexRecordHead;
         } else {
-            IndexRecord newRecord = new IndexRecord(sIndex - 1);//为什么是-1？因为sIndex表示要存入的位置，这里还没有数据，最初sIndex为0，sIndex-1为-1，copyData的时候和0比较了下
+            //为什么是-1？
+            // 1.UIThreadMonitor 的dispatchBegin会 调用 AppMethodBeat.i(AppMethodBeat.METHOD_ID_DISPATCH);打个点
+            // 2.EvilMethodTracer的dispatchBegin会maskIndex("EvilMethodTracer#dispatchBegin")
+            //   LooperAnrTrace的dispatchBegin会maskIndex("AnrTracer#dispatchBegin")
+            // 3.为了将METHOD_ID_DISPATCH算入进去这里需要-1
+            IndexRecord newRecord = new IndexRecord(sIndex - 1);//为什么是-1？，最初sIndex为0，sIndex-1为-1，copyData的时候和0比较了下
             newRecord.source = source;
             //a.1 最初还没满
             //b.1 假如sIndexRecordHead在中间100位置，sIndex-1在1000吧
