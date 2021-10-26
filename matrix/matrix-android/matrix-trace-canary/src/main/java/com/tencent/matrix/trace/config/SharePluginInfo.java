@@ -32,27 +32,35 @@ public class SharePluginInfo {
     public static final String ISSUE_DROP_LEVEL = "dropLevel";  //掉帧程度
     public static final String ISSUE_DROP_SUM = "dropSum";      //掉帧数量
     public static final String ISSUE_FPS = "fps";               //帧率
-    public static final String ISSUE_SUM_TASK_FRAME = "dropTaskFrameSum";
-    public static final String ISSUE_TRACE_STACK = "stack";
-    public static final String ISSUE_THREAD_STACK = "threadStack";
-    public static final String ISSUE_PROCESS_PRIORITY = "processPriority";
-    public static final String ISSUE_PROCESS_TIMER_SLACK = "processTimerSlack";
+    public static final String ISSUE_SUM_TASK_FRAME = "dropTaskFrameSum";//没有用到
+    public static final String ISSUE_TRACE_STACK = "stack";         //耗时方法堆栈
+    public static final String ISSUE_THREAD_STACK = "threadStack";  //主线程堆栈
+    public static final String ISSUE_PROCESS_PRIORITY = "processPriority";//进程优先级
+    public static final String ISSUE_PROCESS_TIMER_SLACK = "processTimerSlack";//todo
     //使用nice value（以下成为nice值）来设定一个进程的优先级，系统任务调度器根据nice值合理安排调度。
 //    nice的值越大，进程的优先级就越低，获得CPU调用的机会越少，nice值越小，进程的优先级则越高，获得CPU调用的机会越多。
     public static final String ISSUE_PROCESS_NICE = "processNice";//https://blog.csdn.net/caonima0001112/article/details/50379738
-    public static final String ISSUE_PROCESS_FOREGROUND = "isProcessForeground";
-    public static final String ISSUE_STACK_KEY = "stackKey";
-    public static final String ISSUE_MEMORY = "memory";
-    public static final String ISSUE_MEMORY_NATIVE = "native_heap";
-    public static final String ISSUE_MEMORY_DALVIK = "dalvik_heap";
-    public static final String ISSUE_MEMORY_VM_SIZE = "vm_size";
-    public static final String ISSUE_COST = "cost";
-    public static final String ISSUE_CPU_USAGE = "usage";
-    public static final String ISSUE_STACK_TYPE = "detail";
-    public static final String ISSUE_IS_WARM_START_UP = "is_warm_start_up";
-    public static final String ISSUE_SUB_TYPE = "subType";
-    public static final String STAGE_APPLICATION_CREATE = "application_create";
-    public static final String STAGE_APPLICATION_CREATE_SCENE = "application_create_scene";
-    public static final String STAGE_FIRST_ACTIVITY_CREATE = "first_activity_create";
-    public static final String STAGE_STARTUP_DURATION = "startup_duration";
+    public static final String ISSUE_PROCESS_FOREGROUND = "isProcessForeground";//是否是前台
+    public static final String ISSUE_STACK_KEY = "stackKey";                    //主要耗时方法的id
+    public static final String ISSUE_MEMORY = "memory";             //LooperAnrTracer anr发生的时候内存状况
+    public static final String ISSUE_MEMORY_NATIVE = "native_heap"; //todo https://blog.csdn.net/gemmem/article/details/8920039?utm_source=tuicoolhttps://blog.csdn.net/gemmem/article/details/8920039?utm_source=tuicool
+    public static final String ISSUE_MEMORY_DALVIK = "dalvik_heap"; //todo
+    public static final String ISSUE_MEMORY_VM_SIZE = "vm_size";    //todo
+    public static final String ISSUE_COST = "cost";         //耗时
+    public static final String ISSUE_CPU_USAGE = "usage";   //cpu占比时间 todo EvilMethodTracer
+    //                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.NORMAL);
+    //                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.LAG_IDLE_HANDLER);
+    //                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.ANR);
+    //                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.LAG);
+    //            jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.SIGNAL_ANR);
+    //            jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.STARTUP);
+    //            jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.PRIORITY_MODIFIED);
+    //            jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.TIMERSLACK_MODIFIED);
+    public static final String ISSUE_STACK_TYPE = "detail"; //问题类型 todo 需要修改
+    public static final String ISSUE_IS_WARM_START_UP = "is_warm_start_up";     //热启动还是冷启动
+    public static final String ISSUE_SUB_TYPE = "subType";                      //冷启动还是热启动
+    public static final String STAGE_APPLICATION_CREATE = "application_create";             //应用创建
+    public static final String STAGE_APPLICATION_CREATE_SCENE = "application_create_scene"; //应用创建的第一个组件
+    public static final String STAGE_FIRST_ACTIVITY_CREATE = "first_activity_create";       //第一个activity启动时间
+    public static final String STAGE_STARTUP_DURATION = "startup_duration";                 //启动时间，冷或者热
 }

@@ -16,7 +16,7 @@
 
 package com.tencent.matrix.trace.config;
 
-//ok 没有引用
+//ok 没有引用，用于修复SharePreferences导致的anr问题
 public class IssueFixConfig {
     private final static IssueFixConfig sInstance = new IssueFixConfig();
     private boolean enableFixSpApply;
