@@ -34,7 +34,7 @@ import java.util.HashSet;
 
 /**
  * 通过LooperMonitor监听ui线程的消息分发，vsync同步也是消息的一种，将结果通过LooperObserver分发出去
- * 通过往编舞者Choreographer ALLBACK_INPUT、CALLBACK_ANIMATION、CALLBACK_TRAVERSAL三种类型的CallbackQueue
+ * 通过往编舞者Choreographer CALLBACK_INPUT、CALLBACK_ANIMATION、CALLBACK_TRAVERSAL三种类型的CallbackQueue
  * 里添加Runnable，即UIThreadMonitor，当UIThreadMonitor的run被调用了说明这个消息是vsync消息
  */
 public class UIThreadMonitor implements BeatLifecycle, Runnable {
@@ -87,7 +87,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     private Method addInputQueue;
     private Method addAnimationQueue;
     private Choreographer choreographer;//Choreographer机制，用于同vsync机制配合，统一动画，输入，绘制时机。
-    private Object vsyncReceiver;       //获取了一个getIntendedFrameTimeNs vsync开始的时间,校对时间
+    private Object vsyncReceiver;       //获取了一个getIntendedFrameTimeNs vsync开始的时间
     private long frameIntervalNanos = 16666666;
     private int[] queueStatus = new int[CALLBACK_LAST + 1];                 //队列状态
     private boolean[] callbackExist = new boolean[CALLBACK_LAST + 1];       //用于标记callback是否添加
@@ -415,7 +415,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     }
     //endregion
 
-    //vsync开始的时间,校对时间
+    //vsync开始的时间,垂直信号时间
     private long getIntendedFrameTimeNs(long defaultValue) {
         try {
             return ReflectUtils.reflectObject(vsyncReceiver, "mTimestampNanos", defaultValue);
@@ -425,7 +425,6 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         }
         return defaultValue;
     }
-
 
     public long getInputEventCost() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

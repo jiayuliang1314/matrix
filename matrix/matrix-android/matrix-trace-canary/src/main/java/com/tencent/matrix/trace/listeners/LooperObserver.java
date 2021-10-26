@@ -42,8 +42,8 @@ public abstract class LooperObserver {
      * @param focusedActivity     activity
      * @param startNs             开始纳秒
      * @param endNs               结束纳秒
-     * @param isVsyncFrame        是否是帧时间
-     * @param intendedFrameTimeNs vsync开始的时间,校对时间
+     * @param isVsyncFrame        是否是垂直同步帧
+     * @param intendedFrameTimeNs vsync开始的时间
      * @param inputCostNs         输入事件耗时
      * @param animationCostNs     动画耗时
      * @param traversalCostNs     绘制耗时

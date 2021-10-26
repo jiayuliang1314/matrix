@@ -58,6 +58,7 @@ public class ActivityThreadHacker {
         try {
             // 记录时间戳，作为应用启用的开始时间
             sApplicationCreateBeginTime = SystemClock.uptimeMillis();
+            //创建一个index
             sApplicationCreateBeginMethodIndex = AppMethodBeat.getInstance().maskIndex("ApplicationCreateBeginMethodIndex");
 //            反射 ActivityThread，接管 Handler
             Class<?> forName = Class.forName("android.app.ActivityThread");
@@ -72,8 +73,9 @@ public class ActivityThreadHacker {
                 Field callbackField = handlerClass.getDeclaredField("mCallback");
                 callbackField.setAccessible(true);
                 Handler.Callback originalCallback = (Handler.Callback) callbackField.get(handler);
-                //Matrix 还会通过反射的方式，接管 ActivityThread 的 Handler 的 Callback：
+                //Matrix 还会通过反射的方式，接管 ActivityThread 的 Handler 的 Callback，创建新的HackCallback
                 HackCallback callback = new HackCallback(originalCallback);
+                //设置为新的HackCallback
                 callbackField.set(handler, callback);
             }
             MatrixLog.i(TAG, "hook system handler completed. start:%s SDK_INT:%s", sApplicationCreateBeginTime, Build.VERSION.SDK_INT);
@@ -165,6 +167,7 @@ public class ActivityThreadHacker {
                 // 如果是第一个启动的 Activity 或 Service 或 Receiver，则以该时间戳作为 Application 启动的结束时间
                 if (isLaunchActivity || msg.what == CREATE_SERVICE
                         || msg.what == RECEIVER) { // todo for provider
+                    //
                     ActivityThreadHacker.sApplicationCreateEndTime = SystemClock.uptimeMillis();
                     ActivityThreadHacker.sApplicationCreateScene = msg.what;
                     isCreated = true;
