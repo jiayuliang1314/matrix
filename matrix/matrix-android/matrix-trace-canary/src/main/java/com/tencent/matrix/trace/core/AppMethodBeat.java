@@ -44,7 +44,7 @@ public class AppMethodBeat implements BeatLifecycle {
     private static final int STATUS_OUT_RELEASE = -3;   //release 状态，15s之后调用，检查是否STATUS_DEFAULT,如果是则释放
     private final static Object statusLock = new Object();//锁
     private static final int METHOD_ID_MAX = 0xFFFFF;
-    public static final int METHOD_ID_DISPATCH = METHOD_ID_MAX - 1;
+    public static final int METHOD_ID_DISPATCH = METHOD_ID_MAX - 1;//1048574
     private static final HashSet<IAppMethodBeatListener> listeners = new HashSet<>();//onActivityFocused的监听
     private static final Object updateTimeLock = new Object();//锁
     private static final AppMethodBeat sInstance = new AppMethodBeat();//单例模式
