@@ -25,7 +25,7 @@ import org.json.JSONObject;
  *
  * Created by zhangshaowen on 2017/8/1.
  */
-
+//ok Issue问题，可以细化todo
 public class Issue {
     private int        type;
     private String     tag;
@@ -61,7 +61,9 @@ public class Issue {
     @Override
     public String toString() {
         String strContent = "";
-        if (null != content) strContent = content.toString();
+        if (null != content) {
+            strContent = content.toString();
+        }
         return String.format("tag[%s]type[%d];key[%s];content[%s]", tag, type, key, strContent);
     }
 

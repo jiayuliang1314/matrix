@@ -19,7 +19,7 @@ package com.tencent.matrix.util;
 /**
  * Created by zhangshaowen on 17/5/17.
  */
-
+//ok
 public class MatrixLog {
     private static MatrixLogImp debugLog = new MatrixLogImp() {
 

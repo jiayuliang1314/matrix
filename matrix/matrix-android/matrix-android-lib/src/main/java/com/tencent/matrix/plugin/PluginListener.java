@@ -21,7 +21,7 @@ import com.tencent.matrix.report.Issue;
 /**
  * Created by zhangshaowen on 17/5/17.
  */
-//
+//PluginListener插件状态监听
 public interface PluginListener {
     void onInit(Plugin plugin);
 

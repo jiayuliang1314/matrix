@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by zhangshaowen on 17/7/5.
  */
-
+//MatrixHandlerThread 开辟了一个单独线程处理，getDefaultHandler，getNewHandlerThread
 public class MatrixHandlerThread {
     private static final String TAG = "Matrix.HandlerThread";
 
@@ -44,9 +44,9 @@ public class MatrixHandlerThread {
      * unite defaultHandlerThread for lightweight work,
      * if you have heavy work checking, you can create a new thread
      */
-    private static volatile HandlerThread defaultHandlerThread;
-    private static volatile Handler defaultHandler;
-    private static volatile Handler defaultMainHandler = new Handler(Looper.getMainLooper());
+    private static volatile HandlerThread defaultHandlerThread;//开辟一个单独线程这个线程支持Handler，Looper.prepare();Looper.loop();
+    private static volatile Handler defaultHandler;//单独线程的Handler
+    private static volatile Handler defaultMainHandler = new Handler(Looper.getMainLooper());//main线程的
     private static HashSet<HandlerThread> handlerThreads = new HashSet<>();
     public static boolean isDebug = false;
 
@@ -54,8 +54,8 @@ public class MatrixHandlerThread {
         return defaultMainHandler;
     }
 
+    //获取默认的HandlerThread
     public static HandlerThread getDefaultHandlerThread() {
-
         synchronized (MatrixHandlerThread.class) {
             if (null == defaultHandlerThread) {
                 defaultHandlerThread = new HandlerThread(MATRIX_THREAD_NAME);

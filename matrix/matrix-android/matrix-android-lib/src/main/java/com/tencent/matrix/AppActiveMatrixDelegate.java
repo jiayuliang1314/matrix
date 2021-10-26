@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 
+//AppActiveMatrixDelegate 监听是否前台，获取场景，这里可以设置fragment名字todo，获取topactivity
 public enum AppActiveMatrixDelegate {
 
     INSTANCE;
@@ -31,9 +32,10 @@ public enum AppActiveMatrixDelegate {
     private String visibleScene = "default";
     private Controller controller = new Controller();
     private boolean isInit = false;
-    private String currentFragmentName;
+    private String currentFragmentName;//todo
     private Handler handler;
 
+    //step 1 init，注册了controller
     public void init(Application application) {
         if (isInit) {
             MatrixLog.e(TAG, "has inited!");
@@ -66,6 +68,7 @@ public enum AppActiveMatrixDelegate {
         return visibleScene;
     }
 
+    //step 3
     private void onDispatchForeground(String visibleScene) {
         if (isAppForeground || !isInit) {
             return;
@@ -86,6 +89,7 @@ public enum AppActiveMatrixDelegate {
 
     }
 
+    //step 4
     private void onDispatchBackground(String visibleScene) {
         if (!isAppForeground || !isInit) {
             return;
@@ -125,6 +129,7 @@ public enum AppActiveMatrixDelegate {
     }
 
 
+    //step 2
     private final class Controller implements Application.ActivityLifecycleCallbacks, ComponentCallbacks2 {
 
         @Override
@@ -196,6 +201,7 @@ public enum AppActiveMatrixDelegate {
         visibleScene = ss.toString();
     }
 
+    //获取顶部activity名字
     public static String getTopActivityName() {
         long start = System.currentTimeMillis();
         try {

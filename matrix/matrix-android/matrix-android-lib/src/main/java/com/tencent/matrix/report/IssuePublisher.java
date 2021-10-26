@@ -25,10 +25,11 @@ import java.util.HashSet;
  * @author liyongjie
  *         Created by liyongjie on 2017/6/6.
  */
-
+//IssuePublisher问题发布者，发布给OnIssueDetectListener
 public class IssuePublisher {
 
     private final OnIssueDetectListener    mIssueListener;
+    //用于标记这个问题是否已经发布了
     private final HashSet<String> mPublishedMap;
 
     public interface OnIssueDetectListener {

@@ -31,21 +31,24 @@ import org.json.JSONObject;
 /**
  * Created by zhangshaowen on 17/5/17.
  */
-
+//Plugin 抽象插件实现
 public abstract class Plugin implements IPlugin, IssuePublisher.OnIssueDetectListener, IAppForeground {
     private static final String TAG = "Matrix.Plugin";
 
+    //状态
     public static final int PLUGIN_CREATE = 0x00;
     public static final int PLUGIN_INITED = 0x01;
     public static final int PLUGIN_STARTED = 0x02;
     public static final int PLUGIN_STOPPED = 0x04;
     public static final int PLUGIN_DESTROYED = 0x08;
 
+    //监听器
     private PluginListener pluginListener;
+    //Application
     private Application application;
-
+    //isSupported默认是true
     private boolean isSupported = true;
-
+    //最初是PLUGIN_CREATE
     private int status = PLUGIN_CREATE;
 
     @Override
@@ -56,9 +59,10 @@ public abstract class Plugin implements IPlugin, IssuePublisher.OnIssueDetectLis
         status = PLUGIN_INITED;
         this.application = app;
         this.pluginListener = listener;
-        AppActiveMatrixDelegate.INSTANCE.addListener(this);
+        AppActiveMatrixDelegate.INSTANCE.addListener(this);//用于监听是否是前台会调用onForeground
     }
 
+    //上报问题
     @Override
     public void onDetectIssue(Issue issue) {
         if (issue.getTag() == null) {
@@ -129,7 +133,7 @@ public abstract class Plugin implements IPlugin, IssuePublisher.OnIssueDetectLis
 
     @Override
     public void destroy() {
-        // stop first
+        // destroy前先stop，stop first
         if (isPluginStarted()) {
             stop();
         }
@@ -149,11 +153,13 @@ public abstract class Plugin implements IPlugin, IssuePublisher.OnIssueDetectLis
         return getClass().getName();
     }
 
+    //是否前台监听
     @Override
     public void onForeground(boolean isForeground) {
 
     }
 
+    //是否前台获取
     public boolean isForeground() {
         return AppActiveMatrixDelegate.INSTANCE.isAppForeground();
     }

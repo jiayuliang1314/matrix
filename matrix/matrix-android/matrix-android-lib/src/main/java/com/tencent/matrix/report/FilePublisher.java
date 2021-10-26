@@ -32,7 +32,7 @@ import java.util.HashSet;
 public class FilePublisher extends IssuePublisher {
     private static final String TAG = "Matrix.FilePublisher";
 
-    private final long                     mExpiredTime;//一天过期日期
+    private final long                     mExpiredTime;//过期日期一天
     private final SharedPreferences.Editor mEditor;
     private final HashMap<String, Long>    mPublishedMap;//activity名字和发生泄漏的时间
 

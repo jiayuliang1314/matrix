@@ -29,6 +29,7 @@ import java.util.HashSet;
  * Created by zhangshaowen on 17/5/17.
  */
 
+//Matrix，Builder用于创建，单例模式
 public class Matrix {
     private static final String TAG = "Matrix.Matrix";
 
@@ -59,6 +60,7 @@ public class Matrix {
         return sInstance != null;
     }
 
+    //测试里用了
     public static Matrix init(Matrix matrix) {
         if (matrix == null) {
             throw new RuntimeException("Matrix init, Matrix should not be null.");
@@ -73,6 +75,7 @@ public class Matrix {
         return sInstance;
     }
 
+    //获取实例
     public static Matrix with() {
         if (sInstance == null) {
             throw new RuntimeException("you must init Matrix sdk first");
@@ -125,6 +128,7 @@ public class Matrix {
         return null;
     }
 
+    //创建Matrix的Builder
     public static class Builder {
         private final Application application;
         private PluginListener pluginListener;

@@ -21,7 +21,7 @@ import android.app.Application;
 /**
  * Created by zhangshaowen on 17/5/17.
  */
-
+//IPlugin接口，功能插件需要实现的接口
 public interface IPlugin {
 
     Application getApplication();

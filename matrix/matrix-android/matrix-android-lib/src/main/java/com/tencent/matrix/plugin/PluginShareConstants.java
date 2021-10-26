@@ -18,6 +18,7 @@ package com.tencent.matrix.plugin;
 
 /**
  * Created by zhouzhijie on 2019/3/13.
+ * 没有用到
  */
 public class PluginShareConstants {
     public static class MemoryCanaryShareKeys {
