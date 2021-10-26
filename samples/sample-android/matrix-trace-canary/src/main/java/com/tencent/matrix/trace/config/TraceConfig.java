@@ -33,21 +33,24 @@ import java.util.Set;
 
 public class TraceConfig implements IDefaultConfig {
     private static final String TAG = "Matrix.TraceConfig";
-    public boolean defualtIdleHandlerEnable;
+    public static final int STACK_STYLE_SIMPLE = 0;
+    public static final int STACK_STYLE_WHOLE = 1;
+    public boolean defualtIdleHandlerEnable;//是否开启idlehandler延迟检测
     public IDynamicConfig dynamicConfig;    //动态配置
     public boolean defaultFpsEnable;        //是否开启fps
-    public boolean defaultMethodTraceEnable;//是否开启超时函数检测
+    public boolean defaultMethodTraceEnable;//是否开启超时函数检测 isEvilMethodTraceEnable
     public boolean defaultStartupEnable;    //是否开启启动检测
     public boolean defaultAppMethodBeatEnable = true;//是否开启method埋点
     public boolean defaultAnrEnable;        //是否开启Anr检测
     public boolean isDebug;
     public boolean isDevEnv;
-    public boolean defaultSignalAnrEnable;
-    public boolean defaultMainThreadPriorityTraceEnable;
+    public boolean defaultSignalAnrEnable;//是否开启signalanr检测
+    public int stackStyle = STACK_STYLE_SIMPLE;
+    public boolean defaultMainThreadPriorityTraceEnable;//主线程优先级检测
     public String splashActivities;         //闪屏activity，用;链接
     public Set<String> splashActivitiesSet; //闪屏activity set
-    public String anrTraceFilePath = "";
-    public String printTraceFilePath = "";
+    public String anrTraceFilePath = "";    //anrtrace路径
+    public String printTraceFilePath = "";  //主动打印trace路径
     public boolean isHasActivity;           //是否含有activity
 
     private TraceConfig() {
@@ -88,6 +91,11 @@ public class TraceConfig implements IDefaultConfig {
 
     public boolean isDevEnv() {
         return isDevEnv;
+    }
+
+    @Override
+    public int getLooperPrinterStackStyle() {
+        return stackStyle;
     }
 
     @Override
@@ -237,6 +245,11 @@ public class TraceConfig implements IDefaultConfig {
             return this;
         }
 
+        public Builder looperPrinterStackStyle(int stackStyle) {
+            config.stackStyle = stackStyle;
+            return this;
+        }
+
         public Builder enableSignalAnrTrace(boolean enable) {
             config.defaultSignalAnrEnable = enable;
             return this;
@@ -286,6 +299,7 @@ public class TraceConfig implements IDefaultConfig {
             config.defaultMainThreadPriorityTraceEnable = enable;
             return this;
         }
+
 
         public TraceConfig build() {
             return config;

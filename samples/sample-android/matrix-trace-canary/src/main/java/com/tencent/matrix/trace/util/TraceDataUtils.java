@@ -30,10 +30,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+//ok了
 public class TraceDataUtils {
 
     private static final String TAG = "Matrix.TraceDataUtils";
 
+    // METHOD_ID_DISPATCH 1 2 3 4 5 6 6 5 4 3 2 1 METHOD_ID_DISPATCH
+    // METHOD_ID_DISPATCH 1 2 3 4 5 6 6 5 4 3
+
+    /**
+     *
+     * @param buffer
+     * @param result
+     * @param isStrict 如果堆栈不齐，是否补堆栈，补齐堆栈核心是计算方法时间
+     * @param endTime
+     */
     public static void structuredDataToStack(long[] buffer, LinkedList<MethodItem> result, boolean isStrict, long endTime) {
         long lastInId = 0L;
         int depth = 0;
@@ -63,22 +74,29 @@ public class TraceDataUtils {
                 depth++;
                 rawData.push(trueId);
             } else {
+                //6
                 int outMethodId = getMethodId(trueId);
+                //METHOD_ID_DISPATCH 1 2 3 4 5 6
                 if (!rawData.isEmpty()) {
+                    //6
                     long in = rawData.pop();
                     depth--;
                     int inMethodId;
                     LinkedList<Long> tmp = new LinkedList<>();
+                    //tmp add 6，tmp 6
                     tmp.add(in);
+                    //6==6，不满足这个条件
                     while ((inMethodId = getMethodId(in)) != outMethodId && !rawData.isEmpty()) {
+                        //找到和outMethodId一致的in
                         MatrixLog.w(TAG, "pop inMethodId[%s] to continue match ouMethodId[%s]", inMethodId, outMethodId);
                         in = rawData.pop();
                         depth--;
                         tmp.add(in);
                     }
-
+                    //6==6，不满足这个条件
                     if (inMethodId != outMethodId
                             && inMethodId == AppMethodBeat.METHOD_ID_DISPATCH) {
+                        //如果到METHOD_ID_DISPATCH还没找到，则放弃outMethodId方法
                         MatrixLog.e(TAG, "inMethodId[%s] != outMethodId[%s] throw this outMethodId!", inMethodId, outMethodId);
                         rawData.addAll(tmp);
                         depth += rawData.size();
@@ -95,6 +113,7 @@ public class TraceDataUtils {
                         return;
                     }
                     MethodItem methodItem = new MethodItem(outMethodId, (int) during, depth);
+                    //添加6方法
                     addMethodItem(result, methodItem);
                 } else {
                     MatrixLog.w(TAG, "[structuredDataToStack] method[%s] not found in! ", outMethodId);
@@ -102,6 +121,7 @@ public class TraceDataUtils {
             }
         }
 
+        //堆栈可能不全，这个时候补堆栈，
         while (!rawData.isEmpty() && isStrict) {
             long trueId = rawData.pop();
             int methodId = getMethodId(trueId);
@@ -113,6 +133,7 @@ public class TraceDataUtils {
                 MatrixLog.e(TAG, "[structuredDataToStack] why has out Method[%s]? is wrong! ", methodId);
                 continue;
             }
+            //核心，计算时间
             MethodItem methodItem = new MethodItem(methodId, (int) (endTime
                     - inTime), rawData.size());
             addMethodItem(result, methodItem);
@@ -207,6 +228,10 @@ public class TraceDataUtils {
      *
      * @param resultStack
      * @return
+     * 
+     *           1
+     *       2        3
+     *     4  5      6 7
      */
     public static int stackToTree(LinkedList<MethodItem> resultStack, TreeNode root) {
         TreeNode lastNode = null;
@@ -223,6 +248,7 @@ public class TraceDataUtils {
             if (lastNode == null || depth == 0) {
                 root.add(node);
             } else if (lastNode.depth() >= depth) {
+                //这里是指的回退
                 while (null != lastNode && lastNode.depth() > depth) {
                     lastNode = lastNode.father;
                 }
@@ -314,6 +340,7 @@ public class TraceDataUtils {
         int curStackSize = stack.size();
         while (curStackSize > targetCount) {
             ListIterator<MethodItem> iterator = stack.listIterator(stack.size());
+            //从后往前压缩，删除，最多压缩60次
             while (iterator.hasPrevious()) {
                 MethodItem item = iterator.previous();
                 if (filter.isFilter(item.durTime, filterCount)) {
@@ -332,6 +359,7 @@ public class TraceDataUtils {
         }
         int size = stack.size();
         if (size > targetCount) {
+            //最后保存30个堆栈
             filter.fallback(stack, size);
         }
     }

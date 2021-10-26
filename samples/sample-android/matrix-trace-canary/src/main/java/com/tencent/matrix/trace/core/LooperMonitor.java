@@ -20,11 +20,11 @@ import android.os.Build;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.SystemClock;
-import androidx.annotation.CallSuper;
-import androidx.annotation.NonNull;
-
 import android.util.Log;
 import android.util.Printer;
+
+import androidx.annotation.CallSuper;
+import androidx.annotation.NonNull;
 
 import com.tencent.matrix.util.MatrixLog;
 import com.tencent.matrix.util.ReflectUtils;
@@ -35,46 +35,29 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 //Looper 的监控是由类 LooperMonitor 实现的，原理很简单，为主线程 Looper 设置一个 Printer 即可，
-// 但值得一提的是，LooperMonitor 不会直接设置 Printer，而是先获取旧对象，并创建代理对象，避免影响到其它用户设置的 Printer
+//但值得一提的是，LooperMonitor 不会直接设置 Printer，而是先获取旧对象，并创建代理对象，避免影响到其它用户设置的 Printer
+//将looper的mLogging对象，设置为我们的代理对象，LooperPrinter
 
 //消息队列空闲时会执行IdelHandler的queueIdle()方法，该方法返回一个boolean值，
 //        如果为false则执行完毕之后移除这条消息，
 //        如果为true则保留，等到下次空闲时会再次执行，
+//这里每隔60s重设置一次LooperPrinter
 public class LooperMonitor implements MessageQueue.IdleHandler {
     private static final String TAG = "Matrix.LooperMonitor";
     private static final Map<Looper, LooperMonitor> sLooperMonitorMap = new ConcurrentHashMap<>();
     private static final LooperMonitor sMainMonitor = LooperMonitor.of(Looper.getMainLooper());//单例模式
-    /**
-     * 监听Looper 消息分发开始，结束
-     */
-    public abstract static class LooperDispatchListener {
+    private static final long CHECK_TIME = 60 * 1000L;//1分钟重新设置一次
+    private static boolean isReflectLoggingError = false;
+    private final HashSet<LooperDispatchListener> listeners = new HashSet<>();//所有的监听器
+    private LooperPrinter printer;//代理printer对象
+    private Looper looper;
+    private long lastCheckPrinterTime = 0;
 
-        boolean isHasDispatchStart = false;
-
-        public boolean isValid() {
-            return false;
-        }
-
-
-        public void dispatchStart() {
-
-        }
-
-        @CallSuper
-        public void onDispatchStart(String x) {
-            this.isHasDispatchStart = true;
-            dispatchStart();
-        }
-
-        @CallSuper
-        public void onDispatchEnd(String x) {
-            this.isHasDispatchStart = false;
-            dispatchEnd();
-        }
-
-
-        public void dispatchEnd() {
-        }
+    private LooperMonitor(Looper looper) {
+        Objects.requireNonNull(looper);
+        this.looper = looper;
+        resetPrinter();
+        addIdleHandler(looper);
     }
 
     public static LooperMonitor of(@NonNull Looper looper) {
@@ -97,12 +80,6 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         sMainMonitor.removeListener(listener);
     }
 
-    private final HashSet<LooperDispatchListener> listeners = new HashSet<>();//所有的监听器
-    private LooperPrinter printer;//代理printer对象
-    private Looper looper;
-    private static final long CHECK_TIME = 60 * 1000L;//1分钟重新设置一次
-    private long lastCheckPrinterTime = 0;
-
     /**
      * It will be thread-unsafe if you get the listeners and literate.
      */
@@ -123,17 +100,11 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         }
     }
 
-    private LooperMonitor(Looper looper) {
-        Objects.requireNonNull(looper);
-        this.looper = looper;
-        resetPrinter();
-        addIdleHandler(looper);
-    }
-
     public Looper getLooper() {
         return looper;
     }
 
+    //当空闲的时候，60s重置一次
     @Override
     public boolean queueIdle() {
         if (SystemClock.uptimeMillis() - lastCheckPrinterTime >= CHECK_TIME) {
@@ -158,8 +129,7 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         }
     }
 
-    private static boolean isReflectLoggingError = false;
-
+    //将looper的mLogging对象，设置为我们的代理对象，LooperPrinter
     private synchronized void resetPrinter() {
         Printer originPrinter = null;
         try {
@@ -208,6 +178,7 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         }
     }
 
+    //给looper的MessageQueue添加一个IdleHandler
     private synchronized void addIdleHandler(Looper looper) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             looper.getQueue().addIdleHandler(this);
@@ -221,7 +192,60 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         }
     }
 
+    private void dispatch(boolean isBegin, String log) {
+        synchronized (listeners) {
+            for (LooperDispatchListener listener : listeners) {
+                if (listener.isValid()) {
+                    if (isBegin) {
+                        if (!listener.isHasDispatchStart) {
+                            listener.onDispatchStart(log);
+                        }
+                    } else {
+                        if (listener.isHasDispatchStart) {
+                            listener.onDispatchEnd(log);
+                        }
+                    }
+                } else if (!isBegin && listener.isHasDispatchStart) {
+                    listener.dispatchEnd();
+                }
+            }
+        }
+    }
 
+    /**
+     * 监听Looper 消息分发开始，结束
+     */
+    public abstract static class LooperDispatchListener {
+
+        boolean isHasDispatchStart = false;
+
+        public boolean isValid() {
+            return false;
+        }
+
+
+        public void dispatchStart() {
+
+        }
+
+        @CallSuper
+        public void onDispatchStart(String x) {
+            this.isHasDispatchStart = true;
+            dispatchStart();
+        }
+
+        @CallSuper
+        public void onDispatchEnd(String x) {
+            this.isHasDispatchStart = false;
+            dispatchEnd();
+        }
+
+
+        public void dispatchEnd() {
+        }
+    }
+
+    //android.util.Printer 一个系统类
     class LooperPrinter implements Printer {
         public Printer origin;
         boolean isHasChecked = false;
@@ -251,27 +275,6 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
 
             if (isValid) {
                 dispatch(x.charAt(0) == '>', x);// 分发，通过第一个字符判断是开始分发，还是结束分发
-            }
-
-        }
-    }
-
-    private void dispatch(boolean isBegin, String log) {
-        synchronized (listeners) {
-            for (LooperDispatchListener listener : listeners) {
-                if (listener.isValid()) {
-                    if (isBegin) {
-                        if (!listener.isHasDispatchStart) {
-                            listener.onDispatchStart(log);
-                        }
-                    } else {
-                        if (listener.isHasDispatchStart) {
-                            listener.onDispatchEnd(log);
-                        }
-                    }
-                } else if (!isBegin && listener.isHasDispatchStart) {
-                    listener.dispatchEnd();
-                }
             }
         }
     }

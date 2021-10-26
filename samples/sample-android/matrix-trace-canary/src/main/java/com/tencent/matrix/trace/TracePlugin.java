@@ -44,16 +44,16 @@ public class TracePlugin extends Plugin {
     //region 参数
     private static final String TAG = "Matrix.TracePlugin";
 
-    private final TraceConfig traceConfig;
-    private EvilMethodTracer evilMethodTracer;
-    private StartupTracer startupTracer;
-    private FrameTracer frameTracer;
-    private LooperAnrTracer looperAnrTracer;
-    private SignalAnrTracer signalAnrTracer;
-    private IdleHandlerLagTracer idleHandlerLagTracer;
-    private ThreadPriorityTracer threadPriorityTracer;
-    //endregion
+    private final TraceConfig traceConfig;      //动态配置
 
+    private EvilMethodTracer evilMethodTracer;  //超时方法检测
+    private StartupTracer startupTracer;        //启动超时检测
+    private FrameTracer frameTracer;            //帧率检测
+    private LooperAnrTracer looperAnrTracer;    //looperAnrTracer looper anr
+    private SignalAnrTracer signalAnrTracer;    //signalAnrTracer signal anr todo
+    private IdleHandlerLagTracer idleHandlerLagTracer;//idle handler lag 检测
+    private ThreadPriorityTracer threadPriorityTracer;//threadPriorityTracer todo
+    //endregion
 
     public TracePlugin(TraceConfig config) {
         this.traceConfig = config;
@@ -142,8 +142,6 @@ public class TracePlugin extends Plugin {
                 if (traceConfig.isStartupEnable()) {
                     startupTracer.onStartTrace();
                 }
-
-
             }
         };
 
@@ -229,6 +227,7 @@ public class TracePlugin extends Plugin {
 
     }
 
+    //
     private boolean willUiThreadMonitorRunning(TraceConfig traceConfig) {
         return traceConfig.isEvilMethodTraceEnable() || traceConfig.isAnrTraceEnable() || traceConfig.isFPSEnable();
     }
