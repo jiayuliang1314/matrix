@@ -31,7 +31,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-
+//AppForegroundUtil这个类主要isActivityInterestingToUser方法判断用户是否在前台
 public enum AppForegroundUtil {
 
     INSTANCE;
