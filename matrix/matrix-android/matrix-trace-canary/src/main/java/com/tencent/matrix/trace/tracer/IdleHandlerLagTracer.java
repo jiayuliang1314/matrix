@@ -94,12 +94,12 @@ public class IdleHandlerLagTracer extends Tracer {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject = DeviceUtil.getDeviceInfo(jsonObject, Matrix.with().getApplication());
                 jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.LAG_IDLE_HANDLER);
-                jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);
+                jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);//todo
                 jsonObject.put(SharePluginInfo.ISSUE_THREAD_STACK, stackTrace);
                 jsonObject.put(SharePluginInfo.ISSUE_PROCESS_FOREGROUND, currentForeground);
 
                 Issue issue = new Issue();
-                issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);//todo
                 issue.setContent(jsonObject);
                 plugin.onDetectIssue(issue);
                 MatrixLog.e(TAG, "happens idle handler Lag : %s ", jsonObject.toString());

@@ -52,7 +52,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
     private final HashSet<IDoFrameListener> listeners = new HashSet<>();//FPSCollector实现了IDoFrameListener
     private final long frameIntervalNs; //16ms
     private final TraceConfig config;
-    private final long timeSliceMs;     //10s，记录的是累计的丢帧耗时。
+    private final long timeSliceMs;     //10s，记录的是累计的观察时间，每10s上报一次。
     private final boolean isFPSEnable;
     private final long frozenThreshold; //掉了42帧
     private final long highThreshold;   //24
@@ -181,7 +181,9 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
                         listener.time = SystemClock.uptimeMillis();
                     }
                     if (null != listener.getExecutor()) {
+//                        300
                         if (listener.getIntervalFrameReplay() > 0) {
+                            //会进入这个收集
                             listener.collect(focusedActivity, startNs, endNs, dropFrame, isVsyncFrame,
                                     intendedFrameTimeNs, inputCostNs, animationCostNs, traversalCostNs);
                         } else {
@@ -299,6 +301,18 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
             }
         }
 
+        /**
+         *
+         * @param visibleScene 可以设置为fragment todo
+         * @param startNs
+         * @param endNs
+         * @param droppedFrames
+         * @param isVsyncFrame
+         * @param intendedFrameTimeNs
+         * @param inputCostNs
+         * @param animationCostNs
+         * @param traversalCostNs
+         */
         public void doReplayInner(String visibleScene, long startNs, long endNs, int droppedFrames,
                                   boolean isVsyncFrame, long intendedFrameTimeNs, long inputCostNs,
                                   long animationCostNs, long traversalCostNs) {
@@ -306,7 +320,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
             if (Utils.isEmpty(visibleScene)) return;
             if (!isVsyncFrame) return;//只处理vsync帧
 
-            FrameCollectItem item = map.get(visibleScene);
+            FrameCollectItem item = map.get(visibleScene);//得到这个visibleScene的FrameCollectItem
             if (null == item) {
                 item = new FrameCollectItem(visibleScene);
                 map.put(visibleScene, item);
@@ -314,7 +328,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
 
             item.collect(droppedFrames);
 
-            if (item.sumFrameCost >= timeSliceMs) { // report，如果一个activity，总共超时帧所占时间超过10s，上报
+            if (item.sumFrameCost >= timeSliceMs) { // report，如果一个activity，总共帧所占时间超过10s，上报
                 map.remove(visibleScene);
                 item.report();
             }
@@ -323,7 +337,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
 
     private class FrameCollectItem {
         String visibleScene;    //activity
-        long sumFrameCost;      //超时时间累计，算上本来的16ms，总共超时帧所占时间
+        long sumFrameCost;      //时间累计，算上本来的16ms，总共帧所占时间
         int sumFrame = 0;       //帧数
         int sumDroppedFrames;   //超时帧累计
         // record the level of frames dropped each time
@@ -339,7 +353,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         void collect(int droppedFrames) {
             float frameIntervalCost = 1f * UIThreadMonitor.getMonitor().getFrameIntervalNanos()
                     / Constants.TIME_MILLIS_TO_NANO;//16ms
-            sumFrameCost += (droppedFrames + 1) * frameIntervalCost;//这个地方+1为什么
+            sumFrameCost += (droppedFrames + 1) * frameIntervalCost;//这个地方+1为什么，因为计算原本的时间
             sumDroppedFrames += droppedFrames;
             sumFrame++;
             if (droppedFrames >= frozenThreshold) {
@@ -386,7 +400,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
                 JSONObject resultObject = new JSONObject();
                 resultObject = DeviceUtil.getDeviceInfo(resultObject, plugin.getApplication());
 
-                resultObject.put(SharePluginInfo.ISSUE_SCENE, visibleScene);
+                resultObject.put(SharePluginInfo.ISSUE_SCENE, visibleScene);//todo
                 resultObject.put(SharePluginInfo.ISSUE_DROP_LEVEL, dropLevelObject);
                 resultObject.put(SharePluginInfo.ISSUE_DROP_SUM, dropSumObject);
                 resultObject.put(SharePluginInfo.ISSUE_FPS, fps);

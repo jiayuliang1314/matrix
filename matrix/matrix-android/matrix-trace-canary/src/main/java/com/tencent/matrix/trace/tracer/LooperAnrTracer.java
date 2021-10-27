@@ -141,7 +141,7 @@ public class LooperAnrTracer extends Tracer {
                 jsonObject.put(SharePluginInfo.ISSUE_PROCESS_FOREGROUND, isForeground);
 
                 Issue issue = new Issue();
-                issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);//todo
                 issue.setContent(jsonObject);
                 plugin.onDetectIssue(issue);
                 MatrixLog.e(TAG, "happens lag : %s, scene : %s ", dumpStack, scene);
@@ -180,7 +180,7 @@ public class LooperAnrTracer extends Tracer {
             int[] processStat = Utils.getProcessPriority(Process.myPid());
             long[] data = AppMethodBeat.getInstance().copyData(beginRecord);
             beginRecord.release();
-            String scene = AppMethodBeat.getVisibleScene();
+            String scene = AppMethodBeat.getVisibleScene();//todo 可以设置为fragment
 
             // memory
             long[] memoryInfo = dumpMemory();
@@ -189,7 +189,7 @@ public class LooperAnrTracer extends Tracer {
             Thread.State status = Looper.getMainLooper().getThread().getState();
             StackTraceElement[] stackTrace = Looper.getMainLooper().getThread().getStackTrace();
             String dumpStack;
-            if (traceConfig.getLooperPrinterStackStyle() == TraceConfig.STACK_STYLE_WHOLE) {
+            if (traceConfig.getLooperPrinterStackStyle() == TraceConfig.STACK_STYLE_WHOLE) {//todo
                 dumpStack = Utils.getWholeStack(stackTrace, "|*\t\t");
             } else {
                 dumpStack = Utils.getStack(stackTrace, "|*\t\t", 12);
@@ -259,6 +259,8 @@ public class LooperAnrTracer extends Tracer {
             if (stackCost >= Constants.DEFAULT_ANR_INVALID) {
                 MatrixLog.w(TAG, "The checked anr task was not executed on time. "
                         + "The possible reason is that the current process has a low priority. just pass this report");
+//                检查的 anr 任务没有按时执行。
+                //可能的原因是当前进程的优先级较低。 只要通过这个报告
                 return;
             }
             // report
@@ -269,12 +271,12 @@ public class LooperAnrTracer extends Tracer {
                 }
                 JSONObject jsonObject = new JSONObject();
                 jsonObject = DeviceUtil.getDeviceInfo(jsonObject, Matrix.with().getApplication());
-                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.ANR);
+                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.ANR);//todo
                 jsonObject.put(SharePluginInfo.ISSUE_COST, stackCost);
                 jsonObject.put(SharePluginInfo.ISSUE_STACK_KEY, stackKey);
-                jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);
+                jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);//todo
                 jsonObject.put(SharePluginInfo.ISSUE_TRACE_STACK, reportBuilder.toString());
-                if (traceConfig.getLooperPrinterStackStyle() == TraceConfig.STACK_STYLE_WHOLE) {
+                if (traceConfig.getLooperPrinterStackStyle() == TraceConfig.STACK_STYLE_WHOLE) {//todo
                     jsonObject.put(SharePluginInfo.ISSUE_THREAD_STACK, Utils.getWholeStack(stackTrace));
                 } else {
                     jsonObject.put(SharePluginInfo.ISSUE_THREAD_STACK, Utils.getStack(stackTrace));
@@ -291,7 +293,7 @@ public class LooperAnrTracer extends Tracer {
 
                 Issue issue = new Issue();
                 issue.setKey(token + "");
-                issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);//todo
                 issue.setContent(jsonObject);
                 plugin.onDetectIssue(issue);
 

@@ -64,6 +64,7 @@ public class Constants {
     //LAG_IDLE_HANDLER IDLE_HANDLER超过2s
     //PRIORITY_MODIFIED todo
     //TIMERSLACK_MODIFIED todo
+    //ANR可以设置为LooperAnr
     public enum Type {
         NORMAL, ANR, STARTUP, LAG, SIGNAL_ANR, LAG_IDLE_HANDLER, PRIORITY_MODIFIED, TIMERSLACK_MODIFIED
     }

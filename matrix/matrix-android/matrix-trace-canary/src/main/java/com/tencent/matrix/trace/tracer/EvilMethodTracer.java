@@ -185,15 +185,15 @@ public class EvilMethodTracer extends Tracer {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject = DeviceUtil.getDeviceInfo(jsonObject, Matrix.with().getApplication());
 
-                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.NORMAL);
+                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.NORMAL);//todo
                 jsonObject.put(SharePluginInfo.ISSUE_COST, stackCost);
                 jsonObject.put(SharePluginInfo.ISSUE_CPU_USAGE, usage);
-                jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);
+                jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);//todo 可以设置为fragment
                 jsonObject.put(SharePluginInfo.ISSUE_TRACE_STACK, reportBuilder.toString());
                 jsonObject.put(SharePluginInfo.ISSUE_STACK_KEY, stackKey);
 
                 Issue issue = new Issue();
-                issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);//todo
                 issue.setContent(jsonObject);
                 plugin.onDetectIssue(issue);
 
