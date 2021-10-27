@@ -380,6 +380,7 @@ public class TraceDataUtils {
         Collections.sort(sortList, new Comparator<MethodItem>() {
             @Override
             public int compare(MethodItem o1, MethodItem o2) {
+                //todo 这里是啥意思，为啥要(o2.depth + 1) * o2.durTime，为啥不直接o2.durTime
                 return Integer.compare((o2.depth + 1) * o2.durTime, (o1.depth + 1) * o1.durTime);
             }
         });
