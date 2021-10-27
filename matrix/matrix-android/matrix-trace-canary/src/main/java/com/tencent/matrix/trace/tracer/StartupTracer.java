@@ -63,13 +63,13 @@ import static android.os.SystemClock.uptimeMillis;
  * <p>
  * <p>
  * applicationCost 通过ActivityThreadHacker获取
- * firstScreenCost
  * <p>
  * https://www.jianshu.com/p/eb3b410cce49
  * https://blog.csdn.net/laizixingxingdewo/article/details/78927861
  * <p>
  * 1、冷启动：当启动应用时，后台没有该应用的进程，这时系统会重新创建一个新的进程分配给该应用，这个启动方式就是冷启动。
- * 2、热启动：当启动应用时，后台已有该应用的进程（例：按back键、home键，应用虽然会退出，但是该应用的进程是依然会保留在后台，可进入任务列表查看），所以在已有进程的情况下，这种启动会从已有的进程中来启动应用，这个方式叫热启动。
+ * 2、热启动：当启动应用时，后台已有该应用的进程（例：按back键、home键，应用虽然会退出，但是该应用的进程是依然会保留
+ * 在后台，可进入任务列表查看），所以在已有进程的情况下，这种启动会从已有的进程中来启动应用，这个方式叫热启动。
  */
 
 public class StartupTracer extends Tracer implements IAppMethodBeatListener, ActivityThreadHacker.IApplicationCreateListener, Application.ActivityLifecycleCallbacks {
@@ -91,13 +91,14 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
     private long lastCreateActivity = 0L;
     //endregion
 
+    //region 简单方法
     public StartupTracer(TraceConfig config) {
         this.config = config;
         this.isStartupEnable = config.isStartupEnable();
-        this.splashActivities = config.getSplashActivities();
+        this.splashActivities = config.getSplashActivities();//todo 需要设置getSplashActivities
         this.coldStartupThresholdMs = config.getColdStartupThresholdMs();
         this.warmStartupThresholdMs = config.getWarmStartupThresholdMs();
-        this.isHasActivity = config.isHasActivity();
+        this.isHasActivity = config.isHasActivity();//todo 需要设置getSplashActivities
         ActivityThreadHacker.addListener(this);
     }
 
@@ -144,11 +145,22 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
         if (!isHasActivity) {
             long applicationCost = ActivityThreadHacker.getApplicationCost();
             MatrixLog.i(TAG, "onApplicationCreateEnd, applicationCost:%d", applicationCost);
-            //if there not have activity,so,application cost is all cost
+            //if there not have activity,so,application cost is all cost，ok
+            //如果没有acitivity，则是application启动了就都启动了，冷启动
             analyse(applicationCost, 0, applicationCost, false);
         }
     }
 
+    @Override
+    public void onForeground(boolean isForeground) {
+        super.onForeground(isForeground);
+        if (!isForeground) {
+            checkActivityThread_mCallback();
+        }
+    }
+    //endregion
+
+    //region step2 onActivityFocused
     @Override
     public void onActivityFocused(Activity activity) {
         //sApplicationCreateScene记录了第一个启动的是Activity 或 Service 或 Receiver
@@ -191,7 +203,7 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
                 if (splashActivities.contains(activityName)) {
                     // 且声明的首屏Activity列表中包含此Activity，则设置标志位 **** 带splash的情况，第二步
                     hasShowSplashActivity = true;
-                } else if (splashActivities.isEmpty()) { //
+                } else if (splashActivities.isEmpty()) { //todo 不知道干哈的
                     // process which is has activity but not main UI process
                     if (isCreatedByLaunchActivity) {
                         coldCost = firstScreenCost;
@@ -200,7 +212,7 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
                         coldCost = ActivityThreadHacker.getApplicationCost();
                     }
                 } else {
-                    if (isCreatedByLaunchActivity) {
+                    if (isCreatedByLaunchActivity) {//todo 不知道干哈的
 //                        MatrixLog.e(TAG, "pass this activity[%s] at duration of start up! splashActivities=%s", activity, splashActivities);
                         coldCost = firstScreenCost;
                     } else {
@@ -253,8 +265,8 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
         }
 
         MatrixHandlerThread.getDefaultHandler().post(new AnalyseTask(data, applicationCost, firstScreenCost, allCost, isWarmStartUp, ActivityThreadHacker.sApplicationCreateScene));
-
     }
+    //endregion
 
     //region step1
     // onCreate,onStart,onResume都不是真正visible的时间点，真正的visible时间点是onWindowFocusChanged()函数被执行时。
@@ -308,13 +320,6 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
     }
     //endregion
 
-    @Override
-    public void onForeground(boolean isForeground) {
-        super.onForeground(isForeground);
-        if (!isForeground) {
-            checkActivityThread_mCallback();
-        }
-    }
 
     private class AnalyseTask implements Runnable {
 
