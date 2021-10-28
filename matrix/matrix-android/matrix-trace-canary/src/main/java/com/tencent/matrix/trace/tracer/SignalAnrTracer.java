@@ -61,29 +61,29 @@ public class SignalAnrTracer extends Tracer {
     //检测error次数
     private static final int CHECK_ERROR_STATE_COUNT =
             ANR_DUMP_MAX_TIME / CHECK_ERROR_STATE_INTERVAL;
-    //前台消息，超时2s的时候，说明卡住了
+    //前台的时候，消息超时2s的时候，说明卡住了
     private static final long FOREGROUND_MSG_THRESHOLD = -2000;
-    //后台消息，超时2s的时候，说明卡住了
+    //后台的时候，消息超时10s的时候，说明卡住了
     private static final long BACKGROUND_MSG_THRESHOLD = -10000;
     //是否hasInstance
     public static boolean hasInstance = false;
     //是否是前台状态
     private static boolean currentForeground = false;
     //anr trace 文件路径
-    private static String sAnrTraceFilePath = "";
+    private static String sAnrTraceFilePath = "";//todo
     //    这个Hook Trace的方案，不仅仅可以用来查ANR问题，任何时候我们都可以手动向自己发送一个SIGQUIT信号，
 //    从而hook到当时的Trace。Trace的内容对于我们排查线程死锁，线程异常，耗电等问题都非常有帮助。
     //打印trace 文件路径 ，自己触发的
-    private static String sPrintTraceFilePath = "";
-    //监听
+    private static String sPrintTraceFilePath = "";//todo
+    //监听，没有设置
     private static SignalAnrDetectedListener sSignalAnrDetectedListener;
     //sApplication
     private static Application sApplication;
     //是否初始化了
     private static boolean hasInit = false;
-    //anr发生时间，负值
+    //anr发生时间，负值，代表过去的哪个时间
     private static long anrMessageWhen = 0L;
-    //anr发生时主线程处理的消息
+    //anr发生时，主线程处理的消息
     private static String anrMessageString = "";
     //endregion
 
@@ -114,7 +114,9 @@ public class SignalAnrTracer extends Tracer {
 
     /**
      * AnrDumper.cc里 handleSignal
+     *
      */
+    //step 2
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Keep
     private static void onANRDumped() {
@@ -140,6 +142,7 @@ public class SignalAnrTracer extends Tracer {
         }
     }
 
+    //    step 4
     @Keep
     private static void onANRDumpTrace() {
         try {
@@ -150,6 +153,7 @@ public class SignalAnrTracer extends Tracer {
     }
     //endregion
 
+    //    step 6
     @Keep
     private static void onPrintTrace() {
         try {
@@ -159,8 +163,9 @@ public class SignalAnrTracer extends Tracer {
         }
     }
 
+//    step 3
     /**
-     * @param fromProcessErrorState false代表主线程阻塞了
+     * @param fromProcessErrorState false代表主线程阻塞了，消息超时了吗
      */
     private static void report(boolean fromProcessErrorState) {
         try {
@@ -180,7 +185,7 @@ public class SignalAnrTracer extends Tracer {
             JSONObject jsonObject = new JSONObject();
             jsonObject = DeviceUtil.getDeviceInfo(jsonObject, Matrix.with().getApplication());
             jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.SIGNAL_ANR);
-            jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);
+            jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);//todo
             jsonObject.put(SharePluginInfo.ISSUE_THREAD_STACK, stackTrace);
             jsonObject.put(SharePluginInfo.ISSUE_PROCESS_FOREGROUND, currentForeground);
 
@@ -281,6 +286,7 @@ public class SignalAnrTracer extends Tracer {
         return false;
     }
 
+    //    step 5
     //ok
     public static void printTrace() {
         if (!hasInstance) {
@@ -300,13 +306,14 @@ public class SignalAnrTracer extends Tracer {
 
     private static native void nativePrintTrace();
 
+    //step 1
     @Override
     protected void onAlive() {
         super.onAlive();
         if (!hasInit) {
             //调用native方法启动监听
             nativeInitSignalAnrDetective(sAnrTraceFilePath, sPrintTraceFilePath);
-            //主要用来判断是否是前台
+            //主要用来判断是否是前台，这个方法没啥用
             AppForegroundUtil.INSTANCE.init();
             hasInit = true;
         }
@@ -316,6 +323,7 @@ public class SignalAnrTracer extends Tracer {
     protected void onDead() {
         super.onDead();
         //free anr检测
+        //    step 7
         nativeFreeSignalAnrDetective();
     }
 

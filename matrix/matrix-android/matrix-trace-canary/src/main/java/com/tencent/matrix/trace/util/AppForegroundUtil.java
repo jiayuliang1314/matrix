@@ -44,6 +44,7 @@ public enum AppForegroundUtil {
     private String currentFragmentName;
     private Handler handler;
 
+    //没啥用，这个类就isActivityInterestingToUser有用
     public void init() {
         if (isInit) {
             return;
