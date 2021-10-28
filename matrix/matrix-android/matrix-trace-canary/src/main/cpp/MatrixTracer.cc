@@ -52,14 +52,15 @@
 #define HOOK_CONNECT_PATH "/dev/socket/tombstoned_java_trace"   //socket文件地址
 #define HOOK_OPEN_PATH "/data/anr/traces.txt"                   //socket文件地址
 
-#define HOOK_REQUEST_GROUPID_THREAD_PRIO_TRACE 0x01
+#define HOOK_REQUEST_GROUPID_THREAD_PRIO_TRACE 0x01 //todo
 
 using namespace MatrixTracer;
 
-static std::optional<AnrDumper> sAnrDumper; //AnrDumper，是自定义的SignalHandler
+//类模板 std::optional 管理一个可选的容纳值，既可以存在也可以不存在的值。 todo
+static std::optional<AnrDumper> sAnrDumper; //AnrDumper，是自定义的SignalHandler todo
 static bool isTraceWrite = false;           //isTraceWrite my_connect my_open设置为true，my_write设置为false
 static bool fromMyPrintTrace = false;       //fromMyPrintTrace 是否是自己想打的
-static bool isHooking = false;              //是否hooking，unHookAnrTraceWrite设置为false
+static bool isHooking = false;              //是否hooking，hookAnrTraceWrite设置为true，unHookAnrTraceWrite设置为false
 static std::string anrTracePathstring;      //新的anrTracePathstring，系统用的
 static std::string printTracePathstring;    //新的printTracePathstring，我自己想打印的时候用的
 static int signalCatcherTid;                //signalCatcherTid的线程id
@@ -72,6 +73,7 @@ static struct StacktraceJNI {
     jmethodID AnrDetector_onANRDumpTrace;   //SignalAnrTracer 里的
     jmethodID AnrDetector_onPrintTrace;     //SignalAnrTracer 里的
 
+    //MainThreadPriorityModified相关的东西
     jmethodID ThreadPriorityDetective_onMainThreadPriorityModified;     //修改了优先级
     jmethodID ThreadPriorityDetective_onMainThreadTimerSlackModified;   //修改了TimerSlack
 } gJ;
@@ -128,18 +130,20 @@ int my_prctl(int option, unsigned long arg2, unsigned long arg3,
  *
  * @param content 内容
  * @param filePath 文件地址
+ *
+ * step 4.2.1
  */
 void writeAnr(const std::string &content, const std::string &filePath) {
     //unhook write
     unHookAnrTraceWrite();
-    std::stringstream stringStream(content);
-    std::string to;
+    std::stringstream stringStream(content);//todo
+    std::string to;//todo
     std::ofstream outfile;
     outfile.open(filePath);
     outfile << content;
 }
 
-//region my_connect  original_connect
+//region step 4.1 my_connect  original_connect
 int (*original_connect)(int __fd, const struct sockaddr *__addr, socklen_t __addr_length);
 
 int my_connect(int __fd, const struct sockaddr *__addr, socklen_t __addr_length) {
@@ -156,7 +160,7 @@ int my_connect(int __fd, const struct sockaddr *__addr, socklen_t __addr_length)
 }
 //endregion
 
-//region my_open original_open
+//region step 4.1 my_open original_open
 int (*original_open)(const char *pathname, int flags, mode_t mode);
 
 int my_open(const char *pathname, int flags, mode_t mode) {
@@ -173,11 +177,11 @@ int my_open(const char *pathname, int flags, mode_t mode) {
 }
 //endregion
 
-//region original_write my_write
+//region step 4.2 original_write my_write
 ssize_t (*original_write)(int fd, const void *const __pass_object_size0 buf, size_t count);
 
 ssize_t my_write(int fd, const void *const buf, size_t count) {
-    //如果标记为isTraceWrite为true，第一个signalCatcher线程，write调用即为打印trace的地方
+    //如果标记为isTraceWrite为true，在signalCatcher线程第一个write调用即为打印trace的地方
     if (isTraceWrite && gettid() == signalCatcherTid) {
         isTraceWrite = false;
         signalCatcherTid = 0;
@@ -204,7 +208,7 @@ ssize_t my_write(int fd, const void *const buf, size_t count) {
 }
 //endregion
 
-//调用java的onANRDumped，AnrDumper.cc 里handleSignal里调用anrCallback然后调用这个anrDumpCallback回调
+//step 3 调用java的onANRDumped，AnrDumper.cc 里handleSignal里调用anrCallback然后调用这个anrDumpCallback回调
 bool anrDumpCallback() {
     JNIEnv *env = JniInvocation::getEnv();
     if (!env) return false;
@@ -213,6 +217,7 @@ bool anrDumpCallback() {
 }
 
 //调用java的onANRDumpTrace，my_write里调用
+//step 4.2.2
 bool anrDumpTraceCallback() {
     JNIEnv *env = JniInvocation::getEnv();
     if (!env) return false;
@@ -221,6 +226,7 @@ bool anrDumpTraceCallback() {
 }
 
 //调用java的onPrintTrace，my_write里调用
+////step 4.2.3
 bool printTraceCallback() {
     JNIEnv *env = JniInvocation::getEnv();
     if (!env) return false;
@@ -239,7 +245,7 @@ int getApiLevel() {
 }
 
 /**
- * @param isSiUser true为自己的进程
+ * step 4 @param isSiUser true为自己的进程
  * AnrDumper.cc 里handleSignal里调用anrCallback方法，或者调用siUserCallback，然后调用这个hookAnrTraceWrite回调
  */
 void hookAnrTraceWrite(bool isSiUser) {
@@ -248,7 +254,7 @@ void hookAnrTraceWrite(bool isSiUser) {
         return;
     }
 
-    //isSiUser为true，表示自己进程发的时候是通过kill发的，此处不符合逻辑，返回
+    //isSiUser为true，表示自己进程发的，通过kill发的，但是标记为fromMyPrintTrace却为false，此处不符合逻辑，返回
     if (!fromMyPrintTrace && isSiUser) {
         return;
     }
@@ -264,25 +270,27 @@ void hookAnrTraceWrite(bool isSiUser) {
         if (!libcutils_info) {
             libcutils_info = xhook_elf_open("/system/lib/libcutils.so");
         }
-        xhook_got_hook_symbol(libcutils_info, "connect", (void*) my_connect, (void**) (&original_connect));
+        xhook_got_hook_symbol(libcutils_info, "connect", (void *) my_connect,
+                              (void **) (&original_connect));
     } else {
-        void* libart_info = xhook_elf_open("libart.so");
-        xhook_got_hook_symbol(libart_info, "open", (void*) my_open, (void**) (&original_open));
+        void *libart_info = xhook_elf_open("libart.so");
+        xhook_got_hook_symbol(libart_info, "open", (void *) my_open, (void **) (&original_open));
     }
 
     if (apiLevel >= 30 || apiLevel == 25 || apiLevel == 24) {
-        void* libc_info = xhook_elf_open("libc.so");
-        xhook_got_hook_symbol(libc_info, "write", (void*) my_write, (void**) (&original_write));
+        void *libc_info = xhook_elf_open("libc.so");
+        xhook_got_hook_symbol(libc_info, "write", (void *) my_write, (void **) (&original_write));
     } else if (apiLevel == 29) {
-        void* libbase_info = xhook_elf_open("/system/lib64/libbase.so");
-        if(!libbase_info) {
+        void *libbase_info = xhook_elf_open("/system/lib64/libbase.so");
+        if (!libbase_info) {
             libbase_info = xhook_elf_open("/system/lib/libbase.so");
         }
-        xhook_got_hook_symbol(libbase_info, "write", (void*) my_write, (void**) (&original_write));
+        xhook_got_hook_symbol(libbase_info, "write", (void *) my_write,
+                              (void **) (&original_write));
         xhook_elf_close(libbase_info);
     } else {
-        void* libart_info = xhook_elf_open("libart.so");
-        xhook_got_hook_symbol(libart_info, "write", (void*) my_write, (void**) (&original_write));
+        void *libart_info = xhook_elf_open("libart.so");
+        xhook_got_hook_symbol(libart_info, "write", (void *) my_write, (void **) (&original_write));
     }
 }
 
@@ -291,26 +299,26 @@ void unHookAnrTraceWrite() {
     int apiLevel = getApiLevel();
     if (apiLevel >= 27) {
         void *libcutils_info = xhook_elf_open("/system/lib64/libcutils.so");
-        xhook_got_hook_symbol(libcutils_info, "connect", (void*) original_connect, nullptr);
+        xhook_got_hook_symbol(libcutils_info, "connect", (void *) original_connect, nullptr);
     } else {
-        void* libart_info = xhook_elf_open("libart.so");
-        xhook_got_hook_symbol(libart_info, "open", (void*) original_connect, nullptr);
+        void *libart_info = xhook_elf_open("libart.so");
+        xhook_got_hook_symbol(libart_info, "open", (void *) original_connect, nullptr);
     }
 
-    if (apiLevel >= 30 || apiLevel == 25 || apiLevel ==24) {
-        void* libc_info = xhook_elf_open("libc.so");
-        xhook_got_hook_symbol(libc_info, "write", (void*) original_write, nullptr);
+    if (apiLevel >= 30 || apiLevel == 25 || apiLevel == 24) {
+        void *libc_info = xhook_elf_open("libc.so");
+        xhook_got_hook_symbol(libc_info, "write", (void *) original_write, nullptr);
     } else if (apiLevel == 29) {
-        void* libbase_info = xhook_elf_open("/system/lib64/libbase.so");
-        xhook_got_hook_symbol(libbase_info, "write", (void*) original_write, nullptr);
+        void *libbase_info = xhook_elf_open("/system/lib64/libbase.so");
+        xhook_got_hook_symbol(libbase_info, "write", (void *) original_write, nullptr);
     } else {
-        void* libart_info = xhook_elf_open("libart.so");
-        xhook_got_hook_symbol(libart_info, "write", (void*) original_write, nullptr);
+        void *libart_info = xhook_elf_open("libart.so");
+        xhook_got_hook_symbol(libart_info, "write", (void *) original_write, nullptr);
     }
     isHooking = false;
 }
 
-//初始化，开启检测Signalanr检测，真正检测的地方在AnrDumper.cc
+//step 2 初始化，开启检测Signalanr检测，真正检测的地方在AnrDumper.cc
 static void
 nativeInitSignalAnrDetective(JNIEnv *env, jclass, jstring anrTracePath, jstring printTracePath) {
     //anr发生时，打印path
@@ -323,7 +331,7 @@ nativeInitSignalAnrDetective(JNIEnv *env, jclass, jstring anrTracePath, jstring 
     sAnrDumper.emplace(anrTracePathChar, printTracePathChar, anrDumpCallback);
 }
 
-//Free Signal Anr Detective 重置，释放
+//Free step 6 Signal Anr Detective 重置，释放
 static void nativeFreeSignalAnrDetective(JNIEnv *env, jclass) {
     //重置，释放
     sAnrDumper.reset();
@@ -333,21 +341,22 @@ static void nativeFreeSignalAnrDetective(JNIEnv *env, jclass) {
 static void nativeInitMainThreadPriorityDetective(JNIEnv *env, jclass) {
     //setpriority是修改priority的
     xhook_grouped_register(HOOK_REQUEST_GROUPID_THREAD_PRIO_TRACE, ".*\\.so$", "setpriority",
-            (void *) my_setpriority, (void **) (&original_setpriority));
+                           (void *) my_setpriority, (void **) (&original_setpriority));
     //修改TimerSlack的prctl方法
     xhook_grouped_register(HOOK_REQUEST_GROUPID_THREAD_PRIO_TRACE, ".*\\.so$", "prctl",
-            (void *) my_prctl, (void **) (&original_prctl));
+                           (void *) my_prctl, (void **) (&original_prctl));
     xhook_refresh(true);
 }
 //endregion
 
-//自己打印trace，发送自己的进程发送SIGQUIT
+//step 5 自己打印trace，发送自己的进程发送SIGQUIT
 static void nativePrintTrace() {
     fromMyPrintTrace = true;
     kill(getpid(), SIGQUIT);
 }
 
-template<typename T, std::size_t sz>//todo
+template<typename T, std::size_t sz>
+//todo
 static inline constexpr std::size_t NELEM(const T(&)[sz]) { return sz; }//todo
 
 //JNINativeMethod 数组 anr相关的
@@ -362,7 +371,7 @@ static const JNINativeMethod THREAD_PRIORITY_METHODS[] = {
         {"nativeInitMainThreadPriorityDetective", "()V", (void *) nativeInitMainThreadPriorityDetective},
 };
 
-//JNI_OnLoad 初始化jni环境
+//step 1 JNI_OnLoad 初始化jni环境
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     JniInvocation::init(vm);
 
@@ -390,7 +399,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
             anrDetectiveCls, ANR_METHODS, static_cast<jint>(NELEM(ANR_METHODS))) != 0)
         return -1;
 
-    //删除anrDetectiveCls
+    //删除anrDetectiveCls引用
     env->DeleteLocalRef(anrDetectiveCls);
 
 

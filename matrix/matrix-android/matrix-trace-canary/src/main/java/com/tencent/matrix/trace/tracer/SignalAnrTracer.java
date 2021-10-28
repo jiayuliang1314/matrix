@@ -200,6 +200,7 @@ public class SignalAnrTracer extends Tracer {
         }
     }
 
+    //step 2.1
     //通过消息时间，来判断是否到超出阈值
     @RequiresApi(api = Build.VERSION_CODES.M)
     private static boolean isMainThreadBlocked() {
@@ -228,6 +229,7 @@ public class SignalAnrTracer extends Tracer {
         return false;
     }
 
+    //step 2.2
     private static void checkErrorStateCycle() {
         int checkErrorStateCount = 0;
         //开启一个循环检测
@@ -248,6 +250,7 @@ public class SignalAnrTracer extends Tracer {
         }
     }
 
+    //step 2.3
     //用来判断anr发生了
 //    在ANR弹窗前，会执行到makeAppNotRespondingLocked方法中，在这里会给发生ANR进程标记一个NOT_RESPONDING的flag。
 //    而这个flag我们可以通过ActivityManager来获取：

@@ -47,8 +47,11 @@ namespace MatrixTracer {
 // The global signal handler stack. This is needed because there may exist
 // multiple SignalHandler instances in a process. Each will have itself
 // registered in this stack.
+//  全局信号处理程序堆栈。 这是必需的，因为一个进程中可能存在多个 SignalHandler 实例。 每个都将在此堆栈中注册自己。
     static std::vector<SignalHandler *> *sHandlerStack = nullptr;//todo
-// C++11中新增了<mutex>，它是C++标准程序库中的一个头文件，定义了C++11标准中的一些互斥访问的类与方法等。其中std::mutex就是lock、unlock。std::lock_guard与std::mutex配合使用，把锁放到lock_guard中时，mutex自动上锁，lock_guard析构时，同时把mutex解锁。mutex又称互斥量。
+// C++11中新增了<mutex>，它是C++标准程序库中的一个头文件，定义了C++11标准中的一些互斥访问的类与方法等。
+// 其中std::mutex就是lock、unlock。std::lock_guard与std::mutex配合使用，把锁放到lock_guard中时，
+// mutex自动上锁，lock_guard析构时，同时把mutex解锁。mutex又称互斥量。
     static std::mutex sHandlerStackMutex;//todo
     static bool sStackInstalled = false;
 // InstallAlternateStackLocked will store the newly installed stack in new_stack
@@ -56,6 +59,7 @@ namespace MatrixTracer {
     static stack_t sOldStack;//todo
     static stack_t sNewStack;//todo
 
+    //step 2
     static void installAlternateStackLocked() {//todo
         if (sStackInstalled)
             return;
@@ -79,7 +83,7 @@ namespace MatrixTracer {
         ALOGV("Alternative stack installed.");
     }
 
-// Runs before crashing: normal context.
+//  step 3 Runs before crashing: normal context.
 //    我们通过可以sigaction方法，建立一个Signal Handler：ok
     bool SignalHandler::installHandlersLocked() {
         if (sHandlerInstalled) {
@@ -125,6 +129,7 @@ namespace MatrixTracer {
 
 // This function runs in a compromised context: see the top of the file.
 // Runs on the crashing thread.
+    //step 6
     static void restoreHandlersLocked() {//todo
         if (!sHandlerInstalled)
             return;
@@ -138,6 +143,7 @@ namespace MatrixTracer {
         ALOGV("Signal handler restored.");
     }
 
+    //step 5
     static void restoreAlternateStackLocked() {//todo
         if (!sStackInstalled)
             return;
@@ -165,7 +171,7 @@ namespace MatrixTracer {
 
 // This function runs in a compromised context: see the top of the file.
 // Runs on the crashing thread.
-// 发生信号处理的地方，转发给各sHandlerStack的handleSignal ok
+// step 1.1 发生信号处理的地方，转发给各sHandlerStack的handleSignal ok
     void SignalHandler::signalHandler(int sig, siginfo_t *info, void *uc) {
         ALOGV("Entered signal handler.");
 // All the exception signals are blocked at this point.
@@ -178,9 +184,9 @@ namespace MatrixTracer {
         lock.unlock();
     }
 
-
+    //step 1
     SignalHandler::SignalHandler() {
-        //上锁，todo
+        //上锁
         std::lock_guard<std::mutex> lock(sHandlerStackMutex);
 
         //建一个sHandlerStack
@@ -189,12 +195,13 @@ namespace MatrixTracer {
 
         //todo
         installAlternateStackLocked();
-        //todo
+        //todo 安装新的signalhandler
         installHandlersLocked();
         //将自己放进去
         sHandlerStack->push_back(this);
     }
 
+    //step 4
     SignalHandler::~SignalHandler() {
         std::lock_guard<std::mutex> lock(sHandlerStackMutex);
 

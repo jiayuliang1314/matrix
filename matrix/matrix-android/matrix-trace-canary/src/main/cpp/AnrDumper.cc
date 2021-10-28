@@ -53,7 +53,8 @@ namespace MatrixTracer {
     const char *mAnrTraceFile;
     const char *mPrintTraceFile;
 
-//建立了Signal Handler之后，我们发现在同时有sigwait和signal handler的情况下，
+//step 0
+// 建立了Signal Handler之后，我们发现在同时有sigwait和signal handler的情况下，
 // 信号没有走到我们的signal handler而是依然被系统的Signal Catcher线程捕获到了，这是什么原因呢？
 //
 //原来是Android默认把SIGQUIT设置成了BLOCKED，所以只会响应sigwait而不会进入到我们设置的handler方法中。
@@ -70,6 +71,7 @@ namespace MatrixTracer {
         pthread_sigmask(SIG_UNBLOCK, &sigSet, &old_sigSet);
     }
 
+    //step 3.1
     //得到SignalCatcherThreadId，todo 没看明白
     static int getSignalCatcherThreadId() {
         char taskDirPath[128];
@@ -133,6 +135,7 @@ namespace MatrixTracer {
         return signalCatcherTid;
     }
 
+    //step 3
 //我们通过Signal Handler抢到了SIGQUIT后，原本的Signal Catcher线程中的sigwait就不再能收到SIGQUIT了，
 // 原本的dump堆栈的逻辑就无法完成了，我们为了ANR的整个逻辑和流程跟原来完全一致，需要在Signal Handler里面重新向Signal Catcher线程发送一个SIGQUIT：
     static void sendSigToSignalCatcher() {
@@ -141,7 +144,7 @@ namespace MatrixTracer {
         syscall(SYS_tgkill, getpid(), tid, SIGQUIT);
     }
 
-    //SIGQUIT发生了，其他进程发来的，anr是system_server进程发来的消息，不是自己进程发来的
+    //step 2.1 SIGQUIT发生了，其他进程发来的，anr是system_server进程发来的消息，不是自己进程发来的
     static void *anrCallback(void *arg) {
         //anr可能发生了，通知SignalAnrTracer检测ui线程是否block或者状态为NOT_RESPONDING
         anrDumpCallback();
@@ -155,6 +158,7 @@ namespace MatrixTracer {
         return nullptr;
     }
 
+    //step 2.2
     //SIGQUIT发生了，自己进程发来的，不是anr
     static void *siUserCallback(void *arg) {
         //这里没有调用anrDumpCallback，因为是自己触发的
@@ -167,7 +171,8 @@ namespace MatrixTracer {
         return nullptr;
     }
 
-//另外，Signal Handler回调的第二个参数siginfo_t，也包含了一些有用的信息，该结构体的第三个字段si_code表示该信号被
+//step 1
+// 另外，Signal Handler回调的第二个参数siginfo_t，也包含了一些有用的信息，该结构体的第三个字段si_code表示该信号被
 // 发送的方法，SI_USER表示信号是通过kill发送的，SI_QUEUE表示信号是通过sigqueue发送的。但在Android的ANR流程中，
 // 高版本使用的是sigqueue发送的信号，某些低版本使用的是kill发送的信号，并不统一。
 //
