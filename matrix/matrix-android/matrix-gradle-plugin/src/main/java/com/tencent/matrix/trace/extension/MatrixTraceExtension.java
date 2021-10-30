@@ -1,12 +1,13 @@
 package com.tencent.matrix.trace.extension;
 
+//Extension
 public class MatrixTraceExtension {
     boolean transformInjectionForced;
     String baseMethodMapFile;
     String blackListFile;
     String customDexTransformName;
 
-    boolean enable;
+    boolean enable;                     //开关
 
 //    public void setEnable(boolean enable) {
 //        this.enable = enable;

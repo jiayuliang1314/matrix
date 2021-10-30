@@ -8,13 +8,14 @@ import java.util.HashSet;
 
 public class Configuration {
 
-    public String packageName;
+    public String packageName;//没有，老的有
     public String mappingDir;
     public String baseMethodMapPath;
     public String methodMapFilePath;
     public String ignoreMethodMapFilePath;
     public String blockListFilePath;
-    public String traceClassOut;
+    public String traceClassOut;////没有，老的有
+    //todo
     public HashSet<String> blockSet = new HashSet<>();
 
     public Configuration() {
@@ -31,7 +32,10 @@ public class Configuration {
         this.traceClassOut = Util.nullAsNil(traceClassOut);
     }
 
-    public int parseBlockFile(MappingCollector processor) {
+    public int parseBlockFile(MappingCollector processor) {//todo
+//[package]
+//-keeppackage facebook/
+//-keeppackage com/squareup/
         String blockStr = TraceBuildConstants.DEFAULT_BLOCK_TRACE
                 + FileUtil.readFileAsString(blockListFilePath);
 
@@ -75,45 +79,45 @@ public class Configuration {
 
     public static class Builder {
 
-        public String packageName;
+        public String packageName;//没设置呢？ todo 老的有
         public String mappingPath;
         public String baseMethodMap;
         public String methodMapFile;
         public String ignoreMethodMapFile;
         public String blockListFile;
-        public String traceClassOut;
+        public String traceClassOut;//老的有
 
-        public Builder setPackageName(String packageName) {
+        public Builder setPackageName(String packageName) {//老的有
             this.packageName = packageName;
             return this;
         }
 
-        public Builder setMappingPath(String mappingPath) {
+        public Builder setMappingPath(String mappingPath) {//ok
             this.mappingPath = mappingPath;
             return this;
         }
 
-        public Builder setBaseMethodMap(String baseMethodMap) {
+        public Builder setBaseMethodMap(String baseMethodMap) {//ok
             this.baseMethodMap = baseMethodMap;
             return this;
         }
 
-        public Builder setTraceClassOut(String traceClassOut) {
+        public Builder setTraceClassOut(String traceClassOut) {//老的有
             this.traceClassOut = traceClassOut;
             return this;
         }
 
-        public Builder setMethodMapFilePath(String methodMapDir) {
+        public Builder setMethodMapFilePath(String methodMapDir) {//ok
             methodMapFile = methodMapDir;
             return this;
         }
 
-        public Builder setIgnoreMethodMapFilePath(String methodMapDir) {
+        public Builder setIgnoreMethodMapFilePath(String methodMapDir) {//ok
             ignoreMethodMapFile = methodMapDir;
             return this;
         }
 
-        public Builder setBlockListFile(String blockListFile) {
+        public Builder setBlockListFile(String blockListFile) {//ok
             this.blockListFile = blockListFile;
             return this;
         }

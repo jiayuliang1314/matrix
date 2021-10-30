@@ -24,9 +24,9 @@ public class MethodInfo {
     private final String originalClassName;
 
     public String originalType;
-    public String originalArguments;
+    public String originalArguments;//参数，参数
     public String originalName;
-    public String desc;
+    public String desc;//(参数，参数)返回值
 
     public MethodInfo(String originalClassName,
                       String originalType,
@@ -51,6 +51,7 @@ public class MethodInfo {
         return new MethodInfo("", "", "", "");
     }
 
+    //matches比较originalType+originalArguments
     public boolean matches(String originalType, String originalArguments) {
         boolean bool = (originalType == null || originalType.equals(this.originalType))
                 && (originalArguments == null || originalArguments.equals(this.originalArguments));

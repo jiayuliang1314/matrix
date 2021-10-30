@@ -32,10 +32,15 @@ import java.util.Set;
 public class MappingCollector implements MappingProcessor {
     private final static String TAG = "MappingCollector";
     private final static int DEFAULT_CAPACITY = 2000;
+    //newClassName, className的map
     public HashMap<String, String> mObfuscatedRawClassMap = new HashMap<>(DEFAULT_CAPACITY);
+    //className, newClassName的map
     public HashMap<String, String> mRawObfuscatedClassMap = new HashMap<>(DEFAULT_CAPACITY);
+    //只包含包名的map 混淆前：混淆后
     public HashMap<String, String> mRawObfuscatedPackageMap = new HashMap<>(DEFAULT_CAPACITY);
+    //newClassName, newMethodName, methodMap
     private final Map<String, Map<String, Set<MethodInfo>>> mObfuscatedClassMethodMap = new HashMap<>();
+    //className, methodName, methodMap2
     private final Map<String, Map<String, Set<MethodInfo>>> mOriginalClassMethodMap = new HashMap<>();
 
     @Override
@@ -79,9 +84,9 @@ public class MappingCollector implements MappingProcessor {
             methodMap2.put(methodName, methodSet2);
         }
         methodSet2.add(new MethodInfo(newClassName, methodReturnType, newMethodName, methodArguments));
-
     }
 
+    //mObfuscatedRawClassMap newClassName, className的map
     public String originalClassName(String proguardClassName, String defaultClassName) {
         if (mObfuscatedRawClassMap.containsKey(proguardClassName)) {
             return mObfuscatedRawClassMap.get(proguardClassName);
@@ -90,6 +95,7 @@ public class MappingCollector implements MappingProcessor {
         }
     }
 
+    //mRawObfuscatedClassMap className, newClassName的map
     public String proguardClassName(String originalClassName, String defaultClassName) {
         if (mRawObfuscatedClassMap.containsKey(originalClassName)) {
             return mRawObfuscatedClassMap.get(originalClassName);
@@ -98,6 +104,7 @@ public class MappingCollector implements MappingProcessor {
         }
     }
 
+    //mRawObfuscatedPackageMap只包含包名
     public String proguardPackageName(String originalPackage, String defaultPackage) {
         if (mRawObfuscatedPackageMap.containsKey(originalPackage)) {
             return mRawObfuscatedPackageMap.get(originalPackage);
@@ -113,6 +120,8 @@ public class MappingCollector implements MappingProcessor {
      * @param obfuscatedMethodName
      * @param obfuscatedMethodDesc
      * @return
+     *
+     * mObfuscatedClassMethodMap newClassName, newMethodName, methodMap
      */
     public MethodInfo originalMethodInfo(String obfuscatedClassName, String obfuscatedMethodName, String obfuscatedMethodDesc) {
         DescInfo descInfo = parseMethodDesc(obfuscatedMethodDesc, false);
@@ -142,12 +151,17 @@ public class MappingCollector implements MappingProcessor {
     }
 
     /**
+     * 1
      * get obfuscated method info
      *
      * @param originalClassName
      * @param originalMethodName
      * @param originalMethodDesc
      * @return
+     *
+     * original -> proguard
+     *
+     * mOriginalClassMethodMap className, methodName, methodMap2
      */
     public MethodInfo obfuscatedMethodInfo(String originalClassName, String originalMethodName, String originalMethodDesc) {
         DescInfo descInfo = parseMethodDesc(originalMethodDesc, true);
@@ -182,6 +196,7 @@ public class MappingCollector implements MappingProcessor {
         StringBuffer stringBuffer = new StringBuffer();
         for (String str : args) {
             String key = str.replace("[", "").replace("]", "");
+            //className, newClassName的map
             if (mRawObfuscatedClassMap.containsKey(key)) {
                 stringBuffer.append(str.replace(key, mRawObfuscatedClassMap.get(key)));
             } else {
@@ -192,8 +207,10 @@ public class MappingCollector implements MappingProcessor {
         if (stringBuffer.length() > 0) {
             stringBuffer.deleteCharAt(stringBuffer.length() - 1);
         }
+
         String methodReturnType = methodInfo.getOriginalType();
         String key = methodReturnType.replace("[", "").replace("]", "");
+        //className, newClassName的map
         if (mRawObfuscatedClassMap.containsKey(key)) {
             methodReturnType = methodReturnType.replace(key, mRawObfuscatedClassMap.get(key));
         }
@@ -207,6 +224,10 @@ public class MappingCollector implements MappingProcessor {
      * @param desc
      * @param isRawToObfuscated
      * @return
+     *
+     * isRawToObfuscated true original -> proguard 混淆
+     *                   false proguard -> original 解混淆
+     * 这里考虑数组了
      */
     private DescInfo parseMethodDesc(String desc, boolean isRawToObfuscated) {
         DescInfo descInfo = new DescInfo();
@@ -214,9 +235,11 @@ public class MappingCollector implements MappingProcessor {
         StringBuffer argumentsBuffer = new StringBuffer();
         StringBuffer descBuffer = new StringBuffer();
         descBuffer.append('(');
+
         for (Type type : argsObj) {
             String key = type.getClassName().replace("[", "").replace("]", "");
-            if (isRawToObfuscated) {
+            if (isRawToObfuscated) {//混淆
+                //className, newClassName的map
                 if (mRawObfuscatedClassMap.containsKey(key)) {
                     argumentsBuffer.append(type.getClassName().replace(key, mRawObfuscatedClassMap.get(key)));
                     descBuffer.append(type.toString().replace(key, mRawObfuscatedClassMap.get(key)));
@@ -224,7 +247,8 @@ public class MappingCollector implements MappingProcessor {
                     argumentsBuffer.append(type.getClassName());
                     descBuffer.append(type.toString());
                 }
-            } else {
+            } else {//解混淆
+                //newClassName, className的map
                 if (mObfuscatedRawClassMap.containsKey(key)) {
                     argumentsBuffer.append(type.getClassName().replace(key, mObfuscatedRawClassMap.get(key)));
                     descBuffer.append(type.toString().replace(key, mObfuscatedRawClassMap.get(key)));
@@ -243,18 +267,18 @@ public class MappingCollector implements MappingProcessor {
         } catch (ArrayIndexOutOfBoundsException e) {
             returnObj = Type.getReturnType(desc + ";");
         }
-        if (isRawToObfuscated) {
+        if (isRawToObfuscated) {//混淆
             String key = returnObj.getClassName().replace("[", "").replace("]", "");
-            if (mRawObfuscatedClassMap.containsKey(key)) {
+            if (mRawObfuscatedClassMap.containsKey(key)) {//className, newClassName的map
                 descInfo.setReturnType(returnObj.getClassName().replace(key, mRawObfuscatedClassMap.get(key)));
                 descBuffer.append(returnObj.toString().replace(key, mRawObfuscatedClassMap.get(key)));
             } else {
                 descInfo.setReturnType(returnObj.getClassName());
                 descBuffer.append(returnObj.toString());
             }
-        } else {
+        } else {//解混淆
             String key = returnObj.getClassName().replace("[", "").replace("]", "");
-            if (mObfuscatedRawClassMap.containsKey(key)) {
+            if (mObfuscatedRawClassMap.containsKey(key)) {//newClassName, className的map
                 descInfo.setReturnType(returnObj.getClassName().replace(key, mObfuscatedRawClassMap.get(key)));
                 descBuffer.append(returnObj.toString().replace(key, mObfuscatedRawClassMap.get(key)));
             } else {
@@ -263,7 +287,7 @@ public class MappingCollector implements MappingProcessor {
             }
         }
 
-        // delete last ,
+        // delete last ,  删除最后一个,
         if (argumentsBuffer.length() > 0) {
             argumentsBuffer.deleteCharAt(argumentsBuffer.length() - 1);
         }

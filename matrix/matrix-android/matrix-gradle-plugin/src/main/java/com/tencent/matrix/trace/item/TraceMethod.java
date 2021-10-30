@@ -29,10 +29,15 @@ import org.objectweb.asm.Type;
  */
 public class TraceMethod {
     private static final String TAG = "Matrix.TraceMethod";
+    //方法id
     public int id;
+    //访问标记
     public int accessFlag;
+    //类名
     public String className;
+    //方法名
     public String methodName;
+    //输入输出参数
     public String desc;
 
     public static TraceMethod create(int id, int accessFlag, String className, String methodName, String desc) {
@@ -45,6 +50,7 @@ public class TraceMethod {
         return traceMethod;
     }
 
+    //获取method的全限定名，equals里用这个判断是否是同一个方法
     public String getMethodName() {
         if (desc == null || isNativeMethod()) {
             return this.className + "." + this.methodName;
@@ -57,11 +63,13 @@ public class TraceMethod {
      * proguard -> original
      *
      * @param processor
+     * 求混淆前的方法信息
      */
     public void revert(MappingCollector processor) {
         if (null == processor) {
             return;
         }
+        //求original MethodInfo
         MethodInfo methodInfo = processor.originalMethodInfo(className, methodName, desc);
         this.methodName = methodInfo.originalName;
         this.desc = methodInfo.desc;
@@ -72,17 +80,21 @@ public class TraceMethod {
      * original -> proguard
      *
      * @param processor
+     * 求混淆后的方法信息
      */
     public void proguard(MappingCollector processor) {
         if (null == processor) {
             return;
         }
-        MethodInfo methodInfo = processor.obfuscatedMethodInfo(className, methodName, desc);
+        //求proguard MethodInfo
+        //混淆，使困惑，使模糊不清;
+        MethodInfo methodInfo = processor.obfuscatedMethodInfo(className, methodName, desc);//
         this.methodName = methodInfo.originalName;
         this.desc = methodInfo.desc;
         this.className = processor.proguardClassName(className, className);
     }
 
+    //获取返回值的类型
     public String getReturn() {
         if (Util.isNullOrNil(desc)) {
             return null;
@@ -108,6 +120,7 @@ public class TraceMethod {
         }
     }
 
+    //是否是native方法
     public boolean isNativeMethod() {
         return (accessFlag & Opcodes.ACC_NATIVE) != 0;
     }
