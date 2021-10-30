@@ -28,24 +28,64 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 
 class MatrixPlugin : Plugin<Project> {
-    companion object {
+    companion object {//伴生对象，里边的值都是static的
         const val TAG = "Matrix.Plugin"
     }
 
     override fun apply(project: Project) {
-
+//apply plugin: 'com.tencent.matrix-plugin'
+//matrix {
+//
+//    logLevel "D"
+//
+//    trace {
+//        enable = true
+//        baseMethodMapFile = "${project.projectDir}/matrixTrace/methodMapping.txt"
+//        blackListFile = "${project.projectDir}/matrixTrace/blackMethodList.txt"
+//    }
+//    removeUnusedResources {
+//        variant = "debug"
+//
+//        v2 = removeUnusedResourcesV2Enable
+//
+//        if (!v2) {
+//            unusedResources = project.ext.unusedResourcesSet
+//        }
+//
+//        enable true
+//        needSign true
+//        shrinkArsc true
+//        shrinkDuplicates true
+//        use7zip = true
+//        zipAlign = true
+//        embedResGuard true
+//
+//        apkCheckerPath = "${project.configurations.apkCheckerDependency.resolve().find { it.name.startsWith("matrix-apk-canary") }.getAbsolutePath()}"
+//        sevenZipPath = "${project.configurations.sevenZipDependency.resolve().getAt(0).getAbsolutePath()}"
+//        //Notice: You need to modify the  value of $apksignerPath on different platform. the value below only suitable for Mac Platform,
+//        //if on Windows, you may have to  replace apksigner with apksigner.bat.
+//        apksignerPath = "${android.getSdkDirectory().getAbsolutePath()}/build-tools/${android.getBuildToolsVersion()}/apksigner"
+//        zipAlignPath = "${android.getSdkDirectory().getAbsolutePath()}/build-tools/${android.getBuildToolsVersion()}/zipalign"
+//        ignoreResources = ["R.id.*", "R.bool.*", "R.layout.unused_layout"]
+//    }
+//}
+        //创建MatrixExtension对象
         val matrix = project.extensions.create("matrix", MatrixExtension::class.java)
+        //创建MatrixTraceExtension对象
         val traceExtension = (matrix as ExtensionAware).extensions.create("trace", MatrixTraceExtension::class.java)
+        //创建MatrixRemoveUnusedResExtension对象，todo
         val removeUnusedResourcesExtension = matrix.extensions.create("removeUnusedResources", MatrixRemoveUnusedResExtension::class.java)
 
+        //只支持application
         if (!project.plugins.hasPlugin("com.android.application")) {
             throw GradleException("Matrix Plugin, Android Application plugin required.")
         }
 
         project.afterEvaluate {
-            Log.setLogLevel(matrix.logLevel)
+            Log.setLogLevel(matrix.logLevel)//设置level
         }
 
+        //创建Matrix的tasks
         MatrixTasksManager().createMatrixTasks(
                 project.extensions.getByName("android") as AppExtension,
                 project,

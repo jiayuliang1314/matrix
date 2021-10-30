@@ -17,23 +17,15 @@
 package sample.tencent.matrix;
 
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.plugin.Plugin;
 import com.tencent.matrix.trace.TracePlugin;
-import com.tencent.matrix.trace.view.FrameDecorator;
 import com.tencent.matrix.util.MatrixLog;
 
 import sample.tencent.matrix.battery.TestBatteryActivity;
@@ -52,6 +44,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         IssuesMap.clear();
+    }
+
+    public void testTraceCanary() {
+        int i = 0;
+        int j = 0;
+        int k = i + j;
+        Button testTrace = findViewById(R.id.test_trace);
+        testTrace.setVisibility(View.VISIBLE);
+        testTrace.setVisibility(View.GONE);
     }
 
     @Override

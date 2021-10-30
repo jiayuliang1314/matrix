@@ -38,15 +38,17 @@ class MatrixTasksManager {
 
         createMatrixTraceTask(android, project, traceExtension)
 
-        createRemoveUnusedResourcesTask(android, project, removeUnusedResourcesExtension)
+        createRemoveUnusedResourcesTask(android, project, removeUnusedResourcesExtension)//todo
     }
 
     private fun createMatrixTraceTask(
             android: AppExtension,
             project: Project,
             traceExtension: MatrixTraceExtension) {
+        //MatrixTraceCompat调用inject方法
         MatrixTraceCompat().inject(android, project, traceExtension)
     }
+
     private fun createRemoveUnusedResourcesTask(
             android: AppExtension,
             project: Project,

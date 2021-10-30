@@ -44,6 +44,7 @@ class MatrixTraceInjection : ITraceSwitchListener {
         traceEnable = enable
     }
 
+    //step 1
     fun inject(appExtension: AppExtension,
                project: Project,
                extension: MatrixTraceExtension) {
@@ -57,28 +58,35 @@ class MatrixTraceInjection : ITraceSwitchListener {
 
     private var transparentTransform: MatrixTraceTransform? = null
 
+    //step 2
     private fun injectTransparentTransform(appExtension: AppExtension,
                                            project: Project,
                                            extension: MatrixTraceExtension) {
-
+        //创建一个MatrixTraceTransform
         transparentTransform = MatrixTraceTransform(project, extension)
+        //注册MatrixTraceTransform
         appExtension.registerTransform(transparentTransform!!)
     }
-    
+
+    //step 3
     private fun doInjection(appExtension: AppExtension,
                             project: Project,
                             extension: MatrixTraceExtension) {
         appExtension.applicationVariants.all { variant ->
+            //判断哪种 todo
             if (injectTaskOrTransform(project, extension, variant) == InjectionMode.TransformInjection) {
+                Log.i("TraceCanary", "InjectionMode TransformInjection")
                 // Inject transform
                 transformInjection()
             } else {
+                Log.i("TraceCanary", "InjectionMode TaskInjection")
                 // Inject task
                 taskInjection(project, extension, variant)
             }
         }
     }
 
+    //step 4.2
     private fun taskInjection(project: Project,
                               extension: MatrixTraceExtension,
                               variant: BaseVariant) {
@@ -102,7 +110,8 @@ class MatrixTraceInjection : ITraceSwitchListener {
                 val taskProvider = BaseCreationAction.findNamedTask(project.tasks, taskName)
                 if (taskProvider != null) {
                     minify = true
-                    traceTaskProvider.dependsOn(taskProvider)
+                    //找到位置Proguard
+                    traceTaskProvider.dependsOn(taskProvider)//todo
                 }
             }
 
@@ -111,7 +120,8 @@ class MatrixTraceInjection : ITraceSwitchListener {
                 val taskProvider = BaseCreationAction.findNamedTask(project.tasks, dexBuilderTaskName)
 
                 taskProvider?.configure { task: Task ->
-                    traceTaskProvider.get().wired(task as DexArchiveBuilderTask)
+                    //找到位置dexBuilder
+                    traceTaskProvider.get().wired(task as DexArchiveBuilderTask)//todo
                 }
 
                 if (taskProvider == null) {
@@ -121,6 +131,7 @@ class MatrixTraceInjection : ITraceSwitchListener {
         }
     }
 
+    //step 4.1
     private fun transformInjection() {
 
         Log.i(TAG, "Using trace transform mode.")
@@ -133,6 +144,7 @@ class MatrixTraceInjection : ITraceSwitchListener {
         TransformInjection,
     }
 
+    //step 3.1
     private fun injectTaskOrTransform(project: Project,
                                       extension: MatrixTraceExtension,
                                       variant: BaseVariant): InjectionMode {
@@ -145,6 +157,4 @@ class MatrixTraceInjection : ITraceSwitchListener {
 
         return InjectionMode.TaskInjection
     }
-
-
 }

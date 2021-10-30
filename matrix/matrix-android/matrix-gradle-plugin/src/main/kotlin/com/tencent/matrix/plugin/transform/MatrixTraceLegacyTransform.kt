@@ -33,6 +33,7 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 // For Android Gradle Plugin 3.5.0
+//Legacy遗产; 遗赠财物; 遗留; 后遗症;
 class MatrixTraceLegacyTransform(
         private val config: Configuration,
         private val origTransform: Transform
@@ -56,13 +57,14 @@ class MatrixTraceLegacyTransform(
                     variant.dirName)
 
             val config = Configuration.Builder()
-                    .setPackageName(variant.applicationId)
+                    .setPackageName(variant.applicationId)//老的有
                     .setBaseMethodMap(extension.baseMethodMapFile)
                     .setBlockListFile(extension.blackListFile)
                     .setMethodMapFilePath("$mappingOut/methodMapping.txt")
+//                    .setNewMethodMapFilePath("$mappingOut/newMethodMapping.txt")
                     .setIgnoreMethodMapFilePath("$mappingOut/ignoreMethodMapping.txt")
                     .setMappingPath(mappingOut)
-                    .setTraceClassOut(traceClassOut)
+                    .setTraceClassOut(traceClassOut)//老的有
                     .build()
 
             val hardTask = getTransformTaskName(extension.customDexTransformName, variant.name)

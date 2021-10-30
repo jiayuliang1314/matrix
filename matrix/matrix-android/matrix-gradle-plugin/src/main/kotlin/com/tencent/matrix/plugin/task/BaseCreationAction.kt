@@ -35,7 +35,7 @@ abstract class BaseCreationAction<TaskT>(
         @JvmField
         val computeTaskName = { prefix: String, name: String, suffix: String
             ->
-            prefix.appendCapitalized(name, suffix)
+            prefix.appendCapitalized(name, suffix)//前缀加后续的首字母大写的
         }
 
         fun findNamedTask(taskContainer: TaskContainer, name: String): TaskProvider<Task>? {

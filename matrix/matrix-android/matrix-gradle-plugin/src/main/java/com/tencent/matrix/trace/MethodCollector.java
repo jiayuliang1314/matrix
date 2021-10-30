@@ -49,12 +49,13 @@ public class MethodCollector {
     //traceMethod.getMethodName(), traceMethod
     private final ConcurrentHashMap<String, TraceMethod> collectedIgnoreMethodMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, TraceMethod> collectedMethodMap;
+//    private ConcurrentHashMap<String, TraceMethod> collectedMethodMapNew;
     private final Configuration configuration;
     //方法id自增
     private final AtomicInteger methodId;
     //忽略的计数
     private final AtomicInteger ignoreCount = new AtomicInteger();
-    //方法个数
+    //新增的方法个数
     private final AtomicInteger incrementCount = new AtomicInteger();
 
     public MethodCollector(ExecutorService executor, MappingCollector mappingCollector, AtomicInteger methodId,
@@ -64,6 +65,7 @@ public class MethodCollector {
         this.configuration = configuration;
         this.methodId = methodId;
         this.collectedMethodMap = collectedMethodMap;
+//        this.collectedMethodMapNew = new ConcurrentHashMap<>();
     }
 
     //是否是isWindowFocusChangeMethod判断
@@ -154,6 +156,13 @@ public class MethodCollector {
             }
         }));
 
+//        futures.add(executor.submit(new Runnable() {
+//            @Override
+//            public void run() {
+//                saveNewCollectedMethod(mappingCollector);
+//            }
+//        }));
+
         for (Future future : futures) {
             future.get();
         }
@@ -242,7 +251,43 @@ public class MethodCollector {
         }
     }
 
-
+    //保存新增的
+//    private void saveNewCollectedMethod(MappingCollector mappingCollector) {
+//        File methodMapFile = new File(configuration.methodNewMapFilePath);
+//        if (!methodMapFile.getParentFile().exists()) {
+//            methodMapFile.getParentFile().mkdirs();
+//        }
+//        List<TraceMethod> methodList = new ArrayList<>();
+//
+//        Log.i(TAG, "[saveNewCollectedMethod] size:%s incrementCount:%s path:%s",
+//                collectedMethodMapNew.size(), incrementCount.get(), methodMapFile.getAbsolutePath());
+//
+//        Collections.sort(methodList, new Comparator<TraceMethod>() {
+//            @Override
+//            public int compare(TraceMethod o1, TraceMethod o2) {
+//                return o1.id - o2.id;
+//            }
+//        });
+//
+//        PrintWriter pw = null;
+//        try {
+//            FileOutputStream fileOutputStream = new FileOutputStream(methodMapFile, false);
+//            Writer w = new OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8);
+//            pw = new PrintWriter(w);
+//            for (TraceMethod traceMethod : methodList) {
+//                traceMethod.revert(mappingCollector);
+//                pw.println(traceMethod.toString());
+//            }
+//        } catch (Exception e) {
+//            Log.e(TAG, "write method map Exception:%s", e.getMessage());
+//            e.printStackTrace();
+//        } finally {
+//            if (pw != null) {
+//                pw.flush();
+//                pw.close();
+//            }
+//        }
+//    }
 
     //遍历folder，得到所有需要插桩的类
     private void listClassFiles(ArrayList<File> classFiles, File folder) {
@@ -396,6 +441,7 @@ public class MethodCollector {
             if (isNeedTrace && !collectedMethodMap.containsKey(traceMethod.getMethodName())) {
                 traceMethod.id = methodId.incrementAndGet();
                 collectedMethodMap.put(traceMethod.getMethodName(), traceMethod);
+//                collectedMethodMapNew.put(traceMethod.getMethodName(), traceMethod);
                 incrementCount.incrementAndGet();
             } else if (!isNeedTrace && !collectedIgnoreMethodMap.containsKey(traceMethod.className)) {
                 ignoreCount.incrementAndGet();

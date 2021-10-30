@@ -24,12 +24,12 @@ import com.tencent.matrix.trace.extension.ITraceSwitchListener
 import com.tencent.matrix.trace.extension.MatrixTraceExtension
 import org.gradle.api.Project
 
-class MatrixTraceCompat : ITraceSwitchListener {
+class MatrixTraceCompat : ITraceSwitchListener {//Compat兼容性;
 
     companion object {
         const val TAG = "Matrix.TraceCompat"
 
-        const val LEGACY_FLAG = "matrix_trace_legacy"
+        const val LEGACY_FLAG = "matrix_trace_legacy"//legacy遗产; 遗赠财物; 遗留; 后遗症;
     }
 
     var traceInjection: MatrixTraceInjection? = null
@@ -53,6 +53,7 @@ class MatrixTraceCompat : ITraceSwitchListener {
                     (project.extensions.extraProperties.get(LEGACY_FLAG) as? String?) == "true") {
                     legacyInject(appExtension, project, extension)
                 } else {
+                    Log.i("TraceCanary", "MatrixTraceCompat type1 traceInjection")
                     traceInjection!!.inject(appExtension, project, extension)
                 }
             }
@@ -61,10 +62,11 @@ class MatrixTraceCompat : ITraceSwitchListener {
         }
     }
 
+    //legacy遗产; 遗赠财物; 遗留; 后遗症;
     private fun legacyInject(appExtension: AppExtension,
                              project: Project,
                              extension: MatrixTraceExtension) {
-
+        Log.i("TraceCanary", "MatrixTraceCompat type2 legacyInject")
         project.afterEvaluate {
 
             if (!extension.isEnable) {

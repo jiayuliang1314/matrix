@@ -124,6 +124,7 @@ abstract class MatrixTraceTask : DefaultTask() {
         Log.i(TAG, " Insert matrix trace instrumentations cost time: %sms.", cost)
     }
 
+    //step2
     fun wired(task: DexArchiveBuilderTask) {
 
         Log.i(TAG, "Wiring ${this.name} to task '${task.name}'.")
@@ -137,6 +138,7 @@ abstract class MatrixTraceTask : DefaultTask() {
         task.mixedScopeClasses.setFrom(classOutputs)
     }
 
+    //step 1
     class CreationAction(
             private val creationConfig: CreationConfig,
             private val extension: MatrixTraceExtension

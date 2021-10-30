@@ -39,6 +39,7 @@ class MatrixTraceTransform(
         const val TAG = "Matrix.TraceTransform"
     }
 
+    //step 1
     fun enable() {
         transparent = false
     }
@@ -63,12 +64,15 @@ class MatrixTraceTransform(
         return true
     }
 
+    //step 2
     override fun transform(transformInvocation: TransformInvocation) {
         super.transform(transformInvocation)
 
         if (transparent) {
+            //不加任何东西
             transparent(transformInvocation)
         } else {
+            //修改吧
             transforming(transformInvocation)
         }
     }
@@ -77,6 +81,7 @@ class MatrixTraceTransform(
      * Passes all inputs throughout.
      * TODO: How to avoid this trivial work?
      */
+    //step 3 啥也不干，不做任何东西
     private fun transparent(invocation: TransformInvocation) {
 
         val outputProvider = invocation.outputProvider!!
@@ -124,6 +129,7 @@ class MatrixTraceTransform(
                             }
                             Status.ADDED, Status.CHANGED -> if (!inputFile.isDirectory) {
                                 val outputFile = toOutputFile(outputDir, inputDir, inputFile)
+                                //直接copy
                                 copyFileAndMkdirsAsNeed(inputFile, outputFile)
                             }
                             Status.REMOVED -> {
@@ -134,6 +140,10 @@ class MatrixTraceTransform(
                         }
                     }
                 } else {
+                    //todo 啥语法
+                    //https://blog.csdn.net/u012165769/article/details/106593363
+                    //out 声明我们称之为协变,就是可以兼容自己及其子类,相当于 Java 的 ? extend E
+                    //in 声明我们称之为逆协变,就是可以兼容自己及其父类，相当于 Java 的 ? super E
                     for (`in` in FileUtils.getAllFiles(inputDir)) {
                         val out = toOutputFile(outputDir, inputDir, `in`)
                         copyFileAndMkdirsAsNeed(`in`, out)
@@ -143,6 +153,7 @@ class MatrixTraceTransform(
         }
     }
 
+    //step 3.2
     private fun copyFileAndMkdirsAsNeed(from: File, to: File) {
         if (from.exists()) {
             to.parentFile.mkdirs()
@@ -150,18 +161,21 @@ class MatrixTraceTransform(
         }
     }
 
+    //step 3.1
     private fun toOutputFile(outputDir: File, inputDir: File, inputFile: File): File {
         return File(outputDir, FileUtils.relativePossiblyNonExistingPath(inputFile, inputDir))
     }
 
+    //step 4.1
     private fun configure(transformInvocation: TransformInvocation): Configuration {
 
         val buildDir = project.buildDir.absolutePath
         val dirName = transformInvocation.context.variantName
 
+        //文件输出路径
         val mappingOut = Joiner.on(File.separatorChar).join(
                 buildDir,
-                FD_OUTPUTS,
+                FD_OUTPUTS,//outputs
                 "mapping",
                 dirName)
 
@@ -169,11 +183,13 @@ class MatrixTraceTransform(
                 .setBaseMethodMap(extension.baseMethodMapFile)
                 .setBlockListFile(extension.blackListFile)
                 .setMethodMapFilePath("$mappingOut/methodMapping.txt")
+//                .setNewMethodMapFilePath("$mappingOut/newMethodMapping.txt")
                 .setIgnoreMethodMapFilePath("$mappingOut/ignoreMethodMapping.txt")
                 .setMappingPath(mappingOut)
                 .build()
     }
 
+    //step 4
     private fun transforming(invocation: TransformInvocation) {
 
         val start = System.currentTimeMillis()
@@ -187,11 +203,11 @@ class MatrixTraceTransform(
 
         val config = configure(invocation)
 
-        val changedFiles = ConcurrentHashMap<File, Status>()
+        val changedFiles = ConcurrentHashMap<File, Status>()//
         val inputToOutput = ConcurrentHashMap<File, File>()
         val inputFiles = ArrayList<File>()
 
-        var transformDirectory: File? = null
+        var transformDirectory: File? = null//todo
 
         for (input in invocation.inputs) {
             for (directoryInput in input.directoryInputs) {
@@ -238,11 +254,11 @@ class MatrixTraceTransform(
                 blockListFilePath = config.blockListFilePath,
                 mappingDir = config.mappingDir
         ).doTransform(
-                classInputs = inputFiles,
-                changedFiles = changedFiles,
+                classInputs = inputFiles,//ArrayList<File>()
+                changedFiles = changedFiles,//ConcurrentHashMap<File, Status>()
                 isIncremental = isIncremental,
-                traceClassDirectoryOutput = outputDirectory,
-                inputToOutput = inputToOutput,
+                traceClassDirectoryOutput = outputDirectory,//output文件夹
+                inputToOutput = inputToOutput,//ConcurrentHashMap<File, File>()
                 legacyReplaceChangedFile = null,
                 legacyReplaceFile = null)
 

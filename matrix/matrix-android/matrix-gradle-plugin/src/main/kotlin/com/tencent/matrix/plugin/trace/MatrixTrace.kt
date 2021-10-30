@@ -61,7 +61,6 @@ class MatrixTrace(
                 String.format("%s_%s%s", nameWithoutDotExt, hashing, dotExt)
             }
         }
-
     }
 
     fun doTransform(classInputs: Collection<File>,
@@ -72,19 +71,19 @@ class MatrixTrace(
                     legacyReplaceChangedFile: ((File, Map<File, Status>) -> Object)?,
                     legacyReplaceFile: ((File, File) -> (Object))?
     ) {
-
         val executor: ExecutorService = Executors.newFixedThreadPool(16)
 
         val config = Configuration.Builder()
                 .setIgnoreMethodMapFilePath(ignoreMethodMapFilePath)
                 .setMethodMapFilePath(methodMapFilePath)
+
                 .setBaseMethodMap(baseMethodMapPath)
                 .setBlockListFile(blockListFilePath)
                 .setMappingPath(mappingDir)
                 .build()
 
         /**
-         * step 1
+         * step 1 读取basemap
          */
         var start = System.currentTimeMillis()
 
@@ -94,6 +93,7 @@ class MatrixTrace(
         val methodId = AtomicInteger(0)
         val collectedMethodMap = ConcurrentHashMap<String, TraceMethod>()
 
+        //读取basemap文件转为一个map
         futures.add(executor.submit(ParseMappingTask(
                 mappingCollector, collectedMethodMap, methodId, config)))
 
@@ -139,7 +139,7 @@ class MatrixTrace(
         Log.i(TAG, "[doTransform] Step(1)[Parse]... cost:%sms", System.currentTimeMillis() - start)
 
         /**
-         * step 2
+         * step 2 采集方法，给每个方法分配id，存入文件
          */
         start = System.currentTimeMillis()
         val methodCollector = MethodCollector(executor, mappingCollector, methodId, config, collectedMethodMap)
@@ -148,7 +148,7 @@ class MatrixTrace(
         Log.i(TAG, "[doTransform] Step(2)[Collection]... cost:%sms", System.currentTimeMillis() - start)
 
         /**
-         * step 3
+         * step 3 插桩
          */
         start = System.currentTimeMillis()
         val methodTracer = MethodTracer(executor, mappingCollector, config, methodCollector.collectedMethodMap, methodCollector.collectedClassExtendMap)
@@ -157,6 +157,7 @@ class MatrixTrace(
 
     }
 
+    //读取basemap文件转为一个map
     class ParseMappingTask
     constructor(
             private val mappingCollector: MappingCollector,
@@ -171,7 +172,7 @@ class MatrixTrace(
             val mappingFile = File(config.mappingDir, "mapping.txt")
             if (mappingFile.isFile) {
                 val mappingReader = MappingReader(mappingFile)
-                mappingReader.read(mappingCollector)
+                mappingReader.read(mappingCollector)//混淆
             }
             val size = config.parseBlockFile(mappingCollector)
 
@@ -183,6 +184,7 @@ class MatrixTrace(
                     System.currentTimeMillis() - start, size, collectedMethodMap.size, config.baseMethodMapPath)
         }
 
+        //解混淆
         private fun retraceMethodMap(
                 processor: MappingCollector,
                 methodMap: ConcurrentHashMap<String, TraceMethod>) {
@@ -196,6 +198,7 @@ class MatrixTrace(
             retraceMethodMap.clear()
         }
 
+        //读取baseMethodFile里的信息，转为TraceMethod
         private fun getMethodFromBaseMethod(
                 baseMethodFile: File,
                 collectedMethodMap: ConcurrentHashMap<String, TraceMethod>) {
@@ -228,7 +231,6 @@ class MatrixTrace(
                             if (methodId.get() < traceMethod.id && traceMethod.id != TraceBuildConstants.METHOD_ID_DISPATCH) {
                                 methodId.set(traceMethod.id)
                             }
-
                         }
                     }
                 }
@@ -294,12 +296,12 @@ class MatrixTrace(
                     }
                     outChangedFiles[changedFileOutput] = status
                 }
-
+                //为null
                 legacyReplaceChangedFile?.invoke(dirInput, outChangedFiles)
             } else {
                 resultOfDirInputToOut[dirInput] = dirOutput
             }
-
+            //为null
             legacyReplaceFile?.invoke(dirInput, dirOutput)
         }
     }

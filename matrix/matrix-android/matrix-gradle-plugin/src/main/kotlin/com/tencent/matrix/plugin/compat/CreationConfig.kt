@@ -27,9 +27,9 @@ class CreationConfig(
     companion object {
 
         fun getCodeShrinker(project: Project): CodeShrinker {
-
+            //代码压缩工具
             var enableR8: Boolean = when (val property = project.properties["android.enableR8"]) {
-                null -> true
+                null -> true//？todo 为什么null的时候return true，默认为R8
                 else -> (property as String).toBoolean()
             }
 

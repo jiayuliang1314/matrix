@@ -2,10 +2,10 @@ package com.tencent.matrix.trace.extension;
 
 //Extension
 public class MatrixTraceExtension {
-    boolean transformInjectionForced;
-    String baseMethodMapFile;
-    String blackListFile;
-    String customDexTransformName;
+    boolean transformInjectionForced;   //强制transfrom注入
+    String baseMethodMapFile;           //base的mapping文件
+    String blackListFile;               //不插桩的路径
+    String customDexTransformName;      //自定义transform名字
 
     boolean enable;                     //开关
 
@@ -26,6 +26,7 @@ public class MatrixTraceExtension {
         return customDexTransformName;
     }
 
+    //Injection 注射; 大量资金的投入; (液体)注入，喷入;
     public boolean isTransformInjectionForced() {
         return transformInjectionForced;
     }

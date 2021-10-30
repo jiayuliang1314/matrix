@@ -12,6 +12,7 @@ public class Configuration {
     public String mappingDir;
     public String baseMethodMapPath;
     public String methodMapFilePath;
+//    public String methodNewMapFilePath;
     public String ignoreMethodMapFilePath;
     public String blockListFilePath;
     public String traceClassOut;////没有，老的有
@@ -21,12 +22,14 @@ public class Configuration {
     public Configuration() {
     }
 
-    Configuration(String packageName, String mappingDir, String baseMethodMapPath, String methodMapFilePath,
+    Configuration(String packageName, String mappingDir, String baseMethodMapPath,
+                  String methodMapFilePath,/*String methodNewMapFilePath,*/
                   String ignoreMethodMapFilePath, String blockListFilePath, String traceClassOut) {
         this.packageName = packageName;
         this.mappingDir = Util.nullAsNil(mappingDir);
         this.baseMethodMapPath = Util.nullAsNil(baseMethodMapPath);
         this.methodMapFilePath = Util.nullAsNil(methodMapFilePath);
+//        this.methodNewMapFilePath = Util.nullAsNil(methodNewMapFilePath);
         this.ignoreMethodMapFilePath = Util.nullAsNil(ignoreMethodMapFilePath);
         this.blockListFilePath = Util.nullAsNil(blockListFilePath);
         this.traceClassOut = Util.nullAsNil(traceClassOut);
@@ -83,6 +86,7 @@ public class Configuration {
         public String mappingPath;
         public String baseMethodMap;
         public String methodMapFile;
+//        public String newMethodMapFile;
         public String ignoreMethodMapFile;
         public String blockListFile;
         public String traceClassOut;//老的有
@@ -112,6 +116,11 @@ public class Configuration {
             return this;
         }
 
+//        public Builder setNewMethodMapFilePath(String methodMapDir) {//ok
+//            newMethodMapFile = methodMapDir;
+//            return this;
+//        }
+
         public Builder setIgnoreMethodMapFilePath(String methodMapDir) {//ok
             ignoreMethodMapFile = methodMapDir;
             return this;
@@ -123,7 +132,7 @@ public class Configuration {
         }
 
         public Configuration build() {
-            return new Configuration(packageName, mappingPath, baseMethodMap, methodMapFile, ignoreMethodMapFile, blockListFile, traceClassOut);
+            return new Configuration(packageName, mappingPath, baseMethodMap, methodMapFile,/*newMethodMapFile,*/ ignoreMethodMapFile, blockListFile, traceClassOut);
         }
 
     }

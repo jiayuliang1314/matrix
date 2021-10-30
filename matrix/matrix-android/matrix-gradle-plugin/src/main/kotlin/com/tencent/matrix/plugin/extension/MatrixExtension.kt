@@ -21,10 +21,10 @@ package com.tencent.matrix.plugin.extension
  */
 
 open class MatrixExtension(
-        var clientVersion: String = "",
-        var uuid: String = "",
-        var output: String = "",
-        var logLevel: String = "I"
+        var clientVersion: String = "",//todo
+        var uuid: String = "",      //todo
+        var output: String = "",    //todo
+        var logLevel: String = "I"  //log的level
 ) {
 
     override fun toString(): String {
