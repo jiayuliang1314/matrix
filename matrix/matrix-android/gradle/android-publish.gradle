@@ -227,4 +227,4 @@ task buildAndPublishRepo(type: Copy, dependsOn: ['publish']) {
     }
 }
 
-apply from: rootProject.file('gradle/check.gradle')
+//apply from: rootProject.file('gradle/check.gradle')

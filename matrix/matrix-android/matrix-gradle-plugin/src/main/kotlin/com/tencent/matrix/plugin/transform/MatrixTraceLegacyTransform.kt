@@ -61,7 +61,7 @@ class MatrixTraceLegacyTransform(
                     .setBaseMethodMap(extension.baseMethodMapFile)
                     .setBlockListFile(extension.blackListFile)
                     .setMethodMapFilePath("$mappingOut/methodMapping.txt")
-//                    .setNewMethodMapFilePath("$mappingOut/newMethodMapping.txt")
+                    .setNewMethodMapFilePath("$mappingOut/newMethodMapping.txt")
                     .setIgnoreMethodMapFilePath("$mappingOut/ignoreMethodMapping.txt")
                     .setMappingPath(mappingOut)
                     .setTraceClassOut(traceClassOut)//老的有
@@ -170,6 +170,7 @@ class MatrixTraceLegacyTransform(
         MatrixTrace(
                 ignoreMethodMapFilePath = config.ignoreMethodMapFilePath,
                 methodMapFilePath = config.methodMapFilePath,
+                newMethodMapFilePath = config.methodNewMapFilePath,
                 baseMethodMapPath = config.baseMethodMapPath,
                 blockListFilePath = config.blockListFilePath,
                 mappingDir = config.mappingDir

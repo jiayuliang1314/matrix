@@ -183,7 +183,7 @@ class MatrixTraceTransform(
                 .setBaseMethodMap(extension.baseMethodMapFile)
                 .setBlockListFile(extension.blackListFile)
                 .setMethodMapFilePath("$mappingOut/methodMapping.txt")
-//                .setNewMethodMapFilePath("$mappingOut/newMethodMapping.txt")
+                .setNewMethodMapFilePath("$mappingOut/newMethodMapping.txt")
                 .setIgnoreMethodMapFilePath("$mappingOut/ignoreMethodMapping.txt")
                 .setMappingPath(mappingOut)
                 .build()
@@ -250,6 +250,7 @@ class MatrixTraceTransform(
         MatrixTrace(
                 ignoreMethodMapFilePath = config.ignoreMethodMapFilePath,
                 methodMapFilePath = config.methodMapFilePath,
+                newMethodMapFilePath = config.methodNewMapFilePath,
                 baseMethodMapPath = config.baseMethodMapPath,
                 blockListFilePath = config.blockListFilePath,
                 mappingDir = config.mappingDir

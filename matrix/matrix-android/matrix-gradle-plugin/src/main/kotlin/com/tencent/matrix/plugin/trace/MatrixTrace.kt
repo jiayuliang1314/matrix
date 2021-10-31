@@ -41,6 +41,7 @@ import kotlin.collections.HashMap
 class MatrixTrace(
         private val ignoreMethodMapFilePath: String,
         private val methodMapFilePath: String,
+        private val newMethodMapFilePath:String,
         private val baseMethodMapPath: String?,
         private val blockListFilePath: String?,
         private val mappingDir: String
@@ -76,7 +77,7 @@ class MatrixTrace(
         val config = Configuration.Builder()
                 .setIgnoreMethodMapFilePath(ignoreMethodMapFilePath)
                 .setMethodMapFilePath(methodMapFilePath)
-
+                .setNewMethodMapFilePath(newMethodMapFilePath)
                 .setBaseMethodMap(baseMethodMapPath)
                 .setBlockListFile(blockListFilePath)
                 .setMappingPath(mappingDir)
@@ -154,6 +155,10 @@ class MatrixTrace(
         val methodTracer = MethodTracer(executor, mappingCollector, config, methodCollector.collectedMethodMap, methodCollector.collectedClassExtendMap)
         methodTracer.trace(dirInputOutMap, jarInputOutMap)
         Log.i(TAG, "[doTransform] Step(3)[Trace]... cost:%sms", System.currentTimeMillis() - start)
+
+        /**
+         * step 4 copy文件
+         */
 
     }
 
@@ -395,6 +400,4 @@ class MatrixTrace(
             legacyReplaceFile?.invoke(jarInput, jarOutput)
         }
     }
-
-
 }
