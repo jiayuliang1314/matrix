@@ -17,18 +17,27 @@
 package com.tencent.matrix.plugin
 
 import com.android.build.gradle.AppExtension
+import com.android.build.gradle.BaseExtension
+import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.api.ApplicationVariant
+import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.api.LibraryVariant
+import com.android.builder.model.AndroidProject
+import com.google.common.base.Joiner
 import com.tencent.matrix.javalib.util.Log
+import com.tencent.matrix.plugin.deobfuscation.CopyObfuscationMappingFileTask
 import com.tencent.matrix.plugin.extension.MatrixExtension
 import com.tencent.matrix.plugin.extension.MatrixRemoveUnusedResExtension
 import com.tencent.matrix.plugin.task.MatrixTasksManager
 import com.tencent.matrix.trace.extension.MatrixTraceExtension
-import org.gradle.api.GradleException
-import org.gradle.api.Plugin
-import org.gradle.api.Project
+import org.gradle.api.*
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.tasks.TaskProvider
+import java.io.File
 
 class MatrixPlugin : Plugin<Project> {
-    companion object {//伴生对象，里边的值都是static的
+    companion object {
+        //伴生对象，里边的值都是static的
         const val TAG = "Matrix.Plugin"
     }
 
@@ -85,12 +94,120 @@ class MatrixPlugin : Plugin<Project> {
             Log.setLogLevel(matrix.logLevel)//设置level
         }
 
+
         //创建Matrix的tasks
         MatrixTasksManager().createMatrixTasks(
                 project.extensions.getByName("android") as AppExtension,
                 project,
                 traceExtension,
                 removeUnusedResourcesExtension
+        )
+
+
+//        val obfuscationCanaryPluginAction = Action<AppliedPlugin> {
+//            val leakCanaryExtension = matrix
+//            val variants = findAndroidVariants(project)
+//            variants.configureEach { variant ->
+//                if (leakCanaryExtension.filterObfuscatedVariants(variant)) {
+//                    setupTasks(project, variant)
+//                }
+//            }
+//        }
+//
+//        project.pluginManager.withPlugin("com.android.application", obfuscationCanaryPluginAction)
+//        project.pluginManager.withPlugin("com.android.library", obfuscationCanaryPluginAction)
+    }
+
+    private fun findAndroidVariants(project: Project): DomainObjectSet<BaseVariant> {
+        return try {
+            when (val extension = project.extensions.getByType(BaseExtension::class.java)) {
+                is AppExtension -> extension.applicationVariants as DomainObjectSet<BaseVariant>
+                is LibraryExtension -> extension.libraryVariants as DomainObjectSet<BaseVariant>
+                else -> throwNoAndroidPluginException()
+            }
+        } catch (e: Exception) {
+            throwNoAndroidPluginException()
+        }
+    }
+
+    private fun setupTasks(
+            project: Project,
+            variant: BaseVariant
+    ) {
+        val copyObfuscationMappingFileTaskProvider = project.tasks.register(
+                "traceCanaryCopyObfuscationMappingFor${variant.name.capitalize()}",
+                CopyObfuscationMappingFileTask::class.java
+        ) {
+            it.variantName = variant.name
+
+            val buildDir = project.buildDir.absolutePath
+            val dirName = it.variantName//transformInvocation.context.variantName
+
+            //文件输出路径
+            val mappingOut = Joiner.on(File.separatorChar).join(
+                    buildDir,
+                    AndroidProject.FD_OUTPUTS,//outputs
+                    "mapping",
+                    dirName)
+
+            it.mappingFile = File(mappingOut + "/mapping.txt")
+            it.mergeAssetsDirectory = variant.mergeAssetsProvider.get().outputDir.get().asFile
+
+            val mappingGeneratingTaskProvider =
+                    findTaskProviderOrNull(
+                            project,
+                            "transformClassesAndResourcesWithR8For${variant.name.capitalize()}"
+                    ) ?: findTaskProviderOrNull(
+                            project,
+                            "transformClassesAndResourcesWithProguardFor${variant.name.capitalize()}"
+                    ) ?: findTaskProviderOrNull(
+                            project,
+                            "minify${variant.name.capitalize()}WithR8"
+                    ) ?: findTaskProviderOrNull(
+                            project,
+                            "minify${variant.name.capitalize()}WithProguard"
+                    ) ?: throwMissingMinifiedVariantException()
+
+            it.dependsOn(mappingGeneratingTaskProvider)
+            it.dependsOn(variant.mergeAssetsProvider)
+        }
+
+        getPackageTaskProvider(variant).configure {
+            it.dependsOn(copyObfuscationMappingFileTaskProvider)
+        }
+    }
+
+    private fun findTaskProviderOrNull(
+            project: Project,
+            taskName: String
+    ): TaskProvider<Task>? {
+        return try {
+            project.tasks.named(taskName)
+        } catch (proguardTaskNotFoundException: UnknownTaskException) {
+            null
+        }
+    }
+
+    private fun getPackageTaskProvider(variant: BaseVariant): TaskProvider<out DefaultTask> {
+        return when (variant) {
+            is LibraryVariant -> variant.packageLibraryProvider
+            is ApplicationVariant -> variant.packageApplicationProvider
+            else -> throwNoAndroidPluginException()
+        }
+    }
+
+    private fun throwNoAndroidPluginException(): Nothing {
+        throw GradleException(
+                "LeakCanary deobfuscation plugin can be used only in Android application or library module."
+        )
+    }
+
+    private fun throwMissingMinifiedVariantException(): Nothing {
+        throw GradleException(
+                """
+        LeakCanary deobfuscation plugin couldn't find any variant with minification enabled.
+        Please make sure that there is at least 1 minified variant in your project. 
+      """
         )
     }
 }

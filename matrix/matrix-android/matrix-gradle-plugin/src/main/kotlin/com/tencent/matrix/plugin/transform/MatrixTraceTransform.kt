@@ -17,6 +17,7 @@
 package com.tencent.matrix.plugin.transform
 
 import com.android.build.api.transform.*
+import com.android.build.gradle.AppExtension
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.builder.model.AndroidProject.FD_OUTPUTS
 import com.android.utils.FileUtils
@@ -34,6 +35,8 @@ class MatrixTraceTransform(
         private val extension: MatrixTraceExtension,
         private var transparent: Boolean = true
 ) : Transform() {
+
+//    var methodNewMapMergeAssetsFilePath: String=""
 
     companion object {
         const val TAG = "Matrix.TraceTransform"
@@ -107,7 +110,8 @@ class MatrixTraceTransform(
                             copyFileAndMkdirsAsNeed(inputJar, outputJar)
                         }
                         Status.REMOVED -> FileUtils.delete(outputJar)
-                        else -> {}
+                        else -> {
+                        }
                     }
                 } else {
                     copyFileAndMkdirsAsNeed(inputJar, outputJar)
@@ -136,7 +140,8 @@ class MatrixTraceTransform(
                                 val outputFile = toOutputFile(outputDir, inputDir, inputFile)
                                 FileUtils.deleteIfExists(outputFile)
                             }
-                            else -> {}
+                            else -> {
+                            }
                         }
                     }
                 } else {
@@ -187,6 +192,8 @@ class MatrixTraceTransform(
                 .setIgnoreMethodMapFilePath("$mappingOut/ignoreMethodMapping.txt")
                 .setMappingPath(mappingOut)
                 .build()
+
+
     }
 
     //step 4
@@ -247,14 +254,23 @@ class MatrixTraceTransform(
         // Get transform root dir.
         val outputDirectory = transformDirectory
 
-        MatrixTrace(
+        var matrixTrace = MatrixTrace(
                 ignoreMethodMapFilePath = config.ignoreMethodMapFilePath,
                 methodMapFilePath = config.methodMapFilePath,
                 newMethodMapFilePath = config.methodNewMapFilePath,
                 baseMethodMapPath = config.baseMethodMapPath,
                 blockListFilePath = config.blockListFilePath,
                 mappingDir = config.mappingDir
-        ).doTransform(
+        )
+        (project.extensions.getByName("android") as AppExtension).applicationVariants.all { variant ->
+            if (variant.name.equals(invocation.context.variantName)) {
+                var methodNewMapMergeAssetsFilePath = variant.mergeAssetsProvider.get().outputDir.get().asFile.absolutePath + "/tracecanaryObfuscationMapping.txt"
+
+                matrixTrace.methodNewMapMergeAssetsFilePath = methodNewMapMergeAssetsFilePath
+                Log.i("TraceCanary", "transforming methodNewMapMergeAssetsFilePath " + methodNewMapMergeAssetsFilePath)
+            }
+        }
+        matrixTrace.doTransform(
                 classInputs = inputFiles,//ArrayList<File>()
                 changedFiles = changedFiles,//ConcurrentHashMap<File, Status>()
                 isIncremental = isIncremental,

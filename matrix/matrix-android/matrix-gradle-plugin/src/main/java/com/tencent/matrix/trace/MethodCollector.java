@@ -57,6 +57,7 @@ public class MethodCollector {
     private final AtomicInteger ignoreCount = new AtomicInteger();
     //新增的方法个数
     private final AtomicInteger incrementCount = new AtomicInteger();
+    public String methodNewMapMergeAssetsFilePath;
 
     public MethodCollector(ExecutorService executor, MappingCollector mappingCollector, AtomicInteger methodId,
                            Configuration configuration, ConcurrentHashMap<String, TraceMethod> collectedMethodMap) {
@@ -160,6 +161,13 @@ public class MethodCollector {
             @Override
             public void run() {
                 saveNewCollectedMethod(mappingCollector);
+            }
+        }));
+
+        futures.add(executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                saveNewCollectedMethodAssetsMerge(mappingCollector);
             }
         }));
 
@@ -292,6 +300,49 @@ public class MethodCollector {
             }
         }
     }
+
+    //保存新增的到assets merge
+    private void saveNewCollectedMethodAssetsMerge(MappingCollector mappingCollector) {
+        File methodMapFile = new File(methodNewMapMergeAssetsFilePath);
+        if (!methodMapFile.getParentFile().exists()) {
+            methodMapFile.getParentFile().mkdirs();
+        }
+        List<TraceMethod> methodList = new ArrayList<>();
+
+        methodList.addAll(collectedMethodMapNew.values());
+        Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] size:%s incrementCount:%s path:%s",
+                collectedMethodMapNew.size(), incrementCount.get(), methodMapFile.getAbsolutePath());
+
+        Collections.sort(methodList, new Comparator<TraceMethod>() {
+            @Override
+            public int compare(TraceMethod o1, TraceMethod o2) {
+                return o1.id - o2.id;
+            }
+        });
+
+        PrintWriter pw = null;
+        try {
+            Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] begin writefile");
+            FileOutputStream fileOutputStream = new FileOutputStream(methodMapFile, false);
+            Writer w = new OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8);
+            pw = new PrintWriter(w);
+            for (TraceMethod traceMethod : methodList) {
+                traceMethod.revert(mappingCollector);
+                Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] item:%s", traceMethod.toString());
+                pw.println(traceMethod.toString());
+            }
+            Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] end writefile");
+        } catch (Exception e) {
+            Log.e(TAG, "write method map Exception:%s", e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (pw != null) {
+                pw.flush();
+                pw.close();
+            }
+        }
+    }
+
 
     //遍历folder，得到所有需要插桩的类
     private void listClassFiles(ArrayList<File> classFiles, File folder) {

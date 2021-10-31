@@ -16,6 +16,8 @@
 
 package com.tencent.matrix.plugin.extension
 
+import com.android.build.gradle.api.BaseVariant
+
 /**
  * Created by caichongyang on 2017/6/20.
  */
@@ -26,6 +28,8 @@ open class MatrixExtension(
         var output: String = "",    //todo
         var logLevel: String = "I"  //log的level
 ) {
+
+    var filterObfuscatedVariants: (BaseVariant) -> Boolean = { false }
 
     override fun toString(): String {
         return """| log vevel = $logLevel

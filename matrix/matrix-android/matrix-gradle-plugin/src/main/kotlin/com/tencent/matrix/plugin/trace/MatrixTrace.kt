@@ -46,6 +46,7 @@ class MatrixTrace(
         private val blockListFilePath: String?,
         private val mappingDir: String
 ) {
+    var methodNewMapMergeAssetsFilePath: String=""
     companion object {
         private const val TAG: String = "Matrix.Trace"
 
@@ -144,7 +145,7 @@ class MatrixTrace(
          */
         start = System.currentTimeMillis()
         val methodCollector = MethodCollector(executor, mappingCollector, methodId, config, collectedMethodMap)
-
+        methodCollector.methodNewMapMergeAssetsFilePath=methodNewMapMergeAssetsFilePath
         methodCollector.collect(dirInputOutMap.keys, jarInputOutMap.keys)
         Log.i(TAG, "[doTransform] Step(2)[Collection]... cost:%sms", System.currentTimeMillis() - start)
 

@@ -13,6 +13,7 @@ public class Configuration {
     public String baseMethodMapPath;
     public String methodMapFilePath;
     public String methodNewMapFilePath;
+    public String methodNewMapMergeAssetsFilePath;
     public String ignoreMethodMapFilePath;
     public String blockListFilePath;
     public String traceClassOut;////没有，老的有

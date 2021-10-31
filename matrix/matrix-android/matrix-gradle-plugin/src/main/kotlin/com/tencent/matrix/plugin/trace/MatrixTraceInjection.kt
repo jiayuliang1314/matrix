@@ -27,6 +27,7 @@ import com.tencent.matrix.plugin.compat.CreationConfig.Companion.getCodeShrinker
 import com.tencent.matrix.plugin.task.BaseCreationAction
 import com.tencent.matrix.plugin.task.MatrixTraceTask
 import com.tencent.matrix.plugin.transform.MatrixTraceTransform
+import com.tencent.matrix.trace.MethodCollector
 import com.tencent.matrix.trace.extension.ITraceSwitchListener
 import com.tencent.matrix.trace.extension.MatrixTraceExtension
 import org.gradle.api.Project
@@ -73,6 +74,10 @@ class MatrixTraceInjection : ITraceSwitchListener {
                             project: Project,
                             extension: MatrixTraceExtension) {
         appExtension.applicationVariants.all { variant ->
+
+//            var methodNewMapMergeAssetsFilePath = "/Users/admin/StudioProjects/matrix/samples/sample-android/app/build/intermediates/merged_assets/debug/out"+ "/tracecanaryObfuscationMapping.txt"//variant.mergeAssetsProvider.get().outputDir.get().asFile.absolutePath + "/tracecanaryObfuscationMapping.txt"
+//            Log.i("TraceCanary", "doInjection methodNewMapMergeAssetsFilePath " + methodNewMapMergeAssetsFilePath)
+
             //判断哪种 todo
             if (injectTaskOrTransform(project, extension, variant) == InjectionMode.TransformInjection) {
                 Log.i("TraceCanary", "InjectionMode TransformInjection")
@@ -135,7 +140,7 @@ class MatrixTraceInjection : ITraceSwitchListener {
     private fun transformInjection() {
 
         Log.i(TAG, "Using trace transform mode.")
-
+//        transparentTransform!!.methodNewMapMergeAssetsFilePath=methodNewMapMergeAssetsFilePath
         transparentTransform!!.enable()
     }
 

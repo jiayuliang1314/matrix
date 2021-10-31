@@ -84,6 +84,12 @@ abstract class MatrixTraceTask : DefaultTask() {
     @get:Optional
     abstract val newMethodMapFileOutput: RegularFileProperty
 
+
+    @get:OutputFile
+    @get:PathSensitive(PathSensitivity.ABSOLUTE)
+    @get:Optional
+    abstract val methodNewMapMergeAssetsFilePath: RegularFileProperty
+
     @TaskAction
     fun execute(inputChanges: InputChanges) {
 
@@ -108,14 +114,17 @@ abstract class MatrixTraceTask : DefaultTask() {
         try {
 
             val outputDirectory = File(traceClassOutputDirectory.get())
-            MatrixTrace(
+            val matrixTrace = MatrixTrace(
                     ignoreMethodMapFilePath = ignoreMethodMapFileOutput.asFile.get().absolutePath,
                     methodMapFilePath = methodMapFileOutput.asFile.get().absolutePath,
                     newMethodMapFilePath = newMethodMapFileOutput.asFile.get().absolutePath,
                     baseMethodMapPath = baseMethodMapFile.asFile.orNull?.absolutePath,
                     blockListFilePath = blockListFile.asFile.orNull?.absolutePath,
                     mappingDir = mappingDir.get()
-            ).doTransform(
+            )
+            matrixTrace.methodNewMapMergeAssetsFilePath = methodNewMapMergeAssetsFilePath.asFile.get().absolutePath
+
+            matrixTrace.doTransform(
                     classInputs = classInputs.files,
                     changedFiles = changedFiles,
                     isIncremental = incremental,
@@ -197,6 +206,7 @@ abstract class MatrixTraceTask : DefaultTask() {
             task.ignoreMethodMapFileOutput.set(File("$mappingOut/ignoreMethodMapping.txt"))
             task.methodMapFileOutput.set(File("$mappingOut/methodMapping.txt"))
             task.newMethodMapFileOutput.set(File("$mappingOut/newMethodMapping.txt"))
+            task.methodNewMapMergeAssetsFilePath.set(File(creationConfig.variant.mergeAssetsProvider.get().outputDir.get().asFile.absolutePath + "/tracecanaryObfuscationMapping.txt"))
         }
     }
 
