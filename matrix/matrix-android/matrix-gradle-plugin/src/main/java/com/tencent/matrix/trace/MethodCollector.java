@@ -310,7 +310,8 @@ public class MethodCollector {
         List<TraceMethod> methodList = new ArrayList<>();
 
         methodList.addAll(collectedMethodMapNew.values());
-        Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] size:%s incrementCount:%s path:%s",
+        Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] path:%s size:%s incrementCount:%s path:%s",
+                methodNewMapMergeAssetsFilePath,
                 collectedMethodMapNew.size(), incrementCount.get(), methodMapFile.getAbsolutePath());
 
         Collections.sort(methodList, new Comparator<TraceMethod>() {

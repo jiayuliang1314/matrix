@@ -17,6 +17,7 @@
 package com.tencent.matrix.plugin.transform
 
 import com.android.build.api.transform.*
+import com.android.build.gradle.AppExtension
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.pipeline.TransformTask
@@ -35,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap
 // For Android Gradle Plugin 3.5.0
 //Legacy遗产; 遗赠财物; 遗留; 后遗症;
 class MatrixTraceLegacyTransform(
+        private val project: Project,
         private val config: Configuration,
         private val origTransform: Transform
 ) : Transform() {
@@ -74,7 +76,7 @@ class MatrixTraceLegacyTransform(
                         Log.i(TAG, "successfully inject task:" + task.name)
                         val field = TransformTask::class.java.getDeclaredField("transform")
                         field.isAccessible = true
-                        field.set(task, MatrixTraceLegacyTransform(config, task.transform))
+                        field.set(task, MatrixTraceLegacyTransform(project, config, task.transform))
                         break
                     }
                 }
@@ -112,19 +114,19 @@ class MatrixTraceLegacyTransform(
     }
 
     override fun transform(transformInvocation: TransformInvocation) {
-        super.transform(transformInvocation);
-        val start = System.currentTimeMillis();
+        super.transform(transformInvocation)
+        val start = System.currentTimeMillis()
         try {
-            doTransform(transformInvocation); // hack
+            doTransform(transformInvocation) // hack
         } catch (e: Throwable) {
             e.printStackTrace()
         }
-        val cost = System.currentTimeMillis() - start;
-        val begin = System.currentTimeMillis();
-        origTransform.transform(transformInvocation);
-        val origTransformCost = System.currentTimeMillis() - begin;
+        val cost = System.currentTimeMillis() - start
+        val begin = System.currentTimeMillis()
+        origTransform.transform(transformInvocation)
+        val origTransformCost = System.currentTimeMillis() - begin
         Log.i("Matrix.$name", "[transform] cost time: %dms %s:%sms MatrixTraceTransform:%sms",
-                System.currentTimeMillis() - start, origTransform.javaClass.simpleName, origTransformCost, cost);
+                System.currentTimeMillis() - start, origTransform.javaClass.simpleName, origTransformCost, cost)
     }
 
     private fun doTransform(invocation: TransformInvocation) {
@@ -167,14 +169,26 @@ class MatrixTraceLegacyTransform(
             input as Object
         }
 
-        MatrixTrace(
+        var matrixTrace = MatrixTrace(
                 ignoreMethodMapFilePath = config.ignoreMethodMapFilePath,
                 methodMapFilePath = config.methodMapFilePath,
                 newMethodMapFilePath = config.methodNewMapFilePath,
                 baseMethodMapPath = config.baseMethodMapPath,
                 blockListFilePath = config.blockListFilePath,
                 mappingDir = config.mappingDir
-        ).doTransform(
+        )
+
+        Log.d("TraceCanary", "transforming MatrixTraceLegacyTransform begin")
+        (project.extensions.getByName("android") as AppExtension).applicationVariants.all { variant ->
+            if (variant.name.equals(invocation.context.variantName)) {
+                var methodNewMapMergeAssetsFilePath = variant.mergeAssetsProvider.get().outputDir.get().asFile.absolutePath + "/tracecanaryObfuscationMapping.txt"
+
+                matrixTrace.methodNewMapMergeAssetsFilePath = methodNewMapMergeAssetsFilePath
+                Log.d("TraceCanary", "transforming MatrixTraceLegacyTransform " + methodNewMapMergeAssetsFilePath)
+            }
+        }
+        Log.d("TraceCanary", "transforming MatrixTraceLegacyTransform end")
+        matrixTrace.doTransform(
                 classInputs = inputFiles,
                 changedFiles = changedFiles,
                 isIncremental = isIncremental,
@@ -189,8 +203,8 @@ class MatrixTraceLegacyTransform(
     }
 
     private fun replaceFile(input: QualifiedContent, newFile: File) {
-        val fileField = ReflectUtil.getDeclaredFieldRecursive(input.javaClass, "file");
-        fileField.set(input, newFile);
+        val fileField = ReflectUtil.getDeclaredFieldRecursive(input.javaClass, "file")
+        fileField.set(input, newFile)
     }
 
     private fun replaceChangedFile(dirInput: DirectoryInput, changedFiles: Map<File, Status>) {
