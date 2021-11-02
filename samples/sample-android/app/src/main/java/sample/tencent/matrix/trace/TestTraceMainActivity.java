@@ -123,6 +123,41 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
         startActivity(intent);
     }
 
+    public void test_kadun(View view) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        test_kadun1(view);
+    }
+    public void test_kadun1(View view) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        test_kadun2(view);
+    }
+
+    public void test_kadun2(View view) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        test_kadun3(view);
+    }
+
+    public void test_kadun3(View view) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public void testJankiess(View view) {
         A();
     }

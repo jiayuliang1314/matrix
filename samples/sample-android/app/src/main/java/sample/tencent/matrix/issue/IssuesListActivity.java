@@ -22,6 +22,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +42,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -128,6 +131,7 @@ public class IssuesListActivity extends AppCompatActivity {
         public int position;
 
         private boolean isShow = true;
+        private boolean isObfused=false;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -173,10 +177,13 @@ public class IssuesListActivity extends AppCompatActivity {
         }
 
         public void readMappingFile(Map<Integer, String> methoMap) {
+            Log.i("IssuesListActivity","readMappingFile");
             BufferedReader reader = null;
             String tempString = null;
             try {
-                reader = new BufferedReader(new FileReader(methodFilePath));
+                InputStream in = tvTime.getContext().getResources().getAssets().open("tracecanaryObfuscationMapping.txt");
+                InputStreamReader isr = new InputStreamReader(in,"UTF-8");
+                reader = new BufferedReader(isr);//new FileReader(methodFilePath));
                 while ((tempString = reader.readLine()) != null) {
                     String[] contents = tempString.split(",");
                     methoMap.put(Integer.parseInt(contents[0]), contents[2].replace('\n', ' '));
@@ -197,7 +204,7 @@ public class IssuesListActivity extends AppCompatActivity {
 
         public void showIssue(Issue issue) {
             String key = "stack";
-            if (issue.getContent().has(key)) {
+            if (issue.getContent().has(key) && isObfused==false) {
                 try {
                     String stack = issue.getContent().getString(key);
                     Map<Integer, String> map = new HashMap<>();
@@ -228,6 +235,7 @@ public class IssuesListActivity extends AppCompatActivity {
 
                         issue.getContent().remove(key);
                         issue.getContent().put(key, stringBuilder.toString());
+                        isObfused=true;
                     }
 
                 } catch (JSONException ex) {

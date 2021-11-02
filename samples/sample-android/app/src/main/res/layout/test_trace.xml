@@ -17,6 +17,15 @@
         style="@style/EntryButton" />
 
     <Button
+        android:id="@+id/test_kadun"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:onClick="test_kadun"
+        android:text="测试卡顿问题 - 贾玉良新增"
+        style="@style/EntryButton" />
+
+    <Button
         android:id="@+id/test_enter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

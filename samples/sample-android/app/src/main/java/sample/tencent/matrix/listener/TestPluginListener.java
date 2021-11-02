@@ -67,7 +67,7 @@ public class TestPluginListener extends DefaultPluginListener {
             }
         });
 
-//        jumpToIssueActivity();
+        jumpToIssueActivity();
 
         EventBus.getDefault().post(new MessageEventIssueHappen(issue.getTag()));
     }
