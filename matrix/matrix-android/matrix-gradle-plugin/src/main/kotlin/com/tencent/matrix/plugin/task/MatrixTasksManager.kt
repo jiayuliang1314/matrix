@@ -21,9 +21,11 @@ import com.tencent.matrix.javalib.util.Log
 import com.tencent.matrix.javalib.util.Util
 import com.tencent.matrix.plugin.compat.CreationConfig
 import com.tencent.matrix.plugin.compat.MatrixTraceCompat
+import com.tencent.matrix.plugin.extension.MatrixExtension
 import com.tencent.matrix.plugin.extension.MatrixRemoveUnusedResExtension
 import com.tencent.matrix.trace.extension.MatrixTraceExtension
 import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
 
 class MatrixTasksManager {
 
@@ -31,22 +33,24 @@ class MatrixTasksManager {
         const val TAG = "Matrix.TasksManager"
     }
 
-    fun createMatrixTasks(android: AppExtension,
+    fun createMatrixTasks(matrix: MatrixExtension,
+                          android: AppExtension,
                           project: Project,
                           traceExtension: MatrixTraceExtension,
                           removeUnusedResourcesExtension: MatrixRemoveUnusedResExtension) {
 
-        createMatrixTraceTask(android, project, traceExtension)
+        createMatrixTraceTask(matrix,android, project, traceExtension)
 
         createRemoveUnusedResourcesTask(android, project, removeUnusedResourcesExtension)//todo
     }
 
     private fun createMatrixTraceTask(
+            matrix: MatrixExtension,
             android: AppExtension,
             project: Project,
             traceExtension: MatrixTraceExtension) {
         //MatrixTraceCompat调用inject方法
-        MatrixTraceCompat().inject(android, project, traceExtension)
+        MatrixTraceCompat().inject(matrix,android, project, traceExtension)
     }
 
     private fun createRemoveUnusedResourcesTask(

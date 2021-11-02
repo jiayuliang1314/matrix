@@ -24,10 +24,10 @@ import com.android.builder.model.CodeShrinker
 import com.tencent.matrix.javalib.util.Log
 import com.tencent.matrix.plugin.compat.CreationConfig
 import com.tencent.matrix.plugin.compat.CreationConfig.Companion.getCodeShrinker
+import com.tencent.matrix.plugin.extension.MatrixExtension
 import com.tencent.matrix.plugin.task.BaseCreationAction
 import com.tencent.matrix.plugin.task.MatrixTraceTask
 import com.tencent.matrix.plugin.transform.MatrixTraceTransform
-import com.tencent.matrix.trace.MethodCollector
 import com.tencent.matrix.trace.extension.ITraceSwitchListener
 import com.tencent.matrix.trace.extension.MatrixTraceExtension
 import org.gradle.api.Project
@@ -46,13 +46,13 @@ class MatrixTraceInjection : ITraceSwitchListener {
     }
 
     //step 1
-    fun inject(appExtension: AppExtension,
+    fun inject(matrix: MatrixExtension, appExtension: AppExtension,
                project: Project,
                extension: MatrixTraceExtension) {
         injectTransparentTransform(appExtension, project, extension)
         project.afterEvaluate {
             if (extension.isEnable) {
-                doInjection(appExtension, project, extension)
+                doInjection(matrix, appExtension, project, extension)
             }
         }
     }
@@ -70,7 +70,7 @@ class MatrixTraceInjection : ITraceSwitchListener {
     }
 
     //step 3
-    private fun doInjection(appExtension: AppExtension,
+    private fun doInjection(matrix: MatrixExtension, appExtension: AppExtension,
                             project: Project,
                             extension: MatrixTraceExtension) {
         appExtension.applicationVariants.all { variant ->
@@ -78,15 +78,17 @@ class MatrixTraceInjection : ITraceSwitchListener {
 //            var methodNewMapMergeAssetsFilePath = "/Users/admin/StudioProjects/matrix/samples/sample-android/app/build/intermediates/merged_assets/debug/out"+ "/tracecanaryObfuscationMapping.txt"//variant.mergeAssetsProvider.get().outputDir.get().asFile.absolutePath + "/tracecanaryObfuscationMapping.txt"
 //            Log.i("TraceCanary", "doInjection methodNewMapMergeAssetsFilePath " + methodNewMapMergeAssetsFilePath)
 
-            //判断哪种 todo
-            if (injectTaskOrTransform(project, extension, variant) == InjectionMode.TransformInjection) {
-                Log.i("TraceCanary", "InjectionMode TransformInjection")
-                // Inject transform
-                transformInjection()
-            } else {
-                Log.i("TraceCanary", "InjectionMode TaskInjection")
-                // Inject task
-                taskInjection(project, extension, variant)
+            if (matrix.filterObfuscatedVariants(variant)) {
+                //判断哪种 todo
+                if (injectTaskOrTransform(project, extension, variant) == InjectionMode.TransformInjection) {
+                    Log.i("TraceCanary", "InjectionMode TransformInjection")
+                    // Inject transform
+                    transformInjection()
+                } else {
+                    Log.i("TraceCanary", "InjectionMode TaskInjection")
+                    // Inject task
+                    taskInjection(project, extension, variant)
+                }
             }
         }
     }

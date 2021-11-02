@@ -97,6 +97,7 @@ class MatrixPlugin : Plugin<Project> {
 
         //创建Matrix的tasks
         MatrixTasksManager().createMatrixTasks(
+                matrix,
                 project.extensions.getByName("android") as AppExtension,
                 project,
                 traceExtension,
