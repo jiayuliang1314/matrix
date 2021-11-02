@@ -1,2 +1,2 @@
 include ':app'
-include ':matrix-trace-canary'
+//include ':matrix-trace-canary'

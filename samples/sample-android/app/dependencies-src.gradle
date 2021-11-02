@@ -6,7 +6,7 @@ dependencies {
             "matrix-battery-canary",
             "matrix-android-lib",
             "matrix-android-commons",
-//            "matrix-trace-canary",
+            "matrix-trace-canary",
             "matrix-resource-canary-android",
             "matrix-resource-canary-common",
             "matrix-io-canary",
@@ -57,5 +57,5 @@ dependencies {
 
     implementation "org.greenrobot:eventbus:3.2.0"//混淆ok
 
-    implementation project(':matrix-trace-canary')
+//    implementation project(':matrix-trace-canary')
 }
