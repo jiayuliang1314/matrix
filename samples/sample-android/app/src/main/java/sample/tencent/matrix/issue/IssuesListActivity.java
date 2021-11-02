@@ -216,7 +216,13 @@ public class IssuesListActivity extends AppCompatActivity {
                         String[] lines = stack.split("\n");
                         for (String line : lines) {
                             String[] args = line.split(",");
-                            int method = Integer.parseInt(args[1]);
+                            int method = 0;
+                            try {
+                                method = Integer.parseInt(args[1]);
+                            } catch (NumberFormatException e) {
+                                e.printStackTrace();
+                                return;
+                            }
                             boolean isContainKey = map.containsKey(method);
                             if (!isContainKey) {
                                 System.out.print("error!!!");
