@@ -18,6 +18,7 @@ package com.tencent.matrix.trace.util;
 
 import android.util.Log;
 
+import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.constants.Constants;
 import com.tencent.matrix.trace.core.AppMethodBeat;
 import com.tencent.matrix.trace.items.MethodItem;
@@ -39,7 +40,6 @@ public class TraceDataUtils {
     // METHOD_ID_DISPATCH 1 2 3 4 5 6 6 5 4 3
 
     /**
-     *
      * @param buffer
      * @param result
      * @param isStrict 如果堆栈不齐，是否补堆栈，补齐堆栈核心是计算方法时间
@@ -160,6 +160,7 @@ public class TraceDataUtils {
 
     /**
      * 递归打印TreeNode，存入ss里
+     *
      * @param root
      * @param depth
      * @param ss
@@ -205,6 +206,7 @@ public class TraceDataUtils {
     /**
      * 将TreeNode保存到list
      * 深度优先遍历
+     *
      * @param root
      * @param list
      */
@@ -227,11 +229,9 @@ public class TraceDataUtils {
      * Structured the method stack as a tree Data structure
      *
      * @param resultStack
-     * @return
-     * 
-     *           1
-     *       2        3
-     *     4  5      6 7
+     * @return 1
+     * 2        3
+     * 4  5      6 7
      */
     public static int stackToTree(LinkedList<MethodItem> resultStack, TreeNode root) {
         TreeNode lastNode = null;
@@ -329,7 +329,6 @@ public class TraceDataUtils {
     //endregion
 
 
-
     public static void trimStack(List<MethodItem> stack, int targetCount, IStructuredDataFilter filter) {
         if (0 > targetCount) {
             stack.clear();
@@ -394,8 +393,16 @@ public class TraceDataUtils {
         }
 
         for (MethodItem item : sortList) {
-            ss.append(item.methodId + "|");
-            break;
+            MatrixLog.d(TAG, "getTreeKey newMethodMap contains methodId？" + TracePlugin.newMethodMap);
+            if (TracePlugin.newMethodMap.containsKey(item.methodId)) {
+                MatrixLog.d(TAG, "getTreeKey newMethodMap contains " + item.methodId);
+                ss.append(item.methodId + " " + TracePlugin.newMethodMap.get(item.methodId));
+            } else {
+                MatrixLog.d(TAG, "getTreeKey contains donot contains " + item.methodId);
+                ss.append(item.methodId);
+            }
+//            ss.append(item.methodId + "|");
+            break;//这里保证了只有一个key
         }
         return ss.toString();
     }

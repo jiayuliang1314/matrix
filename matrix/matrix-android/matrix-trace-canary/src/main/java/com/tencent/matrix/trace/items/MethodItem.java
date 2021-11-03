@@ -16,6 +16,9 @@
 
 package com.tencent.matrix.trace.items;
 
+import com.tencent.matrix.trace.TracePlugin;
+import com.tencent.matrix.util.MatrixLog;
+
 public class MethodItem {
 
     public int methodId;
@@ -31,7 +34,14 @@ public class MethodItem {
 
     @Override
     public String toString() {
-        return depth + "," + methodId + "," + count + "," + durTime;
+        MatrixLog.d("Matrix.MethodItem", "toString newMethodMap contains methodId？" + TracePlugin.newMethodMap);
+        if (TracePlugin.newMethodMap.containsKey(methodId)) {
+            MatrixLog.d("Matrix.MethodItem", "toString newMethodMap contains methodId " + methodId);
+            return depth + "," + methodId + "," + count + "," + durTime + "," + TracePlugin.newMethodMap.get(methodId);
+        } else {
+            MatrixLog.d("Matrix.MethodItem", "toString newMethodMap not contains methodId " + methodId);
+            return depth + "," + methodId + "," + count + "," + durTime;
+        }
     }
 
     public void mergeMore(long cost) {

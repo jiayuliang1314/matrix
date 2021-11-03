@@ -1,3 +1,17 @@
 1.掉帧10s才上报，clicfg_matrix_trace_fps_time_slice  ？ 所有时间累计，算上本来的16ms，总共超时帧所占时间，如果没超过16ms，则是16ms
 2.热启动，冷启动                                     ？ ok https://github.com/Tencent/matrix/issues/628
 3.startup 热启动慢会传方法堆栈吗
+
+tag[Trace_EvilMethod]type[0];key[null];
+content[{"machine":"MIDDLE","cpu_app":0,"mem":3510513664,"mem_free":1417432,
+"detail":"NORMAL","cost":4012,"usage":"0.05%","scene":"sample.tencent.matrix.trace.TestTraceMainActivity",
+
+"stack":"0,1048574,1,4012\n
+1,13543,1,4007,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun (Landroid.view.View;)V\n
+2,13544,1,3007,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun1 (Landroid.view.View;)V\n
+3,13545,1,1997,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun2 (Landroid.view.View;)V\n
+4,13546,1,996,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun3 (Landroid.view.View;)V\n",
+
+"stackKey":"13544 sample.tencent.matrix.trace.TestTraceMainActivity test_kadun1 (Landroid.view.View;)V",
+
+"tag":"Trace_EvilMethod","process":"sample.tencent.matrix","time":1635909046083}]

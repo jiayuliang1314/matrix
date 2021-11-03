@@ -19,6 +19,7 @@ package com.tencent.matrix.trace;
 import android.app.Application;
 import android.os.Build;
 import android.os.Looper;
+import android.util.Log;
 
 import com.tencent.matrix.plugin.Plugin;
 import com.tencent.matrix.plugin.PluginListener;
@@ -36,6 +37,13 @@ import com.tencent.matrix.trace.tracer.ThreadPriorityTracer;
 import com.tencent.matrix.util.MatrixHandlerThread;
 import com.tencent.matrix.util.MatrixLog;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Created by caichongyang on 2017/5/20.
  */
@@ -43,9 +51,8 @@ import com.tencent.matrix.util.MatrixLog;
 public class TracePlugin extends Plugin {
     //region 参数
     private static final String TAG = "Matrix.TracePlugin";
-
+    public static ConcurrentHashMap<Integer, String> newMethodMap = new ConcurrentHashMap<>();
     private final TraceConfig traceConfig;      //动态配置
-
     private EvilMethodTracer evilMethodTracer;  //超时方法检测
     private StartupTracer startupTracer;        //启动超时检测
     private FrameTracer frameTracer;            //帧率检测
@@ -76,6 +83,37 @@ public class TracePlugin extends Plugin {
         evilMethodTracer = new EvilMethodTracer(traceConfig);
 
         startupTracer = new StartupTracer(traceConfig);
+
+        newMethodMap.clear();
+        readMappingFile(newMethodMap);
+    }
+
+    public void readMappingFile(ConcurrentHashMap<Integer, String> methoMap) {
+        Log.i(TAG, "readMappingFile");
+        BufferedReader reader = null;
+        String tempString = null;
+        try {
+            InputStream in = getApplication().getResources().getAssets().open("tracecanaryObfuscationMapping.txt");
+            InputStreamReader isr = new InputStreamReader(in, StandardCharsets.UTF_8);
+            reader = new BufferedReader(isr);//new FileReader(methodFilePath));
+            while ((tempString = reader.readLine()) != null) {
+                String[] contents = tempString.split(",");
+                methoMap.put(Integer.parseInt(contents[0]), contents[2].replace('\n', ' '));
+                Log.i(TAG, "readMappingFile " + contents[0] + " " + contents[2]);
+            }
+            Log.i(TAG, "readMappingFile " + methoMap.size());
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
     }
 
     //step 1
