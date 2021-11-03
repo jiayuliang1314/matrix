@@ -1,6 +1,7 @@
 package com.tencent.matrix.trace;
 
 import com.tencent.matrix.javalib.util.Log;
+import com.tencent.matrix.plugin.compat.AgpCompat;
 import com.tencent.matrix.trace.item.TraceMethod;
 import com.tencent.matrix.trace.retrace.MappingCollector;
 
@@ -379,7 +380,7 @@ public class MethodCollector {
                 is = new FileInputStream(classFile);
                 ClassReader classReader = new ClassReader(is);
                 ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-                ClassVisitor visitor = new TraceClassAdapter(Opcodes.ASM5, classWriter);
+                ClassVisitor visitor = new TraceClassAdapter(AgpCompat.getAsmApi(), classWriter);
                 classReader.accept(visitor, 0);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -414,7 +415,7 @@ public class MethodCollector {
                         InputStream inputStream = zipFile.getInputStream(zipEntry);
                         ClassReader classReader = new ClassReader(inputStream);
                         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-                        ClassVisitor visitor = new TraceClassAdapter(Opcodes.ASM5, classWriter);
+                        ClassVisitor visitor = new TraceClassAdapter(AgpCompat.getAsmApi(), classWriter);
                         classReader.accept(visitor, 0);
                     }
                 }
@@ -472,7 +473,7 @@ public class MethodCollector {
 
         CollectMethodNode(String className, int access, String name, String desc,
                           String signature, String[] exceptions) {
-            super(Opcodes.ASM5, access, name, desc, signature, exceptions);
+            super(AgpCompat.getAsmApi(), access, name, desc, signature, exceptions);
             this.className = className;
         }
 

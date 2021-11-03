@@ -260,7 +260,8 @@ class MatrixTraceTransform(
                 newMethodMapFilePath = config.methodNewMapFilePath,
                 baseMethodMapPath = config.baseMethodMapPath,
                 blockListFilePath = config.blockListFilePath,
-                mappingDir = config.mappingDir
+                mappingDir = config.mappingDir,
+                project = project
         )
         (project.extensions.getByName("android") as AppExtension).applicationVariants.all { variant ->
             if (variant.name.equals(invocation.context.variantName)) {
@@ -274,6 +275,7 @@ class MatrixTraceTransform(
                 classInputs = inputFiles,//ArrayList<File>()
                 changedFiles = changedFiles,//ConcurrentHashMap<File, Status>()
                 isIncremental = isIncremental,
+                skipCheckClass = config.skipCheckClass,
                 traceClassDirectoryOutput = outputDirectory,//output文件夹
                 inputToOutput = inputToOutput,//ConcurrentHashMap<File, File>()
                 legacyReplaceChangedFile = null,

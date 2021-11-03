@@ -16,8 +16,8 @@ public class Configuration {
     public String methodNewMapMergeAssetsFilePath;
     public String ignoreMethodMapFilePath;
     public String blockListFilePath;
-    public String traceClassOut;////没有，老的有
-    //todo
+    public String traceClassOut;//没有，老的有
+    public boolean skipCheckClass;
     public HashSet<String> blockSet = new HashSet<>();
 
     public Configuration() {
@@ -25,7 +25,7 @@ public class Configuration {
 
     Configuration(String packageName, String mappingDir, String baseMethodMapPath,
                   String methodMapFilePath,String methodNewMapFilePath,
-                  String ignoreMethodMapFilePath, String blockListFilePath, String traceClassOut) {
+                  String ignoreMethodMapFilePath, String blockListFilePath, String traceClassOut, boolean skipCheckClass) {
         this.packageName = packageName;
         this.mappingDir = Util.nullAsNil(mappingDir);
         this.baseMethodMapPath = Util.nullAsNil(baseMethodMapPath);
@@ -34,6 +34,7 @@ public class Configuration {
         this.ignoreMethodMapFilePath = Util.nullAsNil(ignoreMethodMapFilePath);
         this.blockListFilePath = Util.nullAsNil(blockListFilePath);
         this.traceClassOut = Util.nullAsNil(traceClassOut);
+        this.skipCheckClass = skipCheckClass;
     }
 
     public int parseBlockFile(MappingCollector processor) {//todo
@@ -91,6 +92,7 @@ public class Configuration {
         public String ignoreMethodMapFile;
         public String blockListFile;
         public String traceClassOut;//老的有
+        public boolean skipCheckClass = false;
 
         public Builder setPackageName(String packageName) {//老的有
             this.packageName = packageName;
@@ -132,8 +134,13 @@ public class Configuration {
             return this;
         }
 
+        public Builder setSkipCheckClass(boolean skipCheckClass) {
+            this.skipCheckClass = skipCheckClass;
+            return this;
+        }
+
         public Configuration build() {
-            return new Configuration(packageName, mappingPath, baseMethodMap, methodMapFile,newMethodMapFile, ignoreMethodMapFile, blockListFile, traceClassOut);
+            return new Configuration(packageName, mappingPath, baseMethodMap, methodMapFile,newMethodMapFile, ignoreMethodMapFile, blockListFile, traceClassOut, skipCheckClass);
         }
 
     }

@@ -66,7 +66,8 @@ class MatrixTraceLegacyTransform(
                     .setNewMethodMapFilePath("$mappingOut/newMethodMapping.txt")
                     .setIgnoreMethodMapFilePath("$mappingOut/ignoreMethodMapping.txt")
                     .setMappingPath(mappingOut)
-                    .setTraceClassOut(traceClassOut)//老的有
+                    .setTraceClassOut(traceClassOut)
+                    .setSkipCheckClass(extension.isSkipCheckClass)//老的有
                     .build()
 
             val hardTask = getTransformTaskName(extension.customDexTransformName, variant.name)
@@ -175,7 +176,8 @@ class MatrixTraceLegacyTransform(
                 newMethodMapFilePath = config.methodNewMapFilePath,
                 baseMethodMapPath = config.baseMethodMapPath,
                 blockListFilePath = config.blockListFilePath,
-                mappingDir = config.mappingDir
+                mappingDir = config.mappingDir,
+                project = project
         )
 
         Log.d("TraceCanary", "transforming MatrixTraceLegacyTransform begin")
@@ -192,6 +194,7 @@ class MatrixTraceLegacyTransform(
                 classInputs = inputFiles,
                 changedFiles = changedFiles,
                 isIncremental = isIncremental,
+                skipCheckClass = config.skipCheckClass,
                 traceClassDirectoryOutput = File(config.traceClassOut),
                 inputToOutput = ConcurrentHashMap(),
                 legacyReplaceChangedFile = legacyReplaceChangedFile,

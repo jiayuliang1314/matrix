@@ -6,6 +6,7 @@ public class MatrixTraceExtension {
     String baseMethodMapFile;           //base的mapping文件
     String blackListFile;               //不插桩的路径
     String customDexTransformName;      //自定义transform名字
+    boolean skipCheckClass = true; // skip by default
 
     boolean enable;                     //开关
 
@@ -33,5 +34,9 @@ public class MatrixTraceExtension {
 
     public boolean isEnable() {
         return enable;
+    }
+
+    public boolean isSkipCheckClass() {
+        return skipCheckClass;
     }
 }

@@ -17,6 +17,8 @@
 package com.tencent.matrix.trace.core;
 
 import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.SystemClock;
@@ -26,13 +28,19 @@ import android.util.Printer;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 
+import android.util.Log;
+import android.util.Printer;
+
+import com.tencent.matrix.util.MatrixHandlerThread;
 import com.tencent.matrix.util.MatrixLog;
 import com.tencent.matrix.util.ReflectUtils;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 //Looper 的监控是由类 LooperMonitor 实现的，原理很简单，为主线程 Looper 设置一个 Printer 即可，
 //但值得一提的是，LooperMonitor 不会直接设置 Printer，而是先获取旧对象，并创建代理对象，避免影响到其它用户设置的 Printer
@@ -46,18 +54,62 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
     private static final String TAG = "Matrix.LooperMonitor";
     private static final Map<Looper, LooperMonitor> sLooperMonitorMap = new ConcurrentHashMap<>();
     private static final LooperMonitor sMainMonitor = LooperMonitor.of(Looper.getMainLooper());//单例模式
-    private static final long CHECK_TIME = 60 * 1000L;//1分钟重新设置一次
-    private static boolean isReflectLoggingError = false;
-    private final HashSet<LooperDispatchListener> listeners = new HashSet<>();//所有的监听器
-    private LooperPrinter printer;//代理printer对象
-    private Looper looper;
-    private long lastCheckPrinterTime = 0;
 
-    private LooperMonitor(Looper looper) {
-        Objects.requireNonNull(looper);
-        this.looper = looper;
-        resetPrinter();
-        addIdleHandler(looper);
+    private static final HandlerThread historyMsgHandlerThread = MatrixHandlerThread.getNewHandlerThread("historyMsgHandlerThread", HandlerThread.NORM_PRIORITY);
+    private static final Handler historyMsgHandler = new Handler(historyMsgHandlerThread.getLooper());
+    private static long messageStartTime = 0;
+    private static final int HISTORY_QUEUE_MAX_SIZE = 200;
+    private static final int RECENT_QUEUE_MAX_SIZE = 5000;
+
+    private static final Queue<M> anrHistoryMQ = new ConcurrentLinkedQueue<>();
+    private static final Queue<M> recentMsgQ = new ConcurrentLinkedQueue<>();
+
+    private static String latestMsgLog = "";
+    private static long recentMCount = 0;
+    private static long recentMDuration = 0;
+
+    /**
+     * 监听Looper 消息分发开始，结束
+     */
+    public abstract static class LooperDispatchListener {
+
+        boolean isHasDispatchStart = false;
+        boolean historyMsgRecorder = false;
+        boolean denseMsgTracer = false;
+
+        public LooperDispatchListener(boolean historyMsgRecorder, boolean denseMsgTracer) {
+            this.historyMsgRecorder = historyMsgRecorder;
+            this.denseMsgTracer = denseMsgTracer;
+        }
+
+        public LooperDispatchListener() {
+
+        }
+
+        public boolean isValid() {
+            return false;
+        }
+
+
+        public void dispatchStart() {
+
+        }
+
+        @CallSuper
+        public void onDispatchStart(String x) {
+            this.isHasDispatchStart = true;
+            dispatchStart();
+        }
+
+        @CallSuper
+        public void onDispatchEnd(String x) {
+            this.isHasDispatchStart = false;
+            dispatchEnd();
+        }
+
+
+        public void dispatchEnd() {
+        }
     }
 
     public static LooperMonitor of(@NonNull Looper looper) {
@@ -80,6 +132,12 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         sMainMonitor.removeListener(listener);
     }
 
+    private final HashSet<LooperDispatchListener> listeners = new HashSet<>();//所有的监听器
+    private LooperPrinter printer;//代理printer对象
+    private Looper looper;
+    private static final long CHECK_TIME = 60 * 1000L;//1分钟重新设置一次
+    private long lastCheckPrinterTime = 0;
+
     /**
      * It will be thread-unsafe if you get the listeners and literate.
      */
@@ -98,6 +156,13 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         synchronized (listeners) {
             listeners.remove(listener);
         }
+    }
+
+    private LooperMonitor(Looper looper) {
+        Objects.requireNonNull(looper);
+        this.looper = looper;
+        resetPrinter();
+        addIdleHandler(looper);
     }
 
     public Looper getLooper() {
@@ -128,6 +193,8 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
             printer = null;
         }
     }
+
+    private static boolean isReflectLoggingError = false;
 
     //将looper的mLogging对象，设置为我们的代理对象，LooperPrinter
     private synchronized void resetPrinter() {
@@ -192,59 +259,6 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
         }
     }
 
-    private void dispatch(boolean isBegin, String log) {
-        synchronized (listeners) {
-            for (LooperDispatchListener listener : listeners) {
-                if (listener.isValid()) {
-                    if (isBegin) {
-                        if (!listener.isHasDispatchStart) {
-                            listener.onDispatchStart(log);
-                        }
-                    } else {
-                        if (listener.isHasDispatchStart) {
-                            listener.onDispatchEnd(log);
-                        }
-                    }
-                } else if (!isBegin && listener.isHasDispatchStart) {
-                    listener.dispatchEnd();
-                }
-            }
-        }
-    }
-
-    /**
-     * 监听Looper 消息分发开始，结束
-     */
-    public abstract static class LooperDispatchListener {
-
-        boolean isHasDispatchStart = false;
-
-        public boolean isValid() {
-            return false;
-        }
-
-
-        public void dispatchStart() {
-
-        }
-
-        @CallSuper
-        public void onDispatchStart(String x) {
-            this.isHasDispatchStart = true;
-            dispatchStart();
-        }
-
-        @CallSuper
-        public void onDispatchEnd(String x) {
-            this.isHasDispatchStart = false;
-            dispatchEnd();
-        }
-
-
-        public void dispatchEnd() {
-        }
-    }
-
     //android.util.Printer 一个系统类
     class LooperPrinter implements Printer {
         public Printer origin;
@@ -276,6 +290,106 @@ public class LooperMonitor implements MessageQueue.IdleHandler {
             if (isValid) {
                 dispatch(x.charAt(0) == '>', x);// 分发，通过第一个字符判断是开始分发，还是结束分发
             }
+
+        }
+    }
+
+    private static void recordMsg(final String log, final long duration, boolean denseMsgTracer) {
+        historyMsgHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                enqueueHistoryMQ(new M(log, duration));
+            }
+        });
+
+        if (denseMsgTracer) {
+            historyMsgHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    enqueueRecentMQ(new M(log, duration));
+                }
+            });
+        }
+    }
+
+    private static void enqueueRecentMQ(M m) {
+        if (recentMsgQ.size() == RECENT_QUEUE_MAX_SIZE) {
+            recentMsgQ.poll();
+        }
+        recentMsgQ.offer(m);
+
+        recentMDuration += m.d;
+    }
+
+    private static void enqueueHistoryMQ(M m) {
+        if (anrHistoryMQ.size() == HISTORY_QUEUE_MAX_SIZE) {
+            anrHistoryMQ.poll();
+        }
+        anrHistoryMQ.offer(m);
+    }
+
+    public static Queue<M> getHistoryMQ() {
+        enqueueHistoryMQ(new M(latestMsgLog, System.currentTimeMillis() - messageStartTime));
+        return anrHistoryMQ;
+    }
+
+    public static Queue<M> getRecentMsgQ() {
+        return recentMsgQ;
+    }
+
+    public static void cleanRecentMQ() {
+        recentMsgQ.clear();
+        recentMCount = 0;
+        recentMDuration = 0;
+    }
+
+    public static long getRecentMCount() {
+        return recentMCount;
+    }
+
+    public static long getRecentMDuration() {
+        return recentMDuration;
+    }
+
+    private void dispatch(boolean isBegin, String log) {
+        synchronized (listeners) {
+            for (LooperDispatchListener listener : listeners) {
+                if (listener.isValid()) {
+                    if (isBegin) {
+                        if (!listener.isHasDispatchStart) {
+                            if (listener.historyMsgRecorder) {
+                                messageStartTime = System.currentTimeMillis();
+                                latestMsgLog = log;
+                                recentMCount++;
+                            }
+                            listener.onDispatchStart(log);
+                        }
+                    } else {
+                        if (listener.isHasDispatchStart) {
+                            if (listener.historyMsgRecorder) {
+                                recordMsg(log, System.currentTimeMillis() - messageStartTime, listener.denseMsgTracer);
+                            }
+                            listener.onDispatchEnd(log);
+                        }
+                    }
+                } else if (!isBegin && listener.isHasDispatchStart) {
+                    listener.dispatchEnd();
+                }
+            }
+        }
+    }
+
+    public static class M {
+        public String l;
+        public long d;
+        M(String l, long d) {
+            this.l = l;
+            this.d = d;
+        }
+
+        @Override
+        public String toString() {
+            return "{" + l + " -> " + d + '}';
         }
     }
 }

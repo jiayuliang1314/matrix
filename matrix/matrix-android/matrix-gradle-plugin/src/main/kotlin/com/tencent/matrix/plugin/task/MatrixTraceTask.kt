@@ -90,6 +90,9 @@ abstract class MatrixTraceTask : DefaultTask() {
     @get:Optional
     abstract val methodNewMapMergeAssetsFilePath: RegularFileProperty
 
+    @get:Optional
+    abstract val skipCheckClass: Property<Boolean>
+
     @TaskAction
     fun execute(inputChanges: InputChanges) {
 
@@ -120,7 +123,8 @@ abstract class MatrixTraceTask : DefaultTask() {
                     newMethodMapFilePath = newMethodMapFileOutput.asFile.get().absolutePath,
                     baseMethodMapPath = baseMethodMapFile.asFile.orNull?.absolutePath,
                     blockListFilePath = blockListFile.asFile.orNull?.absolutePath,
-                    mappingDir = mappingDir.get()
+                    mappingDir = mappingDir.get(),
+                    project = project
             )
             matrixTrace.methodNewMapMergeAssetsFilePath = methodNewMapMergeAssetsFilePath.asFile.get().absolutePath
 
@@ -128,6 +132,7 @@ abstract class MatrixTraceTask : DefaultTask() {
                     classInputs = classInputs.files,
                     changedFiles = changedFiles,
                     isIncremental = incremental,
+                    skipCheckClass = this.skipCheckClass.get(),
                     traceClassDirectoryOutput = outputDirectory,
                     inputToOutput = ConcurrentHashMap(),
                     legacyReplaceChangedFile = null,

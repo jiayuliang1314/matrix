@@ -130,7 +130,9 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         frameIntervalNanos = ReflectUtils.reflectObject(choreographer, "mFrameIntervalNanos", Constants.DEFAULT_FRAME_DURATION);
         //向LooperMonitor注册Message执行开始的回调、执行结束的回调。这里的Message是指主线程中发生的所有Message，
         //包括App自己的以及Framework中的，Choreographer中的自然也可以捕获到。
-        LooperMonitor.register(new LooperMonitor.LooperDispatchListener() {
+        boolean historyMsgRecorder = config.historyMsgRecorder;
+        boolean denseMsgTracer = config.denseMsgTracer;
+        LooperMonitor.register(new LooperMonitor.LooperDispatchListener(historyMsgRecorder, denseMsgTracer) {
             @Override
             public boolean isValid() {
                 return isAlive;
