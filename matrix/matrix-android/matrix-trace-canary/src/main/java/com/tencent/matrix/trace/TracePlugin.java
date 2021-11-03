@@ -17,6 +17,7 @@
 package com.tencent.matrix.trace;
 
 import android.app.Application;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
@@ -83,9 +84,15 @@ public class TracePlugin extends Plugin {
         evilMethodTracer = new EvilMethodTracer(traceConfig);
 
         startupTracer = new StartupTracer(traceConfig);
-
         newMethodMap.clear();
-        readMappingFile(newMethodMap);
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                //异步去做
+                Log.i(TAG, "AsyncTask readMappingFile");
+                readMappingFile(newMethodMap);
+            }
+        });
     }
 
     public void readMappingFile(ConcurrentHashMap<Integer, String> methoMap) {
