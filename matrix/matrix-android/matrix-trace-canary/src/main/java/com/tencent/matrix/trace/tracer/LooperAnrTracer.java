@@ -23,6 +23,8 @@ import android.os.SystemClock;
 
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
+import com.tencent.matrix.report.IssueOfTraceCanary;
+import com.tencent.matrix.report.MemoryBean;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
@@ -46,13 +48,13 @@ import java.util.List;
 public class LooperAnrTracer extends Tracer {
 
     private static final String TAG = "Matrix.AnrTracer";
-//    onAlive 时初始化，onDead 时退出
+    private final TraceConfig traceConfig;
+    //    onAlive 时初始化，onDead 时退出
     private Handler anrHandler;//检测anr的handler，推迟5s之后，执行AnrHandleTask
     private Handler lagHandler;//检测lag 拖后腿方法的handler，推迟2s之后，执行LagHandleTask
-    private final TraceConfig traceConfig;
-    private volatile AnrHandleTask anrTask = new AnrHandleTask();
-    private volatile LagHandleTask lagTask = new LagHandleTask();
-    private boolean isAnrTraceEnable;
+    private final AnrHandleTask anrTask = new AnrHandleTask();
+    private final LagHandleTask lagTask = new LagHandleTask();
+    private final boolean isAnrTraceEnable;
 
     public LooperAnrTracer(TraceConfig traceConfig) {
         this.traceConfig = traceConfig;
@@ -118,6 +120,36 @@ public class LooperAnrTracer extends Tracer {
         }
     }
 
+    private String printInputExpired(long inputCost) {
+        StringBuilder print = new StringBuilder();
+        String scene = AppMethodBeat.getVisibleScene();
+        boolean isForeground = isForeground();
+        // memory
+        long[] memoryInfo = dumpMemory();
+        // process
+        int[] processStat = Utils.getProcessPriority(Process.myPid());
+        print.append(String.format("-\n>>>>>>>>>>>>>>>>>>>>>>> maybe happens Input ANR(%s ms)! <<<<<<<<<<<<<<<<<<<<<<<\n", inputCost));
+        print.append("|* [Status]").append("\n");
+        print.append("|*\t\tScene: ").append(scene).append("\n");
+        print.append("|*\t\tForeground: ").append(isForeground).append("\n");
+        print.append("|*\t\tPriority: ").append(processStat[0]).append("\tNice: ").append(processStat[1]).append("\n");
+        print.append("|*\t\tis64BitRuntime: ").append(DeviceUtil.is64BitRuntime()).append("\n");
+        print.append("|* [Memory]").append("\n");
+        print.append("|*\t\tDalvikHeap: ").append(memoryInfo[0]).append("kb\n");
+        print.append("|*\t\tNativeHeap: ").append(memoryInfo[1]).append("kb\n");
+        print.append("|*\t\tVmSize: ").append(memoryInfo[2]).append("kb\n");
+        print.append("=========================================================================");
+        return print.toString();
+    }
+
+    private long[] dumpMemory() {
+        long[] memory = new long[3];
+        memory[0] = DeviceUtil.getDalvikHeap();
+        memory[1] = DeviceUtil.getNativeHeap();
+        memory[2] = DeviceUtil.getVmSize();
+        return memory;
+    }
+
     class LagHandleTask implements Runnable {
 
         @Override
@@ -143,6 +175,16 @@ public class LooperAnrTracer extends Tracer {
                 Issue issue = new Issue();
                 issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);//todo
                 issue.setContent(jsonObject);
+
+
+                IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+                DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+                issueOfTraceCanary.setDetail(Constants.Type.LAG.toString());
+                issueOfTraceCanary.setScene(scene);
+                issueOfTraceCanary.setThreadStack(dumpStack);
+                issueOfTraceCanary.setProcessForeground(isForeground);
+                issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                issue.setIssueOfTraceCanary(issueOfTraceCanary);
                 plugin.onDetectIssue(issue);
                 MatrixLog.e(TAG, "happens lag : %s, scene : %s ", dumpStack, scene);
 
@@ -159,16 +201,16 @@ public class LooperAnrTracer extends Tracer {
         AppMethodBeat.IndexRecord beginRecord;
         long token;
 
-        public AppMethodBeat.IndexRecord getBeginRecord() {
-            return beginRecord;
-        }
-
         AnrHandleTask() {
         }
 
         AnrHandleTask(AppMethodBeat.IndexRecord record, long token) {
             this.beginRecord = record;
             this.token = token;
+        }
+
+        public AppMethodBeat.IndexRecord getBeginRecord() {
+            return beginRecord;
         }
 
         //5s时间到，执行了run说明anr发生了
@@ -201,10 +243,6 @@ public class LooperAnrTracer extends Tracer {
             long inputCost = monitor.getQueueCost(UIThreadMonitor.CALLBACK_INPUT, token);
             long animationCost = monitor.getQueueCost(UIThreadMonitor.CALLBACK_ANIMATION, token);
             long traversalCost = monitor.getQueueCost(UIThreadMonitor.CALLBACK_TRAVERSAL, token);
-
-
-
-
 
 
             // trace
@@ -251,11 +289,6 @@ public class LooperAnrTracer extends Tracer {
                     token / Constants.TIME_MILLIS_TO_NANO, curTime); // for logcat
 
 
-
-
-
-
-
             if (stackCost >= Constants.DEFAULT_ANR_INVALID) {
                 MatrixLog.w(TAG, "The checked anr task was not executed on time. "
                         + "The possible reason is that the current process has a low priority. just pass this report");
@@ -295,6 +328,31 @@ public class LooperAnrTracer extends Tracer {
                 issue.setKey(token + "");
                 issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);//todo
                 issue.setContent(jsonObject);
+
+                IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+                DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+                issueOfTraceCanary.setDetail(Constants.Type.ANR.toString());
+                issueOfTraceCanary.setCost(stackCost);
+                issueOfTraceCanary.setStackKey(stackKey);
+                issueOfTraceCanary.setScene(scene);
+                issueOfTraceCanary.setStack(reportBuilder.toString());
+                issueOfTraceCanary.setThreadStack(Utils.getWholeStack(stackTrace));
+                issueOfTraceCanary.setProcessPriority(processStat[0]);
+                issueOfTraceCanary.setProcessNice(processStat[1]);
+                issueOfTraceCanary.setProcessForeground(isForeground);
+//                issueOfTraceCanary.setDalvik_heap(memoryInfo[0]);
+//                issueOfTraceCanary.setNative_heap(memoryInfo[1]);
+//                issueOfTraceCanary.setVm_size(memoryInfo[2]);
+//                issueOfTraceCanary.setMemory(memJsonObject.toString());
+                MemoryBean memoryBean = new MemoryBean();
+                memoryBean.setDalvik_heap(memoryInfo[0]);
+                memoryBean.setNative_heap(memoryInfo[1]);
+                memoryBean.setVm_size(memoryInfo[2]);
+                issueOfTraceCanary.setMemoryBean(memoryBean);
+                issueOfTraceCanary.setKey(token + "");
+                issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
                 plugin.onDetectIssue(issue);
 
             } catch (JSONException e) {
@@ -333,36 +391,6 @@ public class LooperAnrTracer extends Tracer {
             print.append("=========================================================================");
             return print.toString();
         }
-    }
-
-    private String printInputExpired(long inputCost) {
-        StringBuilder print = new StringBuilder();
-        String scene = AppMethodBeat.getVisibleScene();
-        boolean isForeground = isForeground();
-        // memory
-        long[] memoryInfo = dumpMemory();
-        // process
-        int[] processStat = Utils.getProcessPriority(Process.myPid());
-        print.append(String.format("-\n>>>>>>>>>>>>>>>>>>>>>>> maybe happens Input ANR(%s ms)! <<<<<<<<<<<<<<<<<<<<<<<\n", inputCost));
-        print.append("|* [Status]").append("\n");
-        print.append("|*\t\tScene: ").append(scene).append("\n");
-        print.append("|*\t\tForeground: ").append(isForeground).append("\n");
-        print.append("|*\t\tPriority: ").append(processStat[0]).append("\tNice: ").append(processStat[1]).append("\n");
-        print.append("|*\t\tis64BitRuntime: ").append(DeviceUtil.is64BitRuntime()).append("\n");
-        print.append("|* [Memory]").append("\n");
-        print.append("|*\t\tDalvikHeap: ").append(memoryInfo[0]).append("kb\n");
-        print.append("|*\t\tNativeHeap: ").append(memoryInfo[1]).append("kb\n");
-        print.append("|*\t\tVmSize: ").append(memoryInfo[2]).append("kb\n");
-        print.append("=========================================================================");
-        return print.toString();
-    }
-
-    private long[] dumpMemory() {
-        long[] memory = new long[3];
-        memory[0] = DeviceUtil.getDalvikHeap();
-        memory[1] = DeviceUtil.getNativeHeap();
-        memory[2] = DeviceUtil.getVmSize();
-        return memory;
     }
 
 }

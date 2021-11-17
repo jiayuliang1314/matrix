@@ -24,6 +24,7 @@ import android.util.Log;
 
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
+import com.tencent.matrix.report.IssueOfTraceCanary;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
@@ -33,6 +34,7 @@ import com.tencent.matrix.trace.hacker.ActivityThreadHacker;
 import com.tencent.matrix.trace.items.MethodItem;
 import com.tencent.matrix.trace.listeners.IAppMethodBeatListener;
 import com.tencent.matrix.trace.util.TraceDataUtils;
+import com.tencent.matrix.trace.util.Utils;
 import com.tencent.matrix.util.DeviceUtil;
 import com.tencent.matrix.util.MatrixHandlerThread;
 import com.tencent.matrix.util.MatrixLog;
@@ -401,6 +403,16 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
                 Issue issue = new Issue();
                 issue.setTag(SharePluginInfo.TAG_PLUGIN_STARTUP);
                 issue.setContent(costObject);
+
+                IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+                DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+                issueOfTraceCanary.setApplication_create(applicationCost);
+                issueOfTraceCanary.setApplication_create_scene(scene);
+                issueOfTraceCanary.setFirst_activity_create(firstScreenCost);
+                issueOfTraceCanary.setStartup_duration(allCost);
+                issueOfTraceCanary.setIs_warm_start_up(isWarmStartUp);
+                issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_STARTUP);
+                issue.setIssueOfTraceCanary(issueOfTraceCanary);
                 plugin.onDetectIssue(issue);
             } catch (JSONException e) {
                 MatrixLog.e(TAG, "[JSONException for StartUpReportTask error: %s", e);
@@ -421,6 +433,17 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
                     Issue issue = new Issue();
                     issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
                     issue.setContent(jsonObject);
+
+                    IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+                    DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+                    issueOfTraceCanary.setDetail(Constants.Type.STARTUP.toString());
+                    issueOfTraceCanary.setCost(allCost);
+                    issueOfTraceCanary.setStack(reportBuilder.toString());
+                    issueOfTraceCanary.setStackKey(stackKey);
+                    issueOfTraceCanary.setSubType(isWarmStartUp ? 2 : 1);
+                    issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                    issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
                     plugin.onDetectIssue(issue);
 
                 } catch (JSONException e) {

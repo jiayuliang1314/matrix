@@ -20,6 +20,7 @@ import android.os.Process;
 
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
+import com.tencent.matrix.report.IssueOfTraceCanary;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
@@ -195,6 +196,18 @@ public class EvilMethodTracer extends Tracer {
                 Issue issue = new Issue();
                 issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);//todo
                 issue.setContent(jsonObject);
+
+                IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+                DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+                issueOfTraceCanary.setDetail(Constants.Type.NORMAL.toString());
+                issueOfTraceCanary.setCost(stackCost);
+                issueOfTraceCanary.setUsage(usage);
+                issueOfTraceCanary.setScene(scene);
+                issueOfTraceCanary.setStack(reportBuilder.toString());
+                issueOfTraceCanary.setStackKey(stackKey);
+                issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD.toString());
+                issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
                 plugin.onDetectIssue(issue);
 
             } catch (JSONException e) {

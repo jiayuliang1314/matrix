@@ -1,0 +1,40 @@
+3.1.1 StartupTracer冷启动信息，这个无论是否超时都会上报
+onReportIssue type :type_Trace_StartUp_
+onReportIssue content :tag[Trace_StartUp];
+content[{"machine":"MIDDLE","cpu_app":0,"mem":3510513664,"mem_free":1273724,"application_create":75,"application_create_scene":159,"first_activity_create":360,"startup_duration":1001,"is_warm_start_up":false,"tag":"Trace_StartUp","process":"sample.tencent.matrix","time":1636367096192}]
+
+StartupTracer正常热启动，这个无论是否超时都会上报
+onReportIssue type :type_Trace_StartUp
+onReportIssue content :tag[Trace_StartUp];
+content[{"machine":"MIDDLE","cpu_app":0,"mem":3510513664,"mem_free":1223320,"application_create":0,"application_create_scene":159,"first_activity_create":0,"startup_duration":84,"is_warm_start_up":true,"tag":"Trace_StartUp","process":"sample.tencent.matrix","time":1636367307148}]
+
+3.1.2StartupTracer启动超时，上报内容如下，其中subType =isWarmStartUp ? 2 : 1
+onReportIssue type :type_Trace_EvilMethod_STARTUP
+onReportIssue content :tag[Trace_EvilMethod];
+content[{"machine":"MIDDLE","cpu_app":0,"mem":3510513664,"mem_free":1239944,"detail":"STARTUP","cost":18264,"stack":"0,273,1,126\n1,236,1,0\n1,278,1,7\n1,286,1,0\n1,288,1,0\n1,290,1,0\n1,292,1,29\n2,397,1,29\n1,267,6,0\n2,269,1,0\n1,266,1,0\n1,267,2,0\n1,268,3,0\n0,1048574,1,9\n0,1048574,1,66\n0,1048574,1,18\n0,1048574,1,353\n1,235,1,146\n0,1048574,1,46\n0,1048574,1,23\n0,1048574,1,5\n0,1048574,1,46\n0,1048574,1,14\n1,133,1,11\n0,1048574,1,13\n0,1048574,1,106\n1,4,1,77\n1,1,1,5\n0,1048574,1,55\n0,1048574,1,29\n","stackKey":"273","subType":1,"tag":"Trace_EvilMethod","process":"sample.tencent.matrix","time":1636367789954}]
+
+3.2EvilMethodTracer消息执行时间超过700ms的时候上报，（todo usage）
+onReportIssue type :type_Trace_EvilMethod_NORMAL
+onReportIssue content :tag[Trace_EvilMethod];
+content[{"machine":"MIDDLE","cpu_app":0,"mem":3510513664,"mem_free":1273072,"detail":"NORMAL","cost":4004,"usage":"0.05%","scene":"sample.tencent.matrix.trace.TestTraceMainActivity","stack":"0,1048574,1,4004\n1,13543,1,4000,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun (Landroid.view.View;)V\n2,13544,1,3000,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun1 (Landroid.view.View;)V\n3,13545,1,1996,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun2 (Landroid.view.View;)V\n4,13546,1,997,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun3 (Landroid.view.View;)V\n","stackKey":"13544 sample.tencent.matrix.trace.TestTraceMainActivity test_kadun1 (Landroid.view.View;)V","tag":"Trace_EvilMethod","process":"sample.tencent.matrix","time":1636368188066}]
+
+3.3LooperAnrTracer
+3.3.1 消息执行时间超过2s的时候上报Lag，Lag消息有主线程堆栈，没有方法耗时堆栈
+onReportIssue type :type_Trace_EvilMethod_LAG
+onReportIssue content :tag[Trace_EvilMethod];
+content[{"machine":"MIDDLE","cpu_app":0,"mem":3510513664,"mem_free":1274672,"detail":"LAG","scene":"sample.tencent.matrix.trace.TestTraceMainActivity","threadStack":"java.lang.Thread.sleep(Native Method)\njava.lang.Thread.sleep(Thread.java:373)\njava.lang.Thread.sleep(Thread.java:314)\nsample.tencent.matrix.trace.TestTraceMainActivity.test_kadun2(TestTraceMainActivity.java:145)\nsample.tencent.matrix.trace.TestTraceMainActivity.test_kadun1(TestTraceMainActivity.java:140)\nsample.tencent.matrix.trace.TestTraceMainActivity.test_kadun(TestTraceMainActivity.java:132)\njava.lang.reflect.Method.invoke(Native Method)\nandroid.view.View$DeclaredOnClickListener.onClick(View.java:6079)\nandroid.view.View.performClick(View.java:7352)\nandroid.widget.TextView.performClick(TextView.java:14230)\nandroid.view.View.performClickInternal(View.java:7318)\nandroid.view.View.access$3200(View.java:846)\nandroid.view.View$PerformClick.run(View.java:27800)\nandroid.os.Handler.handleCallback(Handler.java:873)\nandroid.os.Handler.dispatchMessage(Handler.java:99)\nandroid.os.Looper.loop(Looper.java:214)\nandroid.app.ActivityThread.main(ActivityThread.java:7050)\njava.lang.reflect.Method.invoke(Native Method)\ncom.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:494)\ncom.android.internal.os.ZygoteInit.main(ZygoteInit.java:964)\n","isProcessForeground":true,"tag":"Trace_EvilMethod","process":"sample.tencent.matrix","time":1636368186092}]
+
+3.3.2 消息执行时间超过5s的时候上报ANR
+onReportIssue type :type_Trace_EvilMethod_ANR
+onReportIssue content :tag[Trace_EvilMethod]type[0];key[1300590216867977];
+content[{"machine":"MIDDLE","cpu_app":0,"mem":3510513664,"mem_free":1250996,"detail":"ANR","cost":5005,"stackKey":"304","scene":"sample.tencent.matrix.trace.TestTraceMainActivity","stack":"0,1048574,1,5005\n1,285,1,5005\n2,291,1,5005\n3,293,1,380\n4,294,1,159\n5,295,1,17\n5,297,1,22\n5,298,1,22\n4,299,1,21\n3,300,1,62\n4,301,1,16\n4,302,1,12\n4,303,1,11\n3,304,1,4563\n","threadStack":" \nat android.os.SystemClock:sleep(127)\nat sample.tencent.matrix.trace.TestTraceMainActivity:L(239)\nat sample.tencent.matrix.trace.TestTraceMainActivity:A(185)\nat sample.tencent.matrix.trace.TestTraceMainActivity:testANR(166)\nat java.lang.reflect.Method:invoke(-2)\nat android.view.View$DeclaredOnClickListener:onClick(6079)\nat android.view.View:performClick(7352)\nat android.widget.TextView:performClick(14230)\nat android.view.View:performClickInternal(7318)\nat android.view.View:access$3200(846)\nat android.view.View$PerformClick:run(27800)\nat android.os.Handler:handleCallback(873)\nat android.os.Handler:dispatchMessage(99)\nat android.os.Looper:loop(214)\nat android.app.ActivityThread:main(7050)\n","processPriority":10,"processNice":-10,"isProcessForeground":true,"memory":{"dalvik_heap":11793,"native_heap":23767,"vm_size":3937292},"tag":"Trace_EvilMethod","process":"sample.tencent.matrix","time":1636369196486}]
+
+3.4IdleHandlerLagTracer
+onReportIssue type :type_Trace_EvilMethod_LAG_IDLE_HANDLER
+onReportIssue content :tag[Trace_EvilMethod];
+content[{"machine":"MIDDLE","cpu_app":0,"mem":3510513664,"mem_free":1274672,"detail":"LAG_IDLE_HANDLER","scene":"sample.tencent.matrix.trace.TestTraceMainActivity","threadStack":"java.lang.Thread.sleep(Native Method)\njava.lang.Thread.sleep(Thread.java:373)\njava.lang.Thread.sleep(Thread.java:314)\nsample.tencent.matrix.trace.TestTraceMainActivity.test_kadun2(TestTraceMainActivity.java:145)\nsample.tencent.matrix.trace.TestTraceMainActivity.test_kadun1(TestTraceMainActivity.java:140)\nsample.tencent.matrix.trace.TestTraceMainActivity.test_kadun(TestTraceMainActivity.java:132)\njava.lang.reflect.Method.invoke(Native Method)\nandroid.view.View$DeclaredOnClickListener.onClick(View.java:6079)\nandroid.view.View.performClick(View.java:7352)\nandroid.widget.TextView.performClick(TextView.java:14230)\nandroid.view.View.performClickInternal(View.java:7318)\nandroid.view.View.access$3200(View.java:846)\nandroid.view.View$PerformClick.run(View.java:27800)\nandroid.os.Handler.handleCallback(Handler.java:873)\nandroid.os.Handler.dispatchMessage(Handler.java:99)\nandroid.os.Looper.loop(Looper.java:214)\nandroid.app.ActivityThread.main(ActivityThread.java:7050)\njava.lang.reflect.Method.invoke(Native Method)\ncom.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:494)\ncom.android.internal.os.ZygoteInit.main(ZygoteInit.java:964)\n","isProcessForeground":true,"tag":"Trace_EvilMethod","process":"sample.tencent.matrix","time":1636368186092}]
+
+3.5FrameTracer
+onReportIssue type :type_Trace_FPS
+onReportIssue content :tag[Trace_FPS];
+content[{"machine":"MIDDLE","cpu_app":0,"mem":3510513664,"mem_free":1265968,"scene":"sample.tencent.matrix.trace.TestFpsActivity","dropLevel":{"DROPPED_FROZEN":0,"DROPPED_HIGH":0,"DROPPED_MIDDLE":19,"DROPPED_NORMAL":3,"DROPPED_BEST":437},"dropSum":{"DROPPED_FROZEN":0,"DROPPED_HIGH":0,"DROPPED_MIDDLE":266,"DROPPED_NORMAL":12,"DROPPED_BEST":1},"fps":38.24362564086914,"tag":"Trace_FPS","process":"sample.tencent.matrix","time":1636372469154}]

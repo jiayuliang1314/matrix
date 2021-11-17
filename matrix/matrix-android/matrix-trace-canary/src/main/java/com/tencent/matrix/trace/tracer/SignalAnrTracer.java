@@ -30,6 +30,7 @@ import androidx.annotation.RequiresApi;
 
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
+import com.tencent.matrix.report.IssueOfTraceCanary;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
@@ -192,6 +193,16 @@ public class SignalAnrTracer extends Tracer {
             Issue issue = new Issue();
             issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
             issue.setContent(jsonObject);
+
+            IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+            DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+            issueOfTraceCanary.setDetail(Constants.Type.SIGNAL_ANR.toString());
+            issueOfTraceCanary.setScene(scene);
+            issueOfTraceCanary.setThreadStack(stackTrace);
+            issueOfTraceCanary.setProcessForeground(currentForeground);
+            issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+            issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
             plugin.onDetectIssue(issue);
             MatrixLog.e(TAG, "happens real ANR : %s ", jsonObject.toString());
 

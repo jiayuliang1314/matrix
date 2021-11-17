@@ -21,6 +21,7 @@ import android.app.Application;
 import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.listeners.IAppForeground;
 import com.tencent.matrix.report.Issue;
+import com.tencent.matrix.report.IssueOfTraceCanary;
 import com.tencent.matrix.report.IssuePublisher;
 import com.tencent.matrix.util.MatrixLog;
 import com.tencent.matrix.util.MatrixUtil;
@@ -33,15 +34,13 @@ import org.json.JSONObject;
  */
 //Plugin 抽象插件实现
 public abstract class Plugin implements IPlugin, IssuePublisher.OnIssueDetectListener, IAppForeground {
-    private static final String TAG = "Matrix.Plugin";
-
     //状态
     public static final int PLUGIN_CREATE = 0x00;
     public static final int PLUGIN_INITED = 0x01;
     public static final int PLUGIN_STARTED = 0x02;
     public static final int PLUGIN_STOPPED = 0x04;
     public static final int PLUGIN_DESTROYED = 0x08;
-
+    private static final String TAG = "Matrix.Plugin";
     //监听器
     private PluginListener pluginListener;
     //Application
@@ -82,6 +81,21 @@ public abstract class Plugin implements IPlugin, IssuePublisher.OnIssueDetectLis
             content.put(Issue.ISSUE_REPORT_PROCESS, MatrixUtil.getProcessName(application));
             content.put(Issue.ISSUE_REPORT_TIME, System.currentTimeMillis());
 
+            IssueOfTraceCanary issueOfTraceCanary = issue.getIssueOfTraceCanary();
+            if (issueOfTraceCanary != null) {
+                if (issue.getTag() != null) {
+//                    content.put(Issue.ISSUE_REPORT_TAG, issue.getTag());
+                    issueOfTraceCanary.setTag(issue.getTag());
+                }
+                if (issue.getType() != 0) {
+//                    content.put(Issue.ISSUE_REPORT_TYPE, issue.getType());
+//                    issueOfTraceCanary.
+                }
+//                content.put(Issue.ISSUE_REPORT_PROCESS, MatrixUtil.getProcessName(application));
+//                content.put(Issue.ISSUE_REPORT_TIME, System.currentTimeMillis());
+                issueOfTraceCanary.setProcess(MatrixUtil.getProcessName(application));
+                issueOfTraceCanary.setTime(System.currentTimeMillis());
+            }
         } catch (JSONException e) {
             MatrixLog.e(TAG, "json error", e);
         }

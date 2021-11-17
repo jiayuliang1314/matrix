@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
+import com.tencent.matrix.report.IssueOfTraceCanary;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
@@ -45,13 +46,32 @@ import java.util.Map;
 public class IdleHandlerLagTracer extends Tracer {
 
     private static final String TAG = "Matrix.AnrTracer";
-    private final TraceConfig traceConfig;
     private static HandlerThread idleHandlerLagHandlerThread;
     private static Handler idleHandlerLagHandler;
     private static Runnable idleHanlderLagRunnable;
+    private final TraceConfig traceConfig;
 
     public IdleHandlerLagTracer(TraceConfig traceConfig) {
         this.traceConfig = traceConfig;
+    }
+
+    private static void detectIdleHandler() {
+        try {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
+                return;
+            }
+            //通过反射获取主线程MessageQueue里的mIdleHandlers
+            MessageQueue mainQueue = Looper.getMainLooper().getQueue();
+            Field field = MessageQueue.class.getDeclaredField("mIdleHandlers");
+            field.setAccessible(true);
+            MyArrayList<MessageQueue.IdleHandler> myIdleHandlerArrayList = new MyArrayList<>();
+            //将MessageQueue里的mIdleHandlers替换为myIdleHandlerArrayList，代理模式
+            field.set(mainQueue, myIdleHandlerArrayList);
+            idleHandlerLagHandlerThread.start();//开启检测线程
+            idleHandlerLagHandler = new Handler(idleHandlerLagHandlerThread.getLooper());//获取检测线程的handler
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     @Override
@@ -101,6 +121,16 @@ public class IdleHandlerLagTracer extends Tracer {
                 Issue issue = new Issue();
                 issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);//todo
                 issue.setContent(jsonObject);
+
+                IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+                DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+                issueOfTraceCanary.setDetail(Constants.Type.LAG_IDLE_HANDLER.toString());
+                issueOfTraceCanary.setScene(scene);
+                issueOfTraceCanary.setThreadStack(stackTrace);
+                issueOfTraceCanary.setProcessForeground(currentForeground);
+                issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
                 plugin.onDetectIssue(issue);
                 MatrixLog.e(TAG, "happens idle handler Lag : %s ", jsonObject.toString());
 
@@ -112,28 +142,8 @@ public class IdleHandlerLagTracer extends Tracer {
         }
     }
 
-    private static void detectIdleHandler() {
-        try {
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
-                return;
-            }
-            //通过反射获取主线程MessageQueue里的mIdleHandlers
-            MessageQueue mainQueue = Looper.getMainLooper().getQueue();
-            Field field = MessageQueue.class.getDeclaredField("mIdleHandlers");
-            field.setAccessible(true);
-            MyArrayList<MessageQueue.IdleHandler> myIdleHandlerArrayList = new MyArrayList<>();
-            //将MessageQueue里的mIdleHandlers替换为myIdleHandlerArrayList，代理模式
-            field.set(mainQueue, myIdleHandlerArrayList);
-            idleHandlerLagHandlerThread.start();//开启检测线程
-            idleHandlerLagHandler = new Handler(idleHandlerLagHandlerThread.getLooper());//获取检测线程的handler
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-
     static class MyIdleHandler implements MessageQueue.IdleHandler {
-        private MessageQueue.IdleHandler idleHandler;
+        private final MessageQueue.IdleHandler idleHandler;
 
         MyIdleHandler(MessageQueue.IdleHandler idleHandler) {
             this.idleHandler = idleHandler;

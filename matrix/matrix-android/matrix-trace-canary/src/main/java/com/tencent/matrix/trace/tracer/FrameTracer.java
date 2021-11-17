@@ -24,7 +24,9 @@ import android.os.SystemClock;
 
 import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.Matrix;
+import com.tencent.matrix.report.DropLevelBean;
 import com.tencent.matrix.report.Issue;
+import com.tencent.matrix.report.IssueOfTraceCanary;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
@@ -302,8 +304,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
 
         /**
-         *
-         * @param visibleScene 可以设置为fragment todo
+         * @param visibleScene        可以设置为fragment todo
          * @param startNs
          * @param endNs
          * @param droppedFrames
@@ -408,6 +409,30 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
                 Issue issue = new Issue();
                 issue.setTag(SharePluginInfo.TAG_PLUGIN_FPS);
                 issue.setContent(resultObject);
+
+                IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+                DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+                issueOfTraceCanary.setScene(visibleScene);
+//                issueOfTraceCanary.setDropLevel(dropLevelObject.toString());
+                DropLevelBean dropLevelBean = new DropLevelBean();
+                dropLevelBean.setDroppedFrozen(dropLevel[DropStatus.DROPPED_FROZEN.index]);
+                dropLevelBean.setDroppedHigh(dropLevel[DropStatus.DROPPED_HIGH.index]);
+                dropLevelBean.setDroppedMiddle(dropLevel[DropStatus.DROPPED_MIDDLE.index]);
+                dropLevelBean.setDroppedNormal(dropLevel[DropStatus.DROPPED_NORMAL.index]);
+                dropLevelBean.setDroppedBest(dropLevel[DropStatus.DROPPED_BEST.index]);
+                issueOfTraceCanary.setDropLevelBean(dropLevelBean);
+//                issueOfTraceCanary.setDropSum(dropSumObject.toString());
+                DropLevelBean dropSumBean = new DropLevelBean();
+                dropSumBean.setDroppedFrozen(dropSum[DropStatus.DROPPED_FROZEN.index]);
+                dropSumBean.setDroppedHigh(dropSum[DropStatus.DROPPED_HIGH.index]);
+                dropSumBean.setDroppedMiddle(dropSum[DropStatus.DROPPED_MIDDLE.index]);
+                dropSumBean.setDroppedNormal(dropSum[DropStatus.DROPPED_NORMAL.index]);
+                dropSumBean.setDroppedBest(dropSum[DropStatus.DROPPED_BEST.index]);
+                issueOfTraceCanary.setDropSumBean(dropLevelBean);
+                issueOfTraceCanary.setFps(fps);
+                issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_FPS);
+                issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
                 plugin.onDetectIssue(issue);
 
             } catch (JSONException e) {

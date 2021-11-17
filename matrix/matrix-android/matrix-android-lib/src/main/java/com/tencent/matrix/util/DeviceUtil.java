@@ -22,6 +22,8 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Debug;
 
+import com.tencent.matrix.report.IssueOfTraceCanary;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -86,6 +88,17 @@ public class DeviceUtil {
         }
 
         return oldObj;
+    }
+
+    public static void getDeviceInfo(IssueOfTraceCanary oldObj, Application context) {
+        try {
+            oldObj.setMachine(getLevel(context).toString());
+            oldObj.setCpu_app(getAppCpuRate());
+            oldObj.setMem(getTotalMemory(context));
+            oldObj.setMem_free(getMemFree(context));
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     public static LEVEL getLevel(Context context) {

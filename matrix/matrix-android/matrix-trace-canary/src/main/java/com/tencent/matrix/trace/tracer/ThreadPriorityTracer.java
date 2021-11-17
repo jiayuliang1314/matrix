@@ -20,6 +20,7 @@ import androidx.annotation.Keep;
 
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
+import com.tencent.matrix.report.IssueOfTraceCanary;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.constants.Constants;
@@ -85,6 +86,15 @@ public class ThreadPriorityTracer extends Tracer {
             Issue issue = new Issue();
             issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
             issue.setContent(jsonObject);
+
+            IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+            DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+            issueOfTraceCanary.setDetail(Constants.Type.PRIORITY_MODIFIED.toString());
+            issueOfTraceCanary.setThreadStack(stackTrace);
+            issueOfTraceCanary.setProcessPriority(priority);
+            issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+            issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
             plugin.onDetectIssue(issue);
             MatrixLog.e(TAG, "happens MainThreadPriorityModified : %s ", jsonObject.toString());
         } catch (Throwable t) {
@@ -121,6 +131,15 @@ public class ThreadPriorityTracer extends Tracer {
             Issue issue = new Issue();
             issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
             issue.setContent(jsonObject);
+
+            IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+            DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+            issueOfTraceCanary.setDetail(Constants.Type.TIMERSLACK_MODIFIED.toString());
+            issueOfTraceCanary.setThreadStack(stackTrace);
+            issueOfTraceCanary.setProcessTimerSlack(timerSlack);
+            issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+            issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
             plugin.onDetectIssue(issue);
             MatrixLog.e(TAG, "happens MainThreadPriorityModified : %s ", jsonObject.toString());
         } catch (Throwable t) {

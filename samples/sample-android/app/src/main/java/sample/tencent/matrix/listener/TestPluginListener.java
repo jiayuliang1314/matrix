@@ -43,10 +43,8 @@ import sample.tencent.matrix.zp.event.MessageEventIssueHappen;
 public class TestPluginListener extends DefaultPluginListener {
 
     public static final String TAG = "TestPluginListener";
-
-    public SoftReference<Context> softReference;
-
     private final Handler mHandler = new Handler(Looper.getMainLooper());
+    public SoftReference<Context> softReference;
 
     public TestPluginListener(Context context) {
         super(context);
@@ -57,6 +55,17 @@ public class TestPluginListener extends DefaultPluginListener {
     public void onReportIssue(final Issue issue) {
         super.onReportIssue(issue);
         MatrixLog.e(TAG, issue.toString());
+
+//        .action("action_matrix", "type_" + tag)
+//                .param("p2", issue.toString())
+        String tag = issue.getTag();
+        MatrixLog.d(TAG, "onReportIssue type :" + "type_" + tag);
+        MatrixLog.d(TAG, "onReportIssue content :" + issue.toString());
+
+        if (issue.getIssueOfTraceCanary() != null) {
+            MatrixLog.d(TAG, "TraceCanary :" + issue.getIssueOfTraceCanary());
+        }
+
 
         IssuesMap.put(IssueFilter.getCurrentFilter(), issue);
 

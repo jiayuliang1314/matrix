@@ -38,6 +38,16 @@ public class Issue {
     public static final String ISSUE_REPORT_PROCESS = "process";
     public static final String ISSUE_REPORT_TIME = "time";
 
+    private IssueOfTraceCanary issueOfTraceCanary;
+
+    public IssueOfTraceCanary getIssueOfTraceCanary() {
+        return issueOfTraceCanary;
+    }
+
+    public void setIssueOfTraceCanary(IssueOfTraceCanary issueOfTraceCanary) {
+        this.issueOfTraceCanary = issueOfTraceCanary;
+    }
+
     public Issue() {
     }
 
