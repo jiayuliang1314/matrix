@@ -93,6 +93,27 @@ public class MethodCollector {
                 }
             }
         }
+        if(isNeed==true) {
+            boolean findInWhite=false;
+            if (configuration.whiteSet.contains(clsName)) {
+                findInWhite = true;
+            } else {
+                if (null != mappingCollector) {
+                    //解混淆
+                    clsName = mappingCollector.originalClassName(clsName, clsName);
+                }
+                clsName = clsName.replaceAll("/", ".");
+                for (String packageName : configuration.whiteSet) {
+                    if (clsName.startsWith(packageName.replaceAll("/", "."))) {
+                        findInWhite = true;
+                        break;
+                    }
+                }
+            }
+            if(!findInWhite){
+                isNeed=false;
+            }
+        }
         return isNeed;
     }
 
@@ -269,8 +290,8 @@ public class MethodCollector {
         List<TraceMethod> methodList = new ArrayList<>();
 
         methodList.addAll(collectedMethodMapNew.values());
-        Log.i(TAG, "[saveNewCollectedMethod] size:%s incrementCount:%s path:%s",
-                collectedMethodMapNew.size(), incrementCount.get(), methodMapFile.getAbsolutePath());
+//        Log.i(TAG, "[saveNewCollectedMethod] size:%s incrementCount:%s path:%s",
+//                collectedMethodMapNew.size(), incrementCount.get(), methodMapFile.getAbsolutePath());
 
         Collections.sort(methodList, new Comparator<TraceMethod>() {
             @Override
@@ -281,16 +302,16 @@ public class MethodCollector {
 
         PrintWriter pw = null;
         try {
-            Log.i(TAG, "[saveNewCollectedMethod] begin writefile");
+//            Log.i(TAG, "[saveNewCollectedMethod] begin writefile");
             FileOutputStream fileOutputStream = new FileOutputStream(methodMapFile, false);
             Writer w = new OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8);
             pw = new PrintWriter(w);
             for (TraceMethod traceMethod : methodList) {
                 traceMethod.revert(mappingCollector);
-                Log.i(TAG, "[saveNewCollectedMethod] item:%s", traceMethod.toString());
+//                Log.i(TAG, "[saveNewCollectedMethod] item:%s", traceMethod.toString());
                 pw.println(traceMethod.toString());
             }
-            Log.i(TAG, "[saveNewCollectedMethod] end writefile");
+//            Log.i(TAG, "[saveNewCollectedMethod] end writefile");
         } catch (Exception e) {
             Log.e(TAG, "write method map Exception:%s", e.getMessage());
             e.printStackTrace();
@@ -311,9 +332,9 @@ public class MethodCollector {
         List<TraceMethod> methodList = new ArrayList<>();
 
         methodList.addAll(collectedMethodMapNew.values());
-        Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] path:%s size:%s incrementCount:%s path:%s",
-                methodNewMapMergeAssetsFilePath,
-                collectedMethodMapNew.size(), incrementCount.get(), methodMapFile.getAbsolutePath());
+//        Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] path:%s size:%s incrementCount:%s path:%s",
+//                methodNewMapMergeAssetsFilePath,
+//                collectedMethodMapNew.size(), incrementCount.get(), methodMapFile.getAbsolutePath());
 
         Collections.sort(methodList, new Comparator<TraceMethod>() {
             @Override
@@ -324,16 +345,16 @@ public class MethodCollector {
 
         PrintWriter pw = null;
         try {
-            Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] begin writefile");
+//            Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] begin writefile");
             FileOutputStream fileOutputStream = new FileOutputStream(methodMapFile, false);
             Writer w = new OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8);
             pw = new PrintWriter(w);
             for (TraceMethod traceMethod : methodList) {
                 traceMethod.revert(mappingCollector);
-                Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] item:%s", traceMethod.toString());
+//                Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] item:%s", traceMethod.toString());
                 pw.println(traceMethod.toString());
             }
-            Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] end writefile");
+//            Log.i(TAG, "[saveNewCollectedMethodAssetsMerge] end writefile");
         } catch (Exception e) {
             Log.e(TAG, "write method map Exception:%s", e.getMessage());
             e.printStackTrace();

@@ -43,6 +43,7 @@ class MatrixTrace(
         private val newMethodMapFilePath:String,
         private val baseMethodMapPath: String?,
         private val blockListFilePath: String?,
+        private val whiteListFilePath: String?,
         private val mappingDir: String,
         private val project: Project
 ) {
@@ -74,7 +75,7 @@ class MatrixTrace(
                     legacyReplaceChangedFile: ((File, Map<File, Status>) -> Object)?,
                     legacyReplaceFile: ((File, File) -> (Object))?
     ) {
-        val executor: ExecutorService = Executors.newFixedThreadPool(16)
+        val executor: ExecutorService = Executors.newFixedThreadPool(50)
 
         val config = Configuration.Builder()
                 .setIgnoreMethodMapFilePath(ignoreMethodMapFilePath)
@@ -82,6 +83,7 @@ class MatrixTrace(
                 .setNewMethodMapFilePath(newMethodMapFilePath)
                 .setBaseMethodMap(baseMethodMapPath)
                 .setBlockListFile(blockListFilePath)
+                .setWhiteListFile(whiteListFilePath)
                 .setMappingPath(mappingDir)
                 .setSkipCheckClass(skipCheckClass)
                 .build()
@@ -189,13 +191,14 @@ class MatrixTrace(
                 mappingReader.read(mappingCollector)//混淆
             }
             val size = config.parseBlockFile(mappingCollector)
+            val sizeWhite = config.parseWhiteFile(mappingCollector)
 
             val baseMethodMapFile = File(config.baseMethodMapPath)
             getMethodFromBaseMethod(baseMethodMapFile, collectedMethodMap)
             retraceMethodMap(mappingCollector, collectedMethodMap)
 
-            Log.i(TAG, "[ParseMappingTask#run] cost:%sms, black size:%s, collect %s method from %s",
-                    System.currentTimeMillis() - start, size, collectedMethodMap.size, config.baseMethodMapPath)
+            Log.i(TAG, "[ParseMappingTask#run] cost:%sms, black size:%s,white size:%s, collect %s method from %s",
+                    System.currentTimeMillis() - start, size,sizeWhite, collectedMethodMap.size, config.baseMethodMapPath)
         }
 
         //解混淆

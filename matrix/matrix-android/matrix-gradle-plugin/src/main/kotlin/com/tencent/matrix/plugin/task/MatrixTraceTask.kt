@@ -58,6 +58,11 @@ abstract class MatrixTraceTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.ABSOLUTE)
     abstract val blockListFile: RegularFileProperty
 
+    @get:InputFile
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.ABSOLUTE)
+    abstract val whiteListFile: RegularFileProperty
+
     @get:Input
     @get:Optional
     abstract val mappingDir: Property<String>
@@ -123,6 +128,7 @@ abstract class MatrixTraceTask : DefaultTask() {
                     newMethodMapFilePath = newMethodMapFileOutput.asFile.get().absolutePath,
                     baseMethodMapPath = baseMethodMapFile.asFile.orNull?.absolutePath,
                     blockListFilePath = blockListFile.asFile.orNull?.absolutePath,
+                    whiteListFilePath = whiteListFile.asFile.orNull?.absolutePath,
                     mappingDir = mappingDir.get(),
                     project = project
             )
@@ -193,6 +199,10 @@ abstract class MatrixTraceTask : DefaultTask() {
             val blackListFile = File(extension.blackListFile)
             if (blackListFile.exists()) {
                 task.blockListFile.set(blackListFile)
+            }
+            val whiteListFile = File(extension.whiteListFile)
+            if (whiteListFile.exists()) {
+                task.whiteListFile.set(whiteListFile)
             }
             task.mappingDir.set(mappingOut)
             task.traceClassOutputDirectory.set(traceClassOut)

@@ -62,6 +62,7 @@ class MatrixTraceLegacyTransform(
                     .setPackageName(variant.applicationId)//老的有
                     .setBaseMethodMap(extension.baseMethodMapFile)
                     .setBlockListFile(extension.blackListFile)
+                    .setWhiteListFile(extension.whiteListFile)
                     .setMethodMapFilePath("$mappingOut/methodMapping.txt")
                     .setNewMethodMapFilePath("$mappingOut/newMethodMapping.txt")
                     .setIgnoreMethodMapFilePath("$mappingOut/ignoreMethodMapping.txt")
@@ -176,6 +177,7 @@ class MatrixTraceLegacyTransform(
                 newMethodMapFilePath = config.methodNewMapFilePath,
                 baseMethodMapPath = config.baseMethodMapPath,
                 blockListFilePath = config.blockListFilePath,
+                whiteListFilePath = config.whiteListFilePath,
                 mappingDir = config.mappingDir,
                 project = project
         )

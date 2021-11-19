@@ -5,8 +5,17 @@ public class MatrixTraceExtension {
     boolean transformInjectionForced;   //强制transfrom注入
     String baseMethodMapFile;           //base的mapping文件
     String blackListFile;               //不插桩的路径
+    String whiteListFile;               //插桩的路径
     String customDexTransformName;      //自定义transform名字
     boolean skipCheckClass = true; // skip by default
+
+    public String getWhiteListFile() {
+        return whiteListFile;
+    }
+
+    public void setWhiteListFile(String whiteListFile) {
+        this.whiteListFile = whiteListFile;
+    }
 
     boolean enable;                     //开关
 
