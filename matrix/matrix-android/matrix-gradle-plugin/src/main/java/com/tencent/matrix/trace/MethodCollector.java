@@ -93,25 +93,27 @@ public class MethodCollector {
                 }
             }
         }
-        if(isNeed==true) {
-            boolean findInWhite=false;
-            if (configuration.whiteSet.contains(clsName)) {
-                findInWhite = true;
-            } else {
-                if (null != mappingCollector) {
-                    //解混淆
-                    clsName = mappingCollector.originalClassName(clsName, clsName);
-                }
-                clsName = clsName.replaceAll("/", ".");
-                for (String packageName : configuration.whiteSet) {
-                    if (clsName.startsWith(packageName.replaceAll("/", "."))) {
-                        findInWhite = true;
-                        break;
+        if (isNeed == true) {
+            if (configuration.whiteSet != null && !configuration.whiteSet.isEmpty()) {
+                boolean findInWhite = false;
+                if (configuration.whiteSet.contains(clsName)) {
+                    findInWhite = true;
+                } else {
+                    if (null != mappingCollector) {
+                        //解混淆
+                        clsName = mappingCollector.originalClassName(clsName, clsName);
+                    }
+                    clsName = clsName.replaceAll("/", ".");
+                    for (String packageName : configuration.whiteSet) {
+                        if (clsName.startsWith(packageName.replaceAll("/", "."))) {
+                            findInWhite = true;
+                            break;
+                        }
                     }
                 }
-            }
-            if(!findInWhite){
-                isNeed=false;
+                if (!findInWhite) {
+                    isNeed = false;
+                }
             }
         }
         return isNeed;
