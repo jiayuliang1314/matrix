@@ -25,7 +25,7 @@ import androidx.annotation.Nullable;
 
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.plugin.Plugin;
-import com.tencent.matrix.resource.ResourcePlugin;
+//import com.tencent.matrix.resource.ResourcePlugin;
 import com.tencent.matrix.util.MatrixLog;
 import com.tencent.matrix.util.MatrixUtil;
 
@@ -56,11 +56,11 @@ public class TestLeakActivity extends Activity {
         editor.commit();
 
         testLeaks.add(this);
-        Plugin plugin = Matrix.with().getPluginByClass(ResourcePlugin.class);
-        if (!plugin.isPluginStarted()) {
-            MatrixLog.i(TAG, "plugin-resource start");
-            plugin.start();
-        }
+//        Plugin plugin = Matrix.with().getPluginByClass(ResourcePlugin.class);
+//        if (!plugin.isPluginStarted()) {
+//            MatrixLog.i(TAG, "plugin-resource start");
+//            plugin.start();
+//        }
 
 //        BitmapFactory.Options options = new BitmapFactory.Options();
 //        options.inSampleSize = 2;

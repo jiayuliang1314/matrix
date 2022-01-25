@@ -24,8 +24,8 @@ import com.tencent.matrix.Matrix;
 import com.tencent.matrix.batterycanary.BatteryMonitorPlugin;
 import com.tencent.matrix.iocanary.IOCanaryPlugin;
 import com.tencent.matrix.iocanary.config.IOConfig;
-import com.tencent.matrix.resource.ResourcePlugin;
-import com.tencent.matrix.resource.config.ResourceConfig;
+//import com.tencent.matrix.resource.ResourcePlugin;
+//import com.tencent.matrix.resource.config.ResourceConfig;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.TraceConfig;
 import com.tencent.matrix.trace.tracer.SignalAnrTracer;
@@ -71,8 +71,8 @@ public class MatrixApplication extends Application {
         builder.plugin(tracePlugin);
 
         // Configure resource canary.
-        ResourcePlugin resourcePlugin = configureResourcePlugin(dynamicConfig);
-        builder.plugin(resourcePlugin);
+//        ResourcePlugin resourcePlugin = configureResourcePlugin(dynamicConfig);
+//        builder.plugin(resourcePlugin);
 
         // Configure io canary.
         IOCanaryPlugin ioCanaryPlugin = configureIOCanaryPlugin(dynamicConfig);
@@ -144,22 +144,22 @@ public class MatrixApplication extends Application {
         signalAnrTracer.onStartTrace();
     }
 
-    private ResourcePlugin configureResourcePlugin(DynamicConfigImplDemo dynamicConfig) {
-        Intent intent = new Intent();
-        ResourceConfig.DumpMode mode = ResourceConfig.DumpMode.MANUAL_DUMP;
-        MatrixLog.i(TAG, "Dump Activity Leak Mode=%s", mode);
-        intent.setClassName(this.getPackageName(), "com.tencent.mm.ui.matrix.ManualDumpActivity");
-        ResourceConfig resourceConfig = new ResourceConfig.Builder()
-                .dynamicConfig(dynamicConfig)
-                .setAutoDumpHprofMode(mode)
-                .setManualDumpTargetActivity(ManualDumpActivity.class.getName())//如果是manual的话，要设置一个activity
-                .build();
-//            Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'void android.graphics.drawable.Drawable.setAlpha(int)' on a null object reference
-//            at androidx.swiperefreshlayout.widget.SwipeRefreshLayout.setColorViewAlpha(SwipeRefreshLayout.java:234)
-//            ResourcePlugin.activityLeakFixer(this);//会引起fatal问题
-
-        return new ResourcePlugin(resourceConfig);
-    }
+//    private ResourcePlugin configureResourcePlugin(DynamicConfigImplDemo dynamicConfig) {
+//        Intent intent = new Intent();
+//        ResourceConfig.DumpMode mode = ResourceConfig.DumpMode.MANUAL_DUMP;
+//        MatrixLog.i(TAG, "Dump Activity Leak Mode=%s", mode);
+//        intent.setClassName(this.getPackageName(), "com.tencent.mm.ui.matrix.ManualDumpActivity");
+//        ResourceConfig resourceConfig = new ResourceConfig.Builder()
+//                .dynamicConfig(dynamicConfig)
+//                .setAutoDumpHprofMode(mode)
+//                .setManualDumpTargetActivity(ManualDumpActivity.class.getName())//如果是manual的话，要设置一个activity
+//                .build();
+////            Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'void android.graphics.drawable.Drawable.setAlpha(int)' on a null object reference
+////            at androidx.swiperefreshlayout.widget.SwipeRefreshLayout.setColorViewAlpha(SwipeRefreshLayout.java:234)
+////            ResourcePlugin.activityLeakFixer(this);//会引起fatal问题
+//
+//        return new ResourcePlugin(resourceConfig);
+//    }
 
     private IOCanaryPlugin configureIOCanaryPlugin(DynamicConfigImplDemo dynamicConfig) {
         return new IOCanaryPlugin(new IOConfig.Builder()
