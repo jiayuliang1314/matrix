@@ -50,6 +50,8 @@ public class LooperAnrTracer extends Tracer {
 
     private static final String TAG = "Matrix.AnrTracer";
     private final TraceConfig traceConfig;
+    private Handler anrHandler;
+    private Handler lagHandler;
     private final AnrHandleTask anrTask = new AnrHandleTask();
     private final LagHandleTask lagTask = new LagHandleTask();
     private boolean isAnrTraceEnable;
@@ -112,35 +114,35 @@ public class LooperAnrTracer extends Tracer {
         lagHandler.removeCallbacks(lagTask);
     }
 
-    private String printInputExpired(long inputCost) {
-        StringBuilder print = new StringBuilder();
-        String scene = AppMethodBeat.getVisibleScene();
-        boolean isForeground = isForeground();
-        // memory
-        long[] memoryInfo = dumpMemory();
-        // process
-        int[] processStat = Utils.getProcessPriority(Process.myPid());
-        print.append(String.format("-\n>>>>>>>>>>>>>>>>>>>>>>> maybe happens Input ANR(%s ms)! <<<<<<<<<<<<<<<<<<<<<<<\n", inputCost));
-        print.append("|* [Status]").append("\n");
-        print.append("|*\t\tScene: ").append(scene).append("\n");
-        print.append("|*\t\tForeground: ").append(isForeground).append("\n");
-        print.append("|*\t\tPriority: ").append(processStat[0]).append("\tNice: ").append(processStat[1]).append("\n");
-        print.append("|*\t\tis64BitRuntime: ").append(DeviceUtil.is64BitRuntime()).append("\n");
-        print.append("|* [Memory]").append("\n");
-        print.append("|*\t\tDalvikHeap: ").append(memoryInfo[0]).append("kb\n");
-        print.append("|*\t\tNativeHeap: ").append(memoryInfo[1]).append("kb\n");
-        print.append("|*\t\tVmSize: ").append(memoryInfo[2]).append("kb\n");
-        print.append("=========================================================================");
-        return print.toString();
-    }
+//    private String printInputExpired(long inputCost) {
+//        StringBuilder print = new StringBuilder();
+//        String scene = AppMethodBeat.getVisibleScene();
+//        boolean isForeground = isForeground();
+//        // memory
+//        long[] memoryInfo = dumpMemory();
+//        // process
+//        int[] processStat = Utils.getProcessPriority(Process.myPid());
+//        print.append(String.format("-\n>>>>>>>>>>>>>>>>>>>>>>> maybe happens Input ANR(%s ms)! <<<<<<<<<<<<<<<<<<<<<<<\n", inputCost));
+//        print.append("|* [Status]").append("\n");
+//        print.append("|*\t\tScene: ").append(scene).append("\n");
+//        print.append("|*\t\tForeground: ").append(isForeground).append("\n");
+//        print.append("|*\t\tPriority: ").append(processStat[0]).append("\tNice: ").append(processStat[1]).append("\n");
+//        print.append("|*\t\tis64BitRuntime: ").append(DeviceUtil.is64BitRuntime()).append("\n");
+//        print.append("|* [Memory]").append("\n");
+//        print.append("|*\t\tDalvikHeap: ").append(memoryInfo[0]).append("kb\n");
+//        print.append("|*\t\tNativeHeap: ").append(memoryInfo[1]).append("kb\n");
+//        print.append("|*\t\tVmSize: ").append(memoryInfo[2]).append("kb\n");
+//        print.append("=========================================================================");
+//        return print.toString();
+//    }
 
-    private long[] dumpMemory() {
-        long[] memory = new long[3];
-        memory[0] = DeviceUtil.getDalvikHeap();
-        memory[1] = DeviceUtil.getNativeHeap();
-        memory[2] = DeviceUtil.getVmSize();
-        return memory;
-    }
+//    private long[] dumpMemory() {
+//        long[] memory = new long[3];
+//        memory[0] = DeviceUtil.getDalvikHeap();
+//        memory[1] = DeviceUtil.getNativeHeap();
+//        memory[2] = DeviceUtil.getVmSize();
+//        return memory;
+//    }
 
     class LagHandleTask implements Runnable {
 

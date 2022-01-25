@@ -148,7 +148,7 @@ public class AppMethodBeat implements BeatLifecycle {
             } else {
                 MatrixLog.w(TAG, "[onStop] current status:%s", status);
             }
-        }, Constants.DEFAULT_RELEASE_BUFFER_DELAY);
+        };
     }
 
     public static AppMethodBeat getInstance() {//ok
@@ -248,31 +248,31 @@ public class AppMethodBeat implements BeatLifecycle {
         }
     }
 
-    private static void realExecute() {
-        MatrixLog.i(TAG, "[realExecute] timestamp:%s", System.currentTimeMillis());
-
-        sCurrentDiffTime = SystemClock.uptimeMillis() - sDiffTime;
-
-        sHandler.removeCallbacksAndMessages(null);
-        //1.每5毫秒调用一次sUpdateDiffTimeRunnable
-        sHandler.postDelayed(sUpdateDiffTimeRunnable, Constants.TIME_UPDATE_CYCLE_MS);
-        //15秒之后，查看是否没有启动，如果没有启动则设置状态为STATUS_EXPIRED_START
-        sHandler.postDelayed(checkStartExpiredRunnable = new Runnable() {
-            @Override
-            public void run() {
-                synchronized (statusLock) {
-                    MatrixLog.i(TAG, "[startExpired] timestamp:%s status:%s", System.currentTimeMillis(), status);
-                    if (status == STATUS_DEFAULT || status == STATUS_READY) {
-                        status = STATUS_EXPIRED_START;
-                    }
-                }
-            }
-        }, Constants.DEFAULT_RELEASE_BUFFER_DELAY);
-        //2.记录时间戳，作为应用启用的开始时间
-        ActivityThreadHacker.hackSysHandlerCallback();
-        //开始监控主线程 Looper，仅仅在dispatchbegin的时候更新了时间
-        LooperMonitor.register(looperMonitorListener);
-    }
+//    private static void realExecute() {
+//        MatrixLog.i(TAG, "[realExecute] timestamp:%s", System.currentTimeMillis());
+//
+//        sCurrentDiffTime = SystemClock.uptimeMillis() - sDiffTime;
+//
+//        sHandler.removeCallbacksAndMessages(null);
+//        //1.每5毫秒调用一次sUpdateDiffTimeRunnable
+//        sHandler.postDelayed(sUpdateDiffTimeRunnable, Constants.TIME_UPDATE_CYCLE_MS);
+//        //15秒之后，查看是否没有启动，如果没有启动则设置状态为STATUS_EXPIRED_START
+//        sHandler.postDelayed(checkStartExpiredRunnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                synchronized (statusLock) {
+//                    MatrixLog.i(TAG, "[startExpired] timestamp:%s status:%s", System.currentTimeMillis(), status);
+//                    if (status == STATUS_DEFAULT || status == STATUS_READY) {
+//                        status = STATUS_EXPIRED_START;
+//                    }
+//                }
+//            }
+//        }, Constants.DEFAULT_RELEASE_BUFFER_DELAY);
+//        //2.记录时间戳，作为应用启用的开始时间
+//        ActivityThreadHacker.hackSysHandlerCallback();
+//        //开始监控主线程 Looper，仅仅在dispatchbegin的时候更新了时间
+//        LooperMonitor.register(looperMonitorListener);
+//    }
 
 
     //监听消息发送结束，更新时间
@@ -400,34 +400,34 @@ public class AppMethodBeat implements BeatLifecycle {
     //endregion
 
     //region onStart onStop forceStop isAlive addListener removeListener
-    @Override
-    public void onStart() {
-        //        这个时候status应该是STATUS_READY 1
-        synchronized (statusLock) {
-            if (status < STATUS_STARTED && status >= STATUS_EXPIRED_START) {
-                sHandler.removeCallbacks(checkStartExpiredRunnable);//检查是否过期
-                if (sBuffer == null) {
-                    throw new RuntimeException(TAG + " sBuffer == null");
-                }
-                MatrixLog.i(TAG, "[onStart] preStatus:%s", status, Utils.getStack());
-                status = STATUS_STARTED;
-            } else {
-                MatrixLog.w(TAG, "[onStart] current status:%s", status);
-            }
-        }
-    }
-
-    @Override
-    public void onStop() {
-        synchronized (statusLock) {
-            if (status == STATUS_STARTED) {
-                MatrixLog.i(TAG, "[onStop] %s", Utils.getStack());
-                status = STATUS_STOPPED;
-            } else {
-                MatrixLog.w(TAG, "[onStop] current status:%s", status);
-            }
-        }
-    }
+//    @Override
+//    public void onStart() {
+//        //        这个时候status应该是STATUS_READY 1
+//        synchronized (statusLock) {
+//            if (status < STATUS_STARTED && status >= STATUS_EXPIRED_START) {
+//                sHandler.removeCallbacks(checkStartExpiredRunnable);//检查是否过期
+//                if (sBuffer == null) {
+//                    throw new RuntimeException(TAG + " sBuffer == null");
+//                }
+//                MatrixLog.i(TAG, "[onStart] preStatus:%s", status, Utils.getStack());
+//                status = STATUS_STARTED;
+//            } else {
+//                MatrixLog.w(TAG, "[onStart] current status:%s", status);
+//            }
+//        }
+//    }
+//
+//    @Override
+//    public void onStop() {
+//        synchronized (statusLock) {
+//            if (status == STATUS_STARTED) {
+//                MatrixLog.i(TAG, "[onStop] %s", Utils.getStack());
+//                status = STATUS_STOPPED;
+//            } else {
+//                MatrixLog.w(TAG, "[onStop] current status:%s", status);
+//            }
+//        }
+//    }
 
     public void forceStop() {
         synchronized (statusLock) {
@@ -457,61 +457,34 @@ public class AppMethodBeat implements BeatLifecycle {
     //链表相关操作
     public IndexRecord maskIndex(String source) {
         if (sIndexRecordHead == null) {
-            //为什么是-1？
-            // 1.UIThreadMonitor 的dispatchBegin会 调用 AppMethodBeat.i(AppMethodBeat.METHOD_ID_DISPATCH);打个点
-            // 2.EvilMethodTracer的dispatchBegin会maskIndex("EvilMethodTracer#dispatchBegin")
-            //   LooperAnrTrace的dispatchBegin会maskIndex("AnrTracer#dispatchBegin")
-            // 3.为了将METHOD_ID_DISPATCH算入进去这里需要-1
             sIndexRecordHead = new IndexRecord(sIndex - 1);
             sIndexRecordHead.source = source;
             return sIndexRecordHead;
         } else {
-            //为什么是-1？
-            // 1.UIThreadMonitor 的dispatchBegin会 调用 AppMethodBeat.i(AppMethodBeat.METHOD_ID_DISPATCH);打个点
-            // 2.EvilMethodTracer的dispatchBegin会maskIndex("EvilMethodTracer#dispatchBegin")
-            //   LooperAnrTrace的dispatchBegin会maskIndex("AnrTracer#dispatchBegin")
-            // 3.为了将METHOD_ID_DISPATCH算入进去这里需要-1
-            IndexRecord newRecord = new IndexRecord(sIndex - 1);//为什么是-1？，最初sIndex为0，sIndex-1为-1，copyData的时候和0比较了下
-            newRecord.source = source;
-            //a.1 最初还没满
-            //b.1 假如sIndexRecordHead在中间100位置，sIndex-1在1000吧
-            //c.1 假如sIndexRecordHead在中间100位置，sIndex-1在50吧
-            //d.1 假如sIndexRecordHead在中间100位置，sIndex-1在1000吧，last在2000
-            IndexRecord trivalrecord = sIndexRecordHead;
+            IndexRecord indexRecord = new IndexRecord(sIndex - 1);
+            indexRecord.source = source;
+            IndexRecord record = sIndexRecordHead;
             IndexRecord last = null;
 
             while (record != null) {
                 if (indexRecord.index <= record.index) {
                     if (null == last) {
-                        //头部插入
-                        //c.3 sIndexRecordHead在100位置,tmp在100位置
                         IndexRecord tmp = sIndexRecordHead;
-                        //c.4 修改头部为newRecord，sIndexRecordHead在50位置
-                        sIndexRecordHead = newRecord;
-                        //c.5 修改newRecord的next为100位置，中间的元素干掉了，为啥
-                        newRecord.next = tmp;
+                        sIndexRecordHead = indexRecord;
+                        indexRecord.next = tmp;
                     } else {
-                        //中间插入
-                        //d5 last index是1000，last next赋值给tmp
                         IndexRecord tmp = last.next;
-                        //d6 last.next设置为新的
-                        last.next = newRecord;
-                        //d7 新的next设置为原本的next的后边
-                        newRecord.next = tmp;
+                        last.next = indexRecord;
+                        indexRecord.next = tmp;
                     }
-                    return newRecord;
+                    return indexRecord;
                 }
-                //a.3 走这里
-                //b.3 走这里
-                //d.3 走这里
-                last = trivalrecord;
-                trivalrecord = trivalrecord.next;
+                last = record;
+                record = record.next;
             }
-            //a.4 last是最后一个节点，他的next为null，将其next设置为newRecord
-            //b.4 last是最后一个节点，他的next为null，将其next设置为newRecord
-            last.next = newRecord;
+            last.next = indexRecord;
 
-            return newRecord;
+            return indexRecord;
         }
     }
 
@@ -545,8 +518,8 @@ public class AppMethodBeat implements BeatLifecycle {
                 return data;
             }
             return data;
-        } catch (OutOfMemoryError e) {
-            MatrixLog.e(TAG, e.toString());
+        } catch (Throwable t) {
+            MatrixLog.e(TAG, t.toString());
             return data;
         } finally {
             MatrixLog.i(TAG, "[copyData] [%s:%s] length:%s cost:%sms", Math.max(0, startRecord.index), endRecord.index, data.length, System.currentTimeMillis() - current);
@@ -554,7 +527,10 @@ public class AppMethodBeat implements BeatLifecycle {
     }
     //endregion
 
-    //region 工具方法
+    public static long getDiffTime() {
+        return sDiffTime;
+    }
+
     public void printIndexRecord() {
         StringBuilder ss = new StringBuilder(" \n");
         IndexRecord record = sIndexRecordHead;

@@ -55,24 +55,24 @@ public class IdleHandlerLagTracer extends Tracer {
         traceConfig = config;
     }
 
-    private static void detectIdleHandler() {
-        try {
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
-                return;
-            }
-            //通过反射获取主线程MessageQueue里的mIdleHandlers
-            MessageQueue mainQueue = Looper.getMainLooper().getQueue();
-            Field field = MessageQueue.class.getDeclaredField("mIdleHandlers");
-            field.setAccessible(true);
-            MyArrayList<MessageQueue.IdleHandler> myIdleHandlerArrayList = new MyArrayList<>();
-            //将MessageQueue里的mIdleHandlers替换为myIdleHandlerArrayList，代理模式
-            field.set(mainQueue, myIdleHandlerArrayList);
-            idleHandlerLagHandlerThread.start();//开启检测线程
-            idleHandlerLagHandler = new Handler(idleHandlerLagHandlerThread.getLooper());//获取检测线程的handler
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
+//    private static void detectIdleHandler() {
+//        try {
+//            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
+//                return;
+//            }
+//            //通过反射获取主线程MessageQueue里的mIdleHandlers
+//            MessageQueue mainQueue = Looper.getMainLooper().getQueue();
+//            Field field = MessageQueue.class.getDeclaredField("mIdleHandlers");
+//            field.setAccessible(true);
+//            MyArrayList<MessageQueue.IdleHandler> myIdleHandlerArrayList = new MyArrayList<>();
+//            //将MessageQueue里的mIdleHandlers替换为myIdleHandlerArrayList，代理模式
+//            field.set(mainQueue, myIdleHandlerArrayList);
+//            idleHandlerLagHandlerThread.start();//开启检测线程
+//            idleHandlerLagHandler = new Handler(idleHandlerLagHandlerThread.getLooper());//获取检测线程的handler
+//        } catch (Throwable t) {
+//            t.printStackTrace();
+//        }
+//    }
 
     @Override
     public void onAlive() {

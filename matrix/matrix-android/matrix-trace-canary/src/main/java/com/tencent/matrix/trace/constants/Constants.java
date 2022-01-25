@@ -51,7 +51,7 @@ public class Constants {
     public static final int TARGET_EVIL_METHOD_STACK = 30;
     public static final int MAX_LIMIT_ANALYSE_STACK_KEY_NUM = 10;
 
-    public static final int MAX_LIMIT_ANALYSE_STACK_KEY_NUM = 10;   //没有用到
+//    public static final int MAX_LIMIT_ANALYSE_STACK_KEY_NUM = 10;   //没有用到
 
     public static final int LIMIT_WARM_THRESHOLD_MS = 5 * 1000;     //没有用到
 
