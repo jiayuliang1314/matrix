@@ -3,6 +3,7 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#CCCCCC</color>
+    <color name="black">#000000</color>
     <color name="screenrecorder_colorPrimary">#008577</color>
     <color name="screenrecorder_black">#ff000000</color>
     <color name="screenrecorder_black_87">#de000000</color>

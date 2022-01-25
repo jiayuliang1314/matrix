@@ -21,6 +21,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Choreographer;
 
+import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.trace.config.TraceConfig;
 import com.tencent.matrix.trace.constants.Constants;
 import com.tencent.matrix.trace.listeners.LooperObserver;
@@ -81,6 +82,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     private volatile long token = 0L;       //消息执行开始时间，也用做token
     private boolean isVsyncFrame = false;   //frame开始标记
     private TraceConfig config;
+    private static boolean useFrameMetrics;
     private Object callbackQueueLock;   //用于同步
     private Object[] callbackQueues;    //队列数组，保存
     private Method addTraversalQueue;   //往绘制队列添加callback的方法
@@ -106,30 +108,14 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     }
     //endregion
 
-    //region step 1 init
-    public void init(TraceConfig config) {
+    public void init(TraceConfig config, boolean supportFrameMetrics) {
+        this.config = config;
+        useFrameMetrics = supportFrameMetrics;
+
         if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
             throw new AssertionError("must be init in main thread!");
         }
-        this.config = config;
-        choreographer = Choreographer.getInstance();
-        //private final Object mLock = new Object(); 这是个同步锁，addFrameCallback会用到
-        callbackQueueLock = ReflectUtils.reflectObject(choreographer, "mLock", new Object());
-        // 回调队列 private final CallbackQueue[] mCallbackQueues;
-        callbackQueues = ReflectUtils.reflectObject(choreographer, "mCallbackQueues", null);
-        if (null != callbackQueues) {
-            // 反射，找到在 Choreographer内部类 CallbackQueue 上添加回调的addCallbackLocked方法
-            // 反射获取Choreographer中CALLBACK_INPUT、CALLBACK_ANIMATION、CALLBACK_TRAVERSAL三种类型的CallbackQueue的addCallbackLocked方法的句柄。
-            addInputQueue = ReflectUtils.reflectMethod(callbackQueues[CALLBACK_INPUT], ADD_CALLBACK, long.class, Object.class, Object.class);
-            addAnimationQueue = ReflectUtils.reflectMethod(callbackQueues[CALLBACK_ANIMATION], ADD_CALLBACK, long.class, Object.class, Object.class);
-            addTraversalQueue = ReflectUtils.reflectMethod(callbackQueues[CALLBACK_TRAVERSAL], ADD_CALLBACK, long.class, Object.class, Object.class);
-        }
-        //这个Receiver用来获取屏幕lcd硬件显示vsync信息
-        vsyncReceiver = ReflectUtils.reflectObject(choreographer, "mDisplayEventReceiver", null);
-        //每一帧的时间16ms的纳秒值
-        frameIntervalNanos = ReflectUtils.reflectObject(choreographer, "mFrameIntervalNanos", Constants.DEFAULT_FRAME_DURATION);
-        //向LooperMonitor注册Message执行开始的回调、执行结束的回调。这里的Message是指主线程中发生的所有Message，
-        //包括App自己的以及Framework中的，Choreographer中的自然也可以捕获到。
+
         boolean historyMsgRecorder = config.historyMsgRecorder;
         boolean denseMsgTracer = config.denseMsgTracer;
         LooperMonitor.register(new LooperMonitor.LooperDispatchListener(historyMsgRecorder, denseMsgTracer) {
@@ -152,18 +138,30 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
 
         });
         this.isInit = true;
-        MatrixLog.i(TAG, "[UIThreadMonitor] %s %s %s %s %s %s frameIntervalNanos:%s", callbackQueueLock == null, callbackQueues == null,
-                addInputQueue == null, addTraversalQueue == null, addAnimationQueue == null, vsyncReceiver == null, frameIntervalNanos);
+        frameIntervalNanos = ReflectUtils.reflectObject(choreographer, "mFrameIntervalNanos", Constants.DEFAULT_FRAME_DURATION);
+        if (!useFrameMetrics) {
+            choreographer = Choreographer.getInstance();
+            callbackQueueLock = ReflectUtils.reflectObject(choreographer, "mLock", new Object());
+            callbackQueues = ReflectUtils.reflectObject(choreographer, "mCallbackQueues", null);
+            if (null != callbackQueues) {
+                addInputQueue = ReflectUtils.reflectMethod(callbackQueues[CALLBACK_INPUT], ADD_CALLBACK, long.class, Object.class, Object.class);
+                addAnimationQueue = ReflectUtils.reflectMethod(callbackQueues[CALLBACK_ANIMATION], ADD_CALLBACK, long.class, Object.class, Object.class);
+                addTraversalQueue = ReflectUtils.reflectMethod(callbackQueues[CALLBACK_TRAVERSAL], ADD_CALLBACK, long.class, Object.class, Object.class);
+            }
+            vsyncReceiver = ReflectUtils.reflectObject(choreographer, "mDisplayEventReceiver", null);
 
+            MatrixLog.i(TAG, "[UIThreadMonitor] %s %s %s %s %s %s frameIntervalNanos:%s", callbackQueueLock == null, callbackQueues == null,
+                    addInputQueue == null, addTraversalQueue == null, addAnimationQueue == null, vsyncReceiver == null, frameIntervalNanos);
 
-        if (config.isDevEnv()) {
-            addObserver(new LooperObserver() {
-                @Override
-                public void doFrame(String focusedActivity, long startNs, long endNs, boolean isVsyncFrame, long intendedFrameTimeNs, long inputCostNs, long animationCostNs, long traversalCostNs) {
-                    MatrixLog.i(TAG, "focusedActivity[%s] frame cost:%sms isVsyncFrame=%s intendedFrameTimeNs=%s [%s|%s|%s]ns",
-                            focusedActivity, (endNs - startNs) / Constants.TIME_MILLIS_TO_NANO, isVsyncFrame, intendedFrameTimeNs, inputCostNs, animationCostNs, traversalCostNs);
-                }
-            });
+            if (config.isDevEnv()) {
+                addObserver(new LooperObserver() {
+                    @Override
+                    public void doFrame(String focusedActivity, long startNs, long endNs, boolean isVsyncFrame, long intendedFrameTimeNs, long inputCostNs, long animationCostNs, long traversalCostNs) {
+                        MatrixLog.i(TAG, "focusedActivity[%s] frame cost:%sms isVsyncFrame=%s intendedFrameTimeNs=%s [%s|%s|%s]ns",
+                                focusedActivity, (endNs - startNs) / Constants.TIME_MILLIS_TO_NANO, isVsyncFrame, intendedFrameTimeNs, inputCostNs, animationCostNs, traversalCostNs);
+                    }
+                });
+            }
         }
     }
     //endregion
@@ -218,10 +216,11 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
 
     //region step 4 dispatchBegin
     private void dispatchBegin() {
-        token = dispatchTimeMs[0] = System.nanoTime();              //记录时间，dispatchTimeMs 0,2位置为开始时间
-        dispatchTimeMs[2] = SystemClock.currentThreadTimeMillis();  //记录时间
-        AppMethodBeat.i(AppMethodBeat.METHOD_ID_DISPATCH);          //打个点
-
+        token = dispatchTimeMs[0] = System.nanoTime();
+        dispatchTimeMs[2] = SystemClock.currentThreadTimeMillis();
+        if (config.isAppMethodBeatEnable()) {
+            AppMethodBeat.i(AppMethodBeat.METHOD_ID_DISPATCH);
+        }
         synchronized (observers) {
             for (LooperObserver observer : observers) {
                 if (!observer.isDispatchBegin()) {
@@ -240,7 +239,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
             traceBegin = System.nanoTime();//用于devenv记录时间打log用
         }
 
-        if (config.isFPSEnable()) {
+        if (config.isFPSEnable() && !useFrameMetrics) {
             long startNs = token;
             long intendedFrameTimeNs = startNs;
             if (isVsyncFrame) {
@@ -253,7 +252,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
             synchronized (observers) {
                 for (LooperObserver observer : observers) {
                     if (observer.isDispatchBegin()) {
-                        observer.doFrame(AppMethodBeat.getVisibleScene(), startNs, endNs, isVsyncFrame, intendedFrameTimeNs, queueCost[CALLBACK_INPUT], queueCost[CALLBACK_ANIMATION], queueCost[CALLBACK_TRAVERSAL]);
+                        observer.doFrame(AppActiveMatrixDelegate.INSTANCE.getVisibleScene(), startNs, endNs, isVsyncFrame, intendedFrameTimeNs, queueCost[CALLBACK_INPUT], queueCost[CALLBACK_ANIMATION], queueCost[CALLBACK_TRAVERSAL]);
                     }
                 }
             }
@@ -320,14 +319,11 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
                 MatrixLog.i(TAG, "[onStart] callbackExist:%s %s", Arrays.toString(callbackExist), Utils.getStack());
                 callbackExist = new boolean[CALLBACK_LAST + 1];//记录是否已经向该类型的CallbackQueue添加了Runnable，避免重复添加
             }
-            //记录CallbackQueue中添加的Runnable的运行状态，分为默认状态（DO_QUEUE_DEFAULT）、已经添加的状态
-            // （DO_QUEUE_BEGIN）、运行结束的状态（DO_QUEUE_END）
-            queueStatus = new int[CALLBACK_LAST + 1];
-            //记录上面某种类型的Runnable的执行起始的耗时，这可以反映出当前这一次执行CallbackQueue里面的任务耗时有多久。
-            queueCost = new long[CALLBACK_LAST + 1];
-//            这里首先会判断某种type类型的callback是否已经添加，UIThreadMonitor是否已经启动等等检查，
-//            然后根据type取得需要invoke的方法句柄，然后调用该方法并设置callbackExist标志位。
-            addFrameCallback(CALLBACK_INPUT, this, true);
+            if (!useFrameMetrics) {
+                queueStatus = new int[CALLBACK_LAST + 1];
+                queueCost = new long[CALLBACK_LAST + 1];
+                addFrameCallback(CALLBACK_INPUT, this, true);
+            }
         }
     }
     //endregion

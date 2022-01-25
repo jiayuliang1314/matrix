@@ -26,7 +26,19 @@ import java.util.concurrent.TimeUnit;
 
 public final class ResourceConfig {
     public static final String TAG = "Matrix.ResourceConfig";
-    //应用在前台时，每分钟去检测是否有泄漏
+
+    public static final int FORK_DUMP_SUPPORTED_API_GUARD = 31; // Now is Android 12 (S).
+
+    public enum DumpMode {
+        NO_DUMP, // report only
+        AUTO_DUMP, // auto dump hprof
+        MANUAL_DUMP, // notify only
+        SILENCE_ANALYSE, // dump and analyse hprof when screen off
+        FORK_DUMP, // fork dump hprof immediately
+        FORK_ANALYSE, // fork dump and analyse hprof immediately
+        LAZY_FORK_ANALYZE, // fork dump immediately but analyze hprof until the screen is off
+    }
+
     private static final long DEFAULT_DETECT_INTERVAL_MILLIS = TimeUnit.MINUTES.toMillis(1);
     //应用在后台时，每20分钟检测是否有泄漏
     private static final long DEFAULT_DETECT_INTERVAL_MILLIS_BG = TimeUnit.MINUTES.toMillis(20);
@@ -37,14 +49,16 @@ public final class ResourceConfig {
     private final IDynamicConfig mDynamicConfig;//todo，一个动态配置类
     //dump模式
     private final DumpMode mDumpHprofMode;
-    private final boolean mDetectDebugger;//是否在debugger模式支持
-    private final String mTargetActivity;//查看泄漏的Activity，在ManualDumpProcessor里会用到
+    private final boolean mDetectDebugger;
+    private final String mTargetActivity;
+    private final String mManufacture;
 
-    private ResourceConfig(IDynamicConfig dynamicConfig, DumpMode dumpHprofMode, boolean detectDebuger, String targetActivity) {
+    private ResourceConfig(IDynamicConfig dynamicConfig, DumpMode dumpHprofMode, boolean detectDebuger, String targetActivity, String manufacture) {
         this.mDynamicConfig = dynamicConfig;
         this.mDumpHprofMode = dumpHprofMode;
         this.mDetectDebugger = detectDebuger;
         this.mTargetActivity = targetActivity;
+        this.mManufacture = manufacture;
     }
 
     //应用在前台时，每分钟去检测是否有泄漏
@@ -77,14 +91,8 @@ public final class ResourceConfig {
         return mDetectDebugger;
     }
 
-    //如果跳过触发Dump Hprof，甚至可以把监测步骤在现网环境启用，以发现测试阶段难以触发的Activity泄漏
-    public enum DumpMode {
-        NO_DUMP, // report only，只上报名字
-        AUTO_DUMP, // auto dump hprof，
-        MANUAL_DUMP, // notify only
-        SILENCE_ANALYSE, // dump and analyse hprof when screen off
-        FORK_DUMP, // fork dump hprof immediately TODO
-        FORK_ANALYSE, // fork dump and analyse hprof immediately TODO
+    public String getManufacture() {
+        return mManufacture;
     }
 
     public static final class Builder {
@@ -93,6 +101,7 @@ public final class ResourceConfig {
         private IDynamicConfig dynamicConfig;
         private String mTargetActivity;
         private boolean mDetectDebugger = false;
+        private String mManufacture;
 
         public Builder dynamicConfig(IDynamicConfig dynamicConfig) {
             this.dynamicConfig = dynamicConfig;
@@ -114,8 +123,13 @@ public final class ResourceConfig {
             return this;
         }
 
+        public Builder setManufacture(String manufacture) {
+            mManufacture = manufacture;
+            return this;
+        }
+
         public ResourceConfig build() {
-            return new ResourceConfig(dynamicConfig, mDefaultDumpHprofMode, mDetectDebugger, mTargetActivity);
+            return new ResourceConfig(dynamicConfig, mDefaultDumpHprofMode, mDetectDebugger, mTargetActivity, mManufacture);
         }
     }
 }

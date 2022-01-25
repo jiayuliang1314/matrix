@@ -21,6 +21,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
 
+import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
 import com.tencent.matrix.report.IssueOfTraceCanary;
@@ -49,12 +50,9 @@ public class LooperAnrTracer extends Tracer {
 
     private static final String TAG = "Matrix.AnrTracer";
     private final TraceConfig traceConfig;
-    //    onAlive 时初始化，onDead 时退出
-    private Handler anrHandler;//检测anr的handler，推迟5s之后，执行AnrHandleTask
-    private Handler lagHandler;//检测lag 拖后腿方法的handler，推迟2s之后，执行LagHandleTask
     private final AnrHandleTask anrTask = new AnrHandleTask();
     private final LagHandleTask lagTask = new LagHandleTask();
-    private final boolean isAnrTraceEnable;
+    private boolean isAnrTraceEnable;
 
     public LooperAnrTracer(TraceConfig traceConfig) {
         this.traceConfig = traceConfig;
@@ -76,9 +74,7 @@ public class LooperAnrTracer extends Tracer {
         super.onDead();
         if (isAnrTraceEnable) {
             UIThreadMonitor.getMonitor().removeObserver(this);
-            if (null != anrTask) {
-                anrTask.getBeginRecord().release();
-            }
+            anrTask.getBeginRecord().release();
             anrHandler.removeCallbacksAndMessages(null);
             lagHandler.removeCallbacksAndMessages(null);
         }
@@ -111,13 +107,9 @@ public class LooperAnrTracer extends Tracer {
                     token, cost,
                     cpuEndMs - cpuBeginMs, Utils.calculateCpuUsage(cpuEndMs - cpuBeginMs, cost));
         }
-        if (null != anrTask) {
-            anrTask.getBeginRecord().release();
-            anrHandler.removeCallbacks(anrTask);
-        }
-        if (null != lagTask) {
-            lagHandler.removeCallbacks(lagTask);
-        }
+        anrTask.getBeginRecord().release();
+        anrHandler.removeCallbacks(anrTask);
+        lagHandler.removeCallbacks(lagTask);
     }
 
     private String printInputExpired(long inputCost) {
@@ -154,7 +146,7 @@ public class LooperAnrTracer extends Tracer {
 
         @Override
         public void run() {
-            String scene = AppMethodBeat.getVisibleScene();
+            String scene = AppActiveMatrixDelegate.INSTANCE.getVisibleScene();
             boolean isForeground = isForeground();
             try {
                 TracePlugin plugin = Matrix.with().getPluginByClass(TracePlugin.class);
@@ -222,7 +214,7 @@ public class LooperAnrTracer extends Tracer {
             int[] processStat = Utils.getProcessPriority(Process.myPid());
             long[] data = AppMethodBeat.getInstance().copyData(beginRecord);
             beginRecord.release();
-            String scene = AppMethodBeat.getVisibleScene();//todo 可以设置为fragment
+            String scene = AppActiveMatrixDelegate.INSTANCE.getVisibleScene();
 
             // memory
             long[] memoryInfo = dumpMemory();
@@ -391,6 +383,36 @@ public class LooperAnrTracer extends Tracer {
             print.append("=========================================================================");
             return print.toString();
         }
+    }
+
+    private String printInputExpired(long inputCost) {
+        StringBuilder print = new StringBuilder();
+        String scene = AppActiveMatrixDelegate.INSTANCE.getVisibleScene();
+        boolean isForeground = isForeground();
+        // memory
+        long[] memoryInfo = dumpMemory();
+        // process
+        int[] processStat = Utils.getProcessPriority(Process.myPid());
+        print.append(String.format("-\n>>>>>>>>>>>>>>>>>>>>>>> maybe happens Input ANR(%s ms)! <<<<<<<<<<<<<<<<<<<<<<<\n", inputCost));
+        print.append("|* [Status]").append("\n");
+        print.append("|*\t\tScene: ").append(scene).append("\n");
+        print.append("|*\t\tForeground: ").append(isForeground).append("\n");
+        print.append("|*\t\tPriority: ").append(processStat[0]).append("\tNice: ").append(processStat[1]).append("\n");
+        print.append("|*\t\tis64BitRuntime: ").append(DeviceUtil.is64BitRuntime()).append("\n");
+        print.append("|* [Memory]").append("\n");
+        print.append("|*\t\tDalvikHeap: ").append(memoryInfo[0]).append("kb\n");
+        print.append("|*\t\tNativeHeap: ").append(memoryInfo[1]).append("kb\n");
+        print.append("|*\t\tVmSize: ").append(memoryInfo[2]).append("kb\n");
+        print.append("=========================================================================");
+        return print.toString();
+    }
+
+    private long[] dumpMemory() {
+        long[] memory = new long[3];
+        memory[0] = DeviceUtil.getDalvikHeap();
+        memory[1] = DeviceUtil.getNativeHeap();
+        memory[2] = DeviceUtil.getVmSize();
+        return memory;
     }
 
 }

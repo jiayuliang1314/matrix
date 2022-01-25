@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Matrix Samples</string>
+    <string name="unused_string">unused</string>
+    <string name="empty_reference_chain">Empty reference chain.</string>
 
 
     <string name="screenrecorder_screen_recorder_resolution">Resolution</string>

@@ -28,6 +28,7 @@ import android.os.SystemClock;
 import androidx.annotation.Keep;
 import androidx.annotation.RequiresApi;
 
+import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
 import com.tencent.matrix.report.IssueOfTraceCanary;
@@ -35,7 +36,6 @@ import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
 import com.tencent.matrix.trace.constants.Constants;
-import com.tencent.matrix.trace.core.AppMethodBeat;
 import com.tencent.matrix.trace.util.AppForegroundUtil;
 import com.tencent.matrix.trace.util.Utils;
 import com.tencent.matrix.util.DeviceUtil;
@@ -45,6 +45,9 @@ import com.tencent.matrix.util.MatrixUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -86,7 +89,11 @@ public class SignalAnrTracer extends Tracer {
     private static long anrMessageWhen = 0L;
     //anr发生时，主线程处理的消息
     private static String anrMessageString = "";
-    //endregion
+    private static String cgroup = "";
+    private static String stackTrace = "";
+    private static String nativeBacktraceStackTrace = "";
+    private static long lastReportedTimeStamp = 0;
+    private static long onAnrDumpedTimeStamp = 0;
 
     static {
         //加载trace-canary lib
@@ -113,37 +120,51 @@ public class SignalAnrTracer extends Tracer {
     }
     //endregion
 
-    /**
-     * AnrDumper.cc里 handleSignal
-     *
-     */
-    //step 2
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    @Keep
-    private static void onANRDumped() {
-        //是否是前台
-        currentForeground = AppForegroundUtil.isInterestingToUser();
-        //是否是主线程堵塞了，需要report
-        boolean needReport = isMainThreadBlocked();
+    public static String readCgroup() {
+        StringBuilder ret = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("/proc/self/cgroup")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                ret.append(line).append("\n");
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+        return ret.toString();
+    }
 
-        //有两种情况，主线程消息已经堵住了，或者开启一个线程检测状态 NOT_RESPONDING
-        //需要report
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private static void confirmRealAnr(final boolean isSigQuit) {
+        MatrixLog.i(TAG, "confirmRealAnr, isSigQuit = " + isSigQuit);
+        boolean needReport = isMainThreadBlocked();
         if (needReport) {
-            report(false);
+            report(false, isSigQuit);
         } else {
 //            监控到SIGQUIT后，我们在20秒内（20秒是ANR dump的timeout时间）不断轮询自己是否有NOT_RESPONDING flag
 //            ，一旦发现有这个flag，那么马上就可以认定发生了一次ANR。
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    //开启了一个线程检查
-                    checkErrorStateCycle();
+                    checkErrorStateCycle(isSigQuit);
                 }
             }, CHECK_ANR_STATE_THREAD_NAME).start();
         }
     }
 
-    //    step 4
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Keep
+    private synchronized static void onANRDumped() {
+        onAnrDumpedTimeStamp = System.currentTimeMillis();
+        MatrixLog.i(TAG, "onANRDumped");
+        stackTrace = Utils.getMainThreadJavaStackTrace();
+        MatrixLog.i(TAG, "onANRDumped, stackTrace = %s, duration = %d", stackTrace, (System.currentTimeMillis() - onAnrDumpedTimeStamp));
+        cgroup = readCgroup();
+        MatrixLog.i(TAG, "onANRDumped, read cgroup duration = %d", (System.currentTimeMillis() - onAnrDumpedTimeStamp));
+        currentForeground = AppForegroundUtil.isInterestingToUser();
+        MatrixLog.i(TAG, "onANRDumped, isInterestingToUser duration = %d", (System.currentTimeMillis() - onAnrDumpedTimeStamp));
+        confirmRealAnr(true);
+    }
+
     @Keep
     private static void onANRDumpTrace() {
         try {
@@ -164,15 +185,28 @@ public class SignalAnrTracer extends Tracer {
         }
     }
 
-//    step 3
-    /**
-     * @param fromProcessErrorState false代表主线程阻塞了，消息超时了吗
-     */
-    private static void report(boolean fromProcessErrorState) {
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Keep
+    private static void onNativeBacktraceDumped() {
+        MatrixLog.i(TAG, "happens onNativeBacktraceDumped");
+        if (System.currentTimeMillis() - lastReportedTimeStamp < ANR_DUMP_MAX_TIME) {
+            MatrixLog.i(TAG, "report SIGQUIT recently, just return");
+            return;
+        }
+        nativeBacktraceStackTrace = Utils.getMainThreadJavaStackTrace();
+        MatrixLog.i(TAG, "happens onNativeBacktraceDumped, mainThreadStackTrace = " + stackTrace);
+
+        confirmRealAnr(false);
+    }
+
+    private static void report(boolean fromProcessErrorState, boolean isSigQuit) {
         try {
-            String stackTrace = Utils.getMainThreadJavaStackTrace();
             if (sSignalAnrDetectedListener != null) {
-                sSignalAnrDetectedListener.onAnrDetected(stackTrace, anrMessageString, anrMessageWhen, fromProcessErrorState);
+                if (isSigQuit) {
+                    sSignalAnrDetectedListener.onAnrDetected(stackTrace, anrMessageString, anrMessageWhen, fromProcessErrorState, cgroup);
+                } else {
+                    sSignalAnrDetectedListener.onNativeBacktraceDetected(nativeBacktraceStackTrace, anrMessageString, anrMessageWhen, fromProcessErrorState);
+                }
                 return;
             }
 
@@ -181,13 +215,18 @@ public class SignalAnrTracer extends Tracer {
                 return;
             }
 
-            String scene = AppMethodBeat.getVisibleScene();
+            String scene = AppActiveMatrixDelegate.INSTANCE.getVisibleScene();
 
             JSONObject jsonObject = new JSONObject();
             jsonObject = DeviceUtil.getDeviceInfo(jsonObject, Matrix.with().getApplication());
-            jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.SIGNAL_ANR);
-            jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);//todo
-            jsonObject.put(SharePluginInfo.ISSUE_THREAD_STACK, stackTrace);
+            if (isSigQuit) {
+                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.SIGNAL_ANR);
+                jsonObject.put(SharePluginInfo.ISSUE_THREAD_STACK, stackTrace);
+            } else {
+                jsonObject.put(SharePluginInfo.ISSUE_STACK_TYPE, Constants.Type.SIGNAL_ANR_NATIVE_BACKTRACE);
+                jsonObject.put(SharePluginInfo.ISSUE_THREAD_STACK, nativeBacktraceStackTrace);
+            }
+            jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);
             jsonObject.put(SharePluginInfo.ISSUE_PROCESS_FOREGROUND, currentForeground);
 
             Issue issue = new Issue();
@@ -208,6 +247,8 @@ public class SignalAnrTracer extends Tracer {
 
         } catch (JSONException e) {
             MatrixLog.e(TAG, "[JSONException error: %s", e);
+        } finally {
+            lastReportedTimeStamp = System.currentTimeMillis();
         }
     }
 
@@ -222,6 +263,7 @@ public class SignalAnrTracer extends Tracer {
             final Message mMessage = (Message) field.get(mainQueue);
             if (mMessage != null) {
                 anrMessageString = mMessage.toString();
+                MatrixLog.i(TAG, "anrMessageString = " + anrMessageString);
                 long when = mMessage.getWhen();
                 if (when == 0) {
                     return false;
@@ -233,6 +275,8 @@ public class SignalAnrTracer extends Tracer {
                     timeThreshold = FOREGROUND_MSG_THRESHOLD;
                 }
                 return time < timeThreshold;
+            } else {
+                MatrixLog.i(TAG, "mMessage is null");
             }
         } catch (Exception e) {
             return false;
@@ -240,8 +284,8 @@ public class SignalAnrTracer extends Tracer {
         return false;
     }
 
-    //step 2.2
-    private static void checkErrorStateCycle() {
+
+    private static void checkErrorStateCycle(boolean isSigQuit) {
         int checkErrorStateCount = 0;
         //开启一个循环检测
         while (checkErrorStateCount < CHECK_ERROR_STATE_COUNT) {
@@ -249,7 +293,7 @@ public class SignalAnrTracer extends Tracer {
                 checkErrorStateCount++;
                 boolean myAnr = checkErrorState();
                 if (myAnr) {
-                    report(true);
+                    report(true, isSigQuit);
                     break;
                 }
 
@@ -267,6 +311,7 @@ public class SignalAnrTracer extends Tracer {
 //    而这个flag我们可以通过ActivityManager来获取：
     private static boolean checkErrorState() {
         try {
+            MatrixLog.i(TAG, "[checkErrorState] start");
             Application application =
                     sApplication == null ? Matrix.with().getApplication() : sApplication;
             ActivityManager am = (ActivityManager) application
@@ -274,6 +319,7 @@ public class SignalAnrTracer extends Tracer {
             //从ActivityManager 获取ProcessErrorStateInfo
             List<ActivityManager.ProcessErrorStateInfo> procs = am.getProcessesInErrorState();
             if (procs == null) {
+                MatrixLog.i(TAG, "[checkErrorState] procs == null");
                 return false;
             }
 
@@ -283,6 +329,7 @@ public class SignalAnrTracer extends Tracer {
                 if (proc.uid != android.os.Process.myUid()
                         && proc.condition == ActivityManager.ProcessErrorStateInfo.NOT_RESPONDING) {
                     MatrixLog.i(TAG, "maybe received other apps ANR signal");
+                    return false;
                 }
 
                 if (proc.pid != android.os.Process.myPid()) continue;
@@ -290,7 +337,9 @@ public class SignalAnrTracer extends Tracer {
                 if (proc.condition != ActivityManager.ProcessErrorStateInfo.NOT_RESPONDING) {
                     continue;
                 }
-                //只有是自己进程，并且是NOT_RESPONDING的时候，才返回true
+
+                MatrixLog.i(TAG, "error sate longMsg = %s", proc.longMsg);
+
                 return true;
             }
             return false;
@@ -346,6 +395,7 @@ public class SignalAnrTracer extends Tracer {
     }
 
     public interface SignalAnrDetectedListener {
-        void onAnrDetected(String stackTrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState);
+        void onAnrDetected(String stackTrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState, String cpuset);
+        void onNativeBacktraceDetected(String backtrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState);
     }
 }

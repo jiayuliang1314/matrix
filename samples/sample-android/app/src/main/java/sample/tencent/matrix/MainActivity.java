@@ -35,6 +35,7 @@ import sample.tencent.matrix.issue.IssuesMap;
 import sample.tencent.matrix.resource.TestLeakActivity;
 import sample.tencent.matrix.sqlitelint.TestSQLiteLintActivity;
 import sample.tencent.matrix.trace.TestTraceMainActivity;
+import sample.tencent.matrix.traffic.TestTrafficActivity;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -115,6 +116,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, TestHooksActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button testTraffic = findViewById(R.id.test_traffic_enter);
+        testTraffic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, TestTrafficActivity.class);
                 startActivity(intent);
             }
         });

@@ -64,6 +64,19 @@ class MatrixTrace(
                 String.format("%s_%s%s", nameWithoutDotExt, hashing, dotExt)
             }
         }
+
+        fun appendSuffix(jarFile: File, suffix: String): String {
+            val origJarName = jarFile.name
+            val dotPos = origJarName.lastIndexOf('.')
+            return if (dotPos < 0) {
+                String.format("%s_%s", origJarName, suffix)
+            } else {
+                val nameWithoutDotExt = origJarName.substring(0, dotPos)
+                val dotExt = origJarName.substring(dotPos)
+                String.format("%s_%s%s", nameWithoutDotExt, suffix, dotExt)
+            }
+        }
+
     }
 
     fun doTransform(classInputs: Collection<File>,
@@ -73,7 +86,8 @@ class MatrixTrace(
                     skipCheckClass: Boolean,
                     traceClassDirectoryOutput: File,
                     legacyReplaceChangedFile: ((File, Map<File, Status>) -> Object)?,
-                    legacyReplaceFile: ((File, File) -> (Object))?
+                    legacyReplaceFile: ((File, File) -> (Object))?,
+                    uniqueOutputName: Boolean
     ) {
         val executor: ExecutorService = Executors.newFixedThreadPool(50)
 
@@ -129,6 +143,7 @@ class MatrixTrace(
                         isIncremental = isIncremental,
                         traceClassFileOutput = traceClassDirectoryOutput,
                         legacyReplaceFile = legacyReplaceFile,
+                        uniqueOutputName = uniqueOutputName,
 
                         // result
                         resultOfDirInputToOut = dirInputOutMap,
@@ -303,9 +318,17 @@ class MatrixTrace(
 
             if (isIncremental) {
                 val outChangedFiles = HashMap<File, Status>()
+
                 for ((changedFileInput, status) in mapOfChangedFiles) {
                     val changedFileInputFullPath = changedFileInput.absolutePath
+
+                    // mapOfChangedFiles is contains all. each collectDirectoryInputTask should handle itself, should not handle other file
+                    if (!changedFileInputFullPath.contains(inputFullPath)) {
+                        continue
+                    }
+
                     val changedFileOutput = File(changedFileInputFullPath.replace(inputFullPath, outputFullPath))
+
                     if (status == Status.ADDED || status == Status.CHANGED) {
                         resultOfDirInputToOut[changedFileInput] = changedFileOutput
                     } else if (status == Status.REMOVED) {
@@ -330,6 +353,7 @@ class MatrixTrace(
             private val isIncremental: Boolean,
             private val traceClassFileOutput: File,
             private val legacyReplaceFile: ((File, File) -> (Object))?,             // Will be removed in the future
+            private val uniqueOutputName: Boolean,
             private val resultOfDirInputToOut: MutableMap<File, File>,
             private val resultOfJarInputToOut: MutableMap<File, File>
     ) : Runnable {
@@ -349,7 +373,11 @@ class MatrixTrace(
             val jarOutput = if (inputToOutput.containsKey(jarInput)) {
                 inputToOutput[jarInput]!!
             } else {
-                File(traceClassFileOutput, getUniqueJarName(jarInput))
+                val outputJarName = if (uniqueOutputName)
+                    getUniqueJarName(jarInput)
+                else
+                    appendSuffix(jarInput, "traced")
+                File(traceClassFileOutput, outputJarName)
             }
 
             Log.d(TAG, "CollectJarInputTask input %s -> output %s", jarInput, jarOutput)

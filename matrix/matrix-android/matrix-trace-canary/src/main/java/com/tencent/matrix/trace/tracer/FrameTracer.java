@@ -18,9 +18,14 @@ package com.tencent.matrix.trace.tracer;
 
 import android.app.Activity;
 import android.app.Application;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.view.FrameMetrics;
+import android.view.Window;
+
+import androidx.annotation.RequiresApi;
 
 import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.Matrix;
@@ -51,21 +56,23 @@ import java.util.concurrent.Executor;
 public class FrameTracer extends Tracer implements Application.ActivityLifecycleCallbacks {
     //region 参数
     private static final String TAG = "Matrix.FrameTracer";
-    private final HashSet<IDoFrameListener> listeners = new HashSet<>();//FPSCollector实现了IDoFrameListener
-    private final long frameIntervalNs; //16ms
+    private static boolean useFrameMetrics;
+    private final HashSet<IDoFrameListener> listeners = new HashSet<>();
+    private DropFrameListener dropFrameListener;
+    private int dropFrameListenerThreshold = 0;
+    private long frameIntervalNs;
+    private int refreshRate;
     private final TraceConfig config;
-    private final long timeSliceMs;     //10s，记录的是累计的观察时间，每10s上报一次。
-    private final boolean isFPSEnable;
-    private final long frozenThreshold; //掉了42帧
-    private final long highThreshold;   //24
-    private final long middleThreshold; //9
-    private final long normalThreshold; //3
-    private final Map<String, Long> lastResumeTimeMap = new HashMap<>();//activity和其最后一次可见resume时间的map，没用到
-    private DropFrameListener dropFrameListener;//没设置
-    private int dropFrameListenerThreshold = 0;//没设置
-    private int droppedSum = 0;     //掉帧数量
-    private long durationSum = 0;   //帧时间累计(所有)没用到
-    //endregion
+    private final long timeSliceMs;
+    private boolean isFPSEnable;
+    private long frozenThreshold;
+    private long highThreshold;
+    private long middleThreshold;
+    private long normalThreshold;
+    private int droppedSum = 0;
+    private long durationSum = 0;
+    private Map<String, Long> lastResumeTimeMap = new HashMap<>();
+    private Map<Integer, Window.OnFrameMetricsAvailableListener> frameListenerMap = new HashMap<>();
 
     public FrameTracer(TraceConfig config) {
         this.config = config;
@@ -119,7 +126,9 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
     public void onAlive() {
         super.onAlive();
         if (isFPSEnable) {
-            UIThreadMonitor.getMonitor().addObserver(this);
+            if (!useFrameMetrics) {
+                UIThreadMonitor.getMonitor().addObserver(this);
+            }
             Matrix.with().getApplication().registerActivityLifecycleCallbacks(this);
         }
     }
@@ -158,14 +167,14 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
                                 final long intendedFrameTimeNs, final long inputCostNs, final long animationCostNs, final long traversalCostNs) {
         long traceBegin = System.currentTimeMillis();
         try {
-            final long jiter = endNs - intendedFrameTimeNs;
-            final int dropFrame = (int) (jiter / frameIntervalNs);//这里是long整型运算，所以大于16ms将会计算出来掉帧数量大于1，否则小于16ms则为0，需要debug
-            if (dropFrameListener != null) {//这里没有设置，没有进入
+            final long jitter = endNs - intendedFrameTimeNs;
+            final int dropFrame = (int) (jitter / frameIntervalNs);
+            if (dropFrameListener != null) {
                 if (dropFrame > dropFrameListenerThreshold) {
                     try {
                         if (AppActiveMatrixDelegate.getTopActivityName() != null) {
                             long lastResumeTime = lastResumeTimeMap.get(AppActiveMatrixDelegate.getTopActivityName());
-                            dropFrameListener.dropFrame(dropFrame, AppActiveMatrixDelegate.getTopActivityName(), lastResumeTime);
+                            dropFrameListener.dropFrame(dropFrame, jitter, AppActiveMatrixDelegate.getTopActivityName(), lastResumeTime);
                         }
                     } catch (Exception e) {
                         MatrixLog.e(TAG, "dropFrameListener error e:" + e.getMessage());
@@ -174,8 +183,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
             }
             //掉帧数量
             droppedSum += dropFrame;
-            //所有时间
-            durationSum += Math.max(jiter, frameIntervalNs);
+            durationSum += Math.max(jitter, frameIntervalNs);
 
             synchronized (listeners) {
                 for (final IDoFrameListener listener : listeners) {
@@ -328,8 +336,7 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
             }
 
             item.collect(droppedFrames);
-
-            if (item.sumFrameCost >= timeSliceMs) { // report，如果一个activity，总共帧所占时间超过10s，上报
+            if (item.sumFrameCost >= timeSliceMs) { // report
                 map.remove(visibleScene);
                 item.report();
             }
@@ -352,9 +359,9 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
 
         void collect(int droppedFrames) {
-            float frameIntervalCost = 1f * UIThreadMonitor.getMonitor().getFrameIntervalNanos()
-                    / Constants.TIME_MILLIS_TO_NANO;//16ms
-            sumFrameCost += (droppedFrames + 1) * frameIntervalCost;//这个地方+1为什么，因为计算原本的时间
+            float frameIntervalCost = 1f * FrameTracer.this.frameIntervalNs
+                    / Constants.TIME_MILLIS_TO_NANO;
+            sumFrameCost += (droppedFrames + 1) * frameIntervalCost;
             sumDroppedFrames += droppedFrames;
             sumFrame++;
             if (droppedFrames >= frozenThreshold) {
@@ -376,9 +383,8 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
         }
 
         void report() {
-            float fps = Math.min(60.f, 1000.f * sumFrame / sumFrameCost);
+            float fps = Math.min(refreshRate, 1000.f * sumFrame / sumFrameCost);
             MatrixLog.i(TAG, "[report] FPS:%s %s", fps, toString());
-
             try {
                 TracePlugin plugin = Matrix.with().getPluginByClass(TracePlugin.class);
                 if (null == plugin) {
@@ -451,6 +457,89 @@ public class FrameTracer extends Tracer implements Application.ActivityLifecycle
                     + ", sumDroppedFrames=" + sumDroppedFrames
                     + ", sumFrameCost=" + sumFrameCost
                     + ", dropLevel=" + Arrays.toString(dropLevel);
+        }
+    }
+
+    public enum DropStatus {
+        DROPPED_FROZEN(4), DROPPED_HIGH(3), DROPPED_MIDDLE(2), DROPPED_NORMAL(1), DROPPED_BEST(0);
+        public int index;
+
+        DropStatus(int index) {
+            this.index = index;
+        }
+
+    }
+
+    public void addDropFrameListener(int dropFrameListenerThreshold, DropFrameListener dropFrameListener) {
+        this.dropFrameListener = dropFrameListener;
+        this.dropFrameListenerThreshold = dropFrameListenerThreshold;
+    }
+
+    public void removeDropFrameListener() {
+        this.dropFrameListener = null;
+    }
+
+    public interface DropFrameListener {
+        void dropFrame(int droppedFrame, long jitter, String scene, long lastResumeTime);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void onActivityCreated(final Activity activity, Bundle savedInstanceState) {
+        if (useFrameMetrics) {
+            this.refreshRate = (int) activity.getWindowManager().getDefaultDisplay().getRefreshRate();
+            this.frameIntervalNs = Constants.TIME_SECOND_TO_NANO / (long) refreshRate;
+            Window.OnFrameMetricsAvailableListener onFrameMetricsAvailableListener = new Window.OnFrameMetricsAvailableListener() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
+                @Override
+                public void onFrameMetricsAvailable(Window window, FrameMetrics frameMetrics, int dropCountSinceLastInvocation) {
+                    FrameMetrics frameMetricsCopy = new FrameMetrics(frameMetrics);
+                    long vsynTime = frameMetricsCopy.getMetric(FrameMetrics.VSYNC_TIMESTAMP);
+                    long intendedVsyncTime = frameMetricsCopy.getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP);
+                    frameMetricsCopy.getMetric(FrameMetrics.DRAW_DURATION);
+                    notifyListener(AppActiveMatrixDelegate.INSTANCE.getVisibleScene(), intendedVsyncTime, vsynTime, true, intendedVsyncTime, 0, 0, 0);
+                }
+            };
+            this.frameListenerMap.put(activity.hashCode(), onFrameMetricsAvailableListener);
+            activity.getWindow().addOnFrameMetricsAvailableListener(onFrameMetricsAvailableListener, new Handler());
+            MatrixLog.i(TAG, "onActivityCreated addOnFrameMetricsAvailableListener");
+        }
+    }
+
+    @Override
+    public void onActivityStarted(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+        lastResumeTimeMap.put(activity.getClass().getName(), System.currentTimeMillis());
+    }
+
+    @Override
+    public void onActivityPaused(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void onActivityDestroyed(Activity activity) {
+        if (useFrameMetrics) {
+            try {
+                activity.getWindow().removeOnFrameMetricsAvailableListener(frameListenerMap.remove(activity.hashCode()));
+            } catch (Throwable t) {
+                MatrixLog.e(TAG, "removeOnFrameMetricsAvailableListener error : " + t.getMessage());
+            }
         }
     }
 }

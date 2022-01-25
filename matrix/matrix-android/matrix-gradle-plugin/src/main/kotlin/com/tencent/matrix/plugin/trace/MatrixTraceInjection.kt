@@ -127,8 +127,7 @@ class MatrixTraceInjection : ITraceSwitchListener {
                 val taskProvider = BaseCreationAction.findNamedTask(project.tasks, dexBuilderTaskName)
 
                 taskProvider?.configure { task: Task ->
-                    //找到位置dexBuilder
-                    traceTaskProvider.get().wired(task as DexArchiveBuilderTask)//todo
+                    traceTaskProvider.get().wired(creationConfig, task as DexArchiveBuilderTask)
                 }
 
                 if (taskProvider == null) {

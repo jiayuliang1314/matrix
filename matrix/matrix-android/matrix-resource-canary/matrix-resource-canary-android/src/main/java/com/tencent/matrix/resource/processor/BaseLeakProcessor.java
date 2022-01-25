@@ -2,8 +2,10 @@ package com.tencent.matrix.resource.processor;
 
 import android.os.Build;
 
+import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
 import com.tencent.matrix.resource.CanaryWorkerService;
+import com.tencent.matrix.resource.ResourcePlugin;
 import com.tencent.matrix.resource.analyzer.ActivityLeakAnalyzer;
 import com.tencent.matrix.resource.analyzer.model.ActivityLeakResult;
 import com.tencent.matrix.resource.analyzer.model.AndroidExcludedRefs;
@@ -13,9 +15,9 @@ import com.tencent.matrix.resource.analyzer.model.HeapDump;
 import com.tencent.matrix.resource.analyzer.model.HeapSnapshot;
 import com.tencent.matrix.resource.config.ResourceConfig;
 import com.tencent.matrix.resource.config.SharePluginInfo;
-import com.tencent.matrix.resource.watcher.ActivityRefWatcher;
 import com.tencent.matrix.resource.dumper.AndroidHeapDumper;
 import com.tencent.matrix.resource.dumper.DumpStorageManager;
+import com.tencent.matrix.resource.watcher.ActivityRefWatcher;
 import com.tencent.matrix.util.MatrixLog;
 
 import org.json.JSONException;
@@ -80,18 +82,22 @@ public abstract class BaseLeakProcessor {
     public void onDestroy() {
     }
 
-    /**
-     * todo
-     * SilenceAnalyseProcessor 调用了
-     * ManualDumpProcessor调用了
-     * @param hprofFile
-     * @param referenceKey
-     * @return
-     */
+    private static volatile boolean mAnalyzing = false;
+
+    public static boolean isAnalyzing() {
+        return mAnalyzing;
+    }
+
+    private static void setAnalyzing(boolean analyzing) {
+        mAnalyzing = analyzing;
+    }
+
     protected ActivityLeakResult analyze(File hprofFile, String referenceKey) {
+        setAnalyzing(true);
         final HeapSnapshot heapSnapshot;
         ActivityLeakResult result;
-        final ExcludedRefs excludedRefs = AndroidExcludedRefs.createAppDefaults(Build.VERSION.SDK_INT, Build.MANUFACTURER).build();
+        String manufacture = Matrix.with().getPluginByClass(ResourcePlugin.class).getConfig().getManufacture();
+        final ExcludedRefs excludedRefs = AndroidExcludedRefs.createAppDefaults(Build.VERSION.SDK_INT, manufacture).build();
         try {
             heapSnapshot = new HeapSnapshot(hprofFile);
             //todo 这里是这个函数的主要逻辑，使用ActivityLeakAnalyzer分析heapSnapshot，返回ActivityLeakResult
@@ -99,6 +105,8 @@ public abstract class BaseLeakProcessor {
         } catch (IOException e) {
             result = ActivityLeakResult.failure(e, 0);
         }
+        getWatcher().triggerGc();
+        setAnalyzing(false);
         return result;
     }
 

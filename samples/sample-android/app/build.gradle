@@ -57,11 +57,13 @@ android {
 
     buildTypes {
         release {
+            debuggable false
             minifyEnabled true
             signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
+            debuggable true
             minifyEnabled true      // 混淆打开
             shrinkResources true   // 将无用的类资源过滤，Gradle2.2版本后设置为false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

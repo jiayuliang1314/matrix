@@ -101,6 +101,12 @@ public class ActivityRefWatcher extends FilePublisher implements Watcher {
                     return new ManualDumpProcessor(watcher, watcher.getResourcePlugin().getConfig().getTargetActivity());
                 case SILENCE_ANALYSE:
                     return new SilenceAnalyseProcessor(watcher);
+                case FORK_DUMP:
+                    return new ForkDumpProcessor(watcher);
+                case FORK_ANALYSE:
+                    return new ForkAnalyseProcessor(watcher);
+                case LAZY_FORK_ANALYZE:
+                    return new LazyForkAnalyzeProcessor(watcher);
                 case NO_DUMP:
                 default:
                     return new NoDumpProcessor(watcher);

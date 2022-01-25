@@ -281,7 +281,9 @@ class MatrixTraceTransform(
                 traceClassDirectoryOutput = outputDirectory,//output文件夹
                 inputToOutput = inputToOutput,//ConcurrentHashMap<File, File>()
                 legacyReplaceChangedFile = null,
-                legacyReplaceFile = null)
+                legacyReplaceFile = null,
+                uniqueOutputName = true
+        )
 
         val cost = System.currentTimeMillis() - start
         Log.i(TAG, " Insert matrix trace instrumentations cost time: %sms.", cost)

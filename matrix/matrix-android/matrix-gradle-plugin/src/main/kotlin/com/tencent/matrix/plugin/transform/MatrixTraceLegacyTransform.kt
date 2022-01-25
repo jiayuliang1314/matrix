@@ -200,7 +200,8 @@ class MatrixTraceLegacyTransform(
                 traceClassDirectoryOutput = File(config.traceClassOut),
                 inputToOutput = ConcurrentHashMap(),
                 legacyReplaceChangedFile = legacyReplaceChangedFile,
-                legacyReplaceFile = legacyReplaceFile
+                legacyReplaceFile = legacyReplaceFile,
+                uniqueOutputName = true
         )
 
         val cost = System.currentTimeMillis() - start

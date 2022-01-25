@@ -38,26 +38,18 @@
 #define SIGNAL_CATCHER_THREAD_SIGBLK 0x1000
 
 namespace MatrixTracer {
-//信号
-    const int TARGET_SIG = SIGQUIT;//3
-//使用sigaction方法注册signal handler进行异步监听，sOldHandlers是保存老的sigaction
-    struct sigaction sOldHandlers;//todo
-    bool sHandlerInstalled = false;
 
-// The global signal handler stack. This is needed because there may exist
-// multiple SignalHandler instances in a process. Each will have itself
-// registered in this stack.
-//  全局信号处理程序堆栈。 这是必需的，因为一个进程中可能存在多个 SignalHandler 实例。 每个都将在此堆栈中注册自己。
-    static std::vector<SignalHandler *> *sHandlerStack = nullptr;//todo
-// C++11中新增了<mutex>，它是C++标准程序库中的一个头文件，定义了C++11标准中的一些互斥访问的类与方法等。
-// 其中std::mutex就是lock、unlock。std::lock_guard与std::mutex配合使用，把锁放到lock_guard中时，
-// mutex自动上锁，lock_guard析构时，同时把mutex解锁。mutex又称互斥量。
-    static std::mutex sHandlerStackMutex;//todo
-    static bool sStackInstalled = false;
-// InstallAlternateStackLocked will store the newly installed stack in new_stack
-// and (if it exists) the previously installed stack in old_stack.
-    static stack_t sOldStack;//todo
-    static stack_t sNewStack;//todo
+struct sigaction sOldHandlers;
+struct sigaction sNativeBacktraceOldHandlers;
+static bool sHandlerInstalled = false;
+static bool sNativeBacktraceHandlerInstalled = false;
+
+static std::vector<SignalHandler*>* sHandlerStack = nullptr;
+static std::mutex sHandlerStackMutex;
+static std::mutex sNativeBacktraceHandlerStackMutex;
+static bool sStackInstalled = false;
+static stack_t sOldStack;
+static stack_t sNewStack;
 
     //step 2
     static void installAlternateStackLocked() {//todo
@@ -79,9 +71,8 @@ namespace MatrixTracer {
             }
         }
 
-        sStackInstalled = true;
-        ALOGV("Alternative stack installed.");
-    }
+    sStackInstalled = true;
+}
 
 //  step 3 Runs before crashing: normal context.
 //    我们通过可以sigaction方法，建立一个Signal Handler：ok
@@ -95,53 +86,69 @@ namespace MatrixTracer {
             return false;
         }
 
-        struct sigaction sa{};//sigaction结构体
-        sa.sa_sigaction = signalHandler;//方法地址，收到信号的地方
-        sa.sa_flags = SA_ONSTACK | SA_SIGINFO | SA_RESTART;
-        //我们通过可以sigaction方法，建立一个Signal Handler
-        if (sigaction(TARGET_SIG, &sa, nullptr) == -1) {//sigaction方法，将sa设置为Signal Handler
-            ALOGV("Signal handler cannot be installed");
+    struct sigaction sa{};
+    sa.sa_sigaction = signalHandler;
+    sa.sa_flags = SA_ONSTACK | SA_SIGINFO | SA_RESTART;
 
-            // At this point it is impractical to back out changes, and so failure to
-            // install a signal is intentionally ignored.
-        }
-
-        sHandlerInstalled = true;
-        ALOGV("Signal handler installed.");
-        return true;
+    if (sigaction(TARGET_SIG, &sa, nullptr) == -1) {
+        return false;
     }
 
-    //todo
-    static void installDefaultHandler(int sig) {
+    sHandlerInstalled = true;
+    return true;
+}
 
-        // Android L+ expose signal and sigaction symbols that override the system
-        // ones. There is a bug in these functions where a request to set the handler
-        // to SIG_DFL is ignored. In that case, an infinite loop is entered as the
-        // signal is repeatedly sent to breakpad's signal handler.
-        // To work around this, directly call the system's sigaction.
-        struct sigaction sa;
-        memset(&sa, 0, sizeof(sa));
-        sigemptyset(&sa.sa_mask);
-        sa.sa_handler = SIG_DFL;
-        sa.sa_flags = SA_RESTART;
-        sigaction(sig, &sa, nullptr);
+bool SignalHandler::installNativeBacktraceHandlersLocked() {
+    if (sNativeBacktraceHandlerInstalled) {
+        return false;
     }
 
-// This function runs in a compromised context: see the top of the file.
-// Runs on the crashing thread.
-    //step 6
-    static void restoreHandlersLocked() {//todo
-        if (!sHandlerInstalled)
-            return;
-        //将老的sOldHandlers重新sigaction上
-        if (sigaction(TARGET_SIG, &sOldHandlers, nullptr) == -1) {
-            //todo
-            installDefaultHandler(TARGET_SIG);
-        }
-
-        sHandlerInstalled = false;
-        ALOGV("Signal handler restored.");
+    if (sigaction(BIONIC_SIGNAL_DEBUGGER, nullptr, &sNativeBacktraceOldHandlers) == -1) {
+        return false;
     }
+
+    struct sigaction sa{};
+    sa.sa_sigaction = debuggerSignalHandler;
+    sa.sa_flags = SA_ONSTACK | SA_SIGINFO | SA_RESTART;
+
+    if (sigaction(BIONIC_SIGNAL_DEBUGGER, &sa, nullptr) == -1) {
+        return false;
+    }
+
+    sNativeBacktraceHandlerInstalled = true;
+    return true;
+}
+
+void SignalHandler::installDefaultHandler(int sig) {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = SIG_DFL;
+    sa.sa_flags = SA_RESTART;
+    sigaction(sig, &sa, nullptr);
+}
+
+void SignalHandler::restoreHandlersLocked() {
+    if (!sHandlerInstalled)
+        return;
+
+    if (sigaction(TARGET_SIG, &sOldHandlers, nullptr) == -1) {
+        installDefaultHandler(TARGET_SIG);
+    }
+
+    sHandlerInstalled = false;
+}
+
+void SignalHandler::restoreNativeBacktraceHandlersLocked() {
+    if (!sNativeBacktraceHandlerInstalled)
+        return;
+
+    if (sigaction(BIONIC_SIGNAL_DEBUGGER, &sNativeBacktraceOldHandlers, nullptr) == -1) {
+        installDefaultHandler(BIONIC_SIGNAL_DEBUGGER);
+    }
+
+    sNativeBacktraceHandlerInstalled = false;
+}
 
     //step 5
     static void restoreAlternateStackLocked() {//todo
@@ -169,13 +176,8 @@ namespace MatrixTracer {
         sStackInstalled = false;
     }
 
-// This function runs in a compromised context: see the top of the file.
-// Runs on the crashing thread.
-// step 1.1 发生信号处理的地方，转发给各sHandlerStack的handleSignal ok
-    void SignalHandler::signalHandler(int sig, siginfo_t *info, void *uc) {
-        ALOGV("Entered signal handler.");
-// All the exception signals are blocked at this point.
-        std::unique_lock<std::mutex> lock(sHandlerStackMutex);
+void SignalHandler::signalHandler(int sig, siginfo_t* info, void* uc) {
+    std::unique_lock<std::mutex> lock(sHandlerStackMutex);
 
         for (auto it = sHandlerStack->rbegin(); it != sHandlerStack->rend(); ++it) {
             (*it)->handleSignal(sig, info, uc);
@@ -184,35 +186,42 @@ namespace MatrixTracer {
         lock.unlock();
     }
 
-    //step 1
-    SignalHandler::SignalHandler() {
-        //上锁
-        std::lock_guard<std::mutex> lock(sHandlerStackMutex);
+void SignalHandler::debuggerSignalHandler(int sig, siginfo_t* info, void* uc) {
+    std::unique_lock<std::mutex> lock(sNativeBacktraceHandlerStackMutex);
+
+    for (auto it = sHandlerStack->rbegin(); it != sHandlerStack->rend(); ++it) {
+        (*it)->handleDebuggerSignal(sig, info, uc);
+    }
+
+    lock.unlock();
+}
+
+SignalHandler::SignalHandler() {
+    std::lock_guard<std::mutex> lock(sHandlerStackMutex);
 
         //建一个sHandlerStack
         if (!sHandlerStack)
             sHandlerStack = new std::vector<SignalHandler *>;
 
-        //todo
-        installAlternateStackLocked();
-        //todo 安装新的signalhandler
-        installHandlersLocked();
-        //将自己放进去
-        sHandlerStack->push_back(this);
-    }
+    installAlternateStackLocked();
+    installHandlersLocked();
+    installNativeBacktraceHandlersLocked();
+    sHandlerStack->push_back(this);
+}
 
     //step 4
     SignalHandler::~SignalHandler() {
         std::lock_guard<std::mutex> lock(sHandlerStackMutex);
 
-        auto it = std::find(sHandlerStack->begin(), sHandlerStack->end(), this);
-        sHandlerStack->erase(it);
-        if (sHandlerStack->empty()) {
-            delete sHandlerStack;
-            sHandlerStack = nullptr;
-            restoreAlternateStackLocked();
-            restoreHandlersLocked();
-        }
+    auto it = std::find(sHandlerStack->begin(), sHandlerStack->end(), this);
+    sHandlerStack->erase(it);
+    if (sHandlerStack->empty()) {
+        delete sHandlerStack;
+        sHandlerStack = nullptr;
+        restoreAlternateStackLocked();
+        restoreNativeBacktraceHandlersLocked();
+        restoreHandlersLocked();
     }
+}
 
 }   // namespace MatrixTracer

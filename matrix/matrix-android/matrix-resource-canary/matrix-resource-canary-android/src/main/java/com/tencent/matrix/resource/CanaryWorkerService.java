@@ -16,10 +16,14 @@
 
 package com.tencent.matrix.resource;
 
+import static com.tencent.matrix.resource.common.utils.StreamUtil.closeQuietly;
+import static com.tencent.matrix.resource.common.utils.StreamUtil.copyFileToStream;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+import com.tencent.matrix.Matrix;
 import com.tencent.matrix.resource.analyzer.model.HeapDump;
 import com.tencent.matrix.resource.dumper.DumpStorageManager;
 import com.tencent.matrix.resource.hproflib.HprofBufferShrinker;
@@ -38,9 +42,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static com.tencent.matrix.resource.common.utils.StreamUtil.closeQuietly;
-import static com.tencent.matrix.resource.common.utils.StreamUtil.copyFileToStream;
 
 /**
  * Created by tangyinsheng on 2017/7/11.
@@ -106,10 +107,10 @@ public class CanaryWorkerService extends MatrixJobIntentService {
             zos.putNextEntry(resultInfoEntry);
             final PrintWriter pw = new PrintWriter(new OutputStreamWriter(zos, StandardCharsets.UTF_8));
             pw.println("# Resource Canary Result Infomation. THIS FILE IS IMPORTANT FOR THE ANALYZER !!");
-            pw.println("sdkVersion=" + Build.VERSION.SDK_INT);//系统版本
-            pw.println("manufacturer=" + Build.MANUFACTURER);//厂商信息
-            pw.println("hprofEntry=" + shrinkedHProfEntry.getName());//裁剪后Hprof文件名
-            pw.println("leakedActivityKey=" + heapDump.getReferenceKey());//泄漏Activity实例的key
+            pw.println("sdkVersion=" + Build.VERSION.SDK_INT);
+            pw.println("manufacturer=" + Matrix.with().getPluginByClass(ResourcePlugin.class).getConfig().getManufacture());
+            pw.println("hprofEntry=" + shrinkedHProfEntry.getName());
+            pw.println("leakedActivityKey=" + heapDump.getReferenceKey());
             pw.flush();
             zos.closeEntry();
 

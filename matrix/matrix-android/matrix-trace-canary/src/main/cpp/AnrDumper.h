@@ -31,16 +31,13 @@ namespace MatrixTracer {
 
 class AnrDumper : public SignalHandler {
  public:
-    //定义回调方法
-    using DumpCallbackFunction = std::function<bool()>;
-
-    AnrDumper(const char* anrTraceFile, const char* printTraceFile, DumpCallbackFunction&& callback);//&&引用。这个功能是C++的补充，常用在函数传参（C中一般用指针）、临时变量引用等。
+    AnrDumper(const char* anrTraceFile, const char* printTraceFile);
     virtual ~AnrDumper();
 
  private:
-    //处理signal地方
-    Result handleSignal(int sig, const siginfo_t *info, void *uc) final;
-    const DumpCallbackFunction mCallback;
+    void handleSignal(int sig, const siginfo_t *info, void *uc) final;
+    void handleDebuggerSignal(int sig, const siginfo_t *info, void *uc) final;
+    static void* nativeBacktraceCallback(void* arg);
 };
 }   // namespace MatrixTracer
 

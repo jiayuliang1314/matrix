@@ -23,6 +23,7 @@ import android.os.MessageQueue;
 
 import androidx.annotation.Nullable;
 
+import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
 import com.tencent.matrix.report.IssueOfTraceCanary;
@@ -30,7 +31,6 @@ import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
 import com.tencent.matrix.trace.constants.Constants;
-import com.tencent.matrix.trace.core.AppMethodBeat;
 import com.tencent.matrix.trace.util.AppForegroundUtil;
 import com.tencent.matrix.trace.util.Utils;
 import com.tencent.matrix.util.DeviceUtil;
@@ -45,14 +45,14 @@ import java.util.Map;
 
 public class IdleHandlerLagTracer extends Tracer {
 
-    private static final String TAG = "Matrix.AnrTracer";
+    private static final String TAG = "Matrix.IdleHandlerLagTracer";
+    private static TraceConfig traceConfig;
     private static HandlerThread idleHandlerLagHandlerThread;
     private static Handler idleHandlerLagHandler;
-    private static Runnable idleHanlderLagRunnable;
-    private final TraceConfig traceConfig;
+    private static Runnable idleHandlerLagRunnable;
 
-    public IdleHandlerLagTracer(TraceConfig traceConfig) {
-        this.traceConfig = traceConfig;
+    public IdleHandlerLagTracer(TraceConfig config) {
+        traceConfig = config;
     }
 
     private static void detectIdleHandler() {
@@ -77,13 +77,9 @@ public class IdleHandlerLagTracer extends Tracer {
     @Override
     public void onAlive() {
         super.onAlive();
-        //如果支持isIdleHandlerEnable
-        if (traceConfig.isIdleHandlerEnable()) {
-            //新建一个HandlerThread，一个新线程检测是否超时处理
+        if (traceConfig.isIdleHandlerTraceEnable()) {
             idleHandlerLagHandlerThread = new HandlerThread("IdleHandlerLagThread");
-            //idleHanlderLagRunnable是一个Runnable
-            idleHanlderLagRunnable = new IdleHandlerLagRunable();
-            //开启检测
+            idleHandlerLagRunnable = new IdleHandlerLagRunable();
             detectIdleHandler();
         }
     }
@@ -91,8 +87,7 @@ public class IdleHandlerLagTracer extends Tracer {
     @Override
     public void onDead() {
         super.onDead();
-        if (traceConfig.isIdleHandlerEnable()) {
-            //取消检测
+        if (traceConfig.isIdleHandlerTraceEnable()) {
             idleHandlerLagHandler.removeCallbacksAndMessages(null);
         }
     }
@@ -109,7 +104,7 @@ public class IdleHandlerLagTracer extends Tracer {
 
                 String stackTrace = Utils.getMainThreadJavaStackTrace();
                 boolean currentForeground = AppForegroundUtil.isInterestingToUser();
-                String scene = AppMethodBeat.getVisibleScene();
+                String scene = AppActiveMatrixDelegate.INSTANCE.getVisibleScene();
 
                 JSONObject jsonObject = new JSONObject();
                 jsonObject = DeviceUtil.getDeviceInfo(jsonObject, Matrix.with().getApplication());
@@ -142,6 +137,24 @@ public class IdleHandlerLagTracer extends Tracer {
         }
     }
 
+    private static void detectIdleHandler() {
+        try {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
+                return;
+            }
+            MessageQueue mainQueue = Looper.getMainLooper().getQueue();
+            Field field = MessageQueue.class.getDeclaredField("mIdleHandlers");
+            field.setAccessible(true);
+            MyArrayList<MessageQueue.IdleHandler> myIdleHandlerArrayList = new MyArrayList<>();
+            field.set(mainQueue, myIdleHandlerArrayList);
+            idleHandlerLagHandlerThread.start();
+            idleHandlerLagHandler = new Handler(idleHandlerLagHandlerThread.getLooper());
+        } catch (Throwable t) {
+            MatrixLog.e(TAG, "reflect idle handler error = " + t.getMessage());
+        }
+    }
+
+
     static class MyIdleHandler implements MessageQueue.IdleHandler {
         private final MessageQueue.IdleHandler idleHandler;
 
@@ -151,12 +164,9 @@ public class IdleHandlerLagTracer extends Tracer {
 
         @Override
         public boolean queueIdle() {
-            //代理模式，对原有方法增强
-            //在方法开始的时候，放出了一个idleHanlderLagRunnable，2s之后执行，执行了说明超时了
-            idleHandlerLagHandler.postDelayed(idleHanlderLagRunnable, Constants.DEFAULT_IDLE_HANDLER_LAG);
+            idleHandlerLagHandler.postDelayed(idleHandlerLagRunnable, traceConfig.idleHandlerLagThreshold);
             boolean ret = this.idleHandler.queueIdle();
-            //idleHandlerLagHandler清除idleHanlderLagRunnable
-            idleHandlerLagHandler.removeCallbacks(idleHanlderLagRunnable);
+            idleHandlerLagHandler.removeCallbacks(idleHandlerLagRunnable);
             return ret;
         }
     }

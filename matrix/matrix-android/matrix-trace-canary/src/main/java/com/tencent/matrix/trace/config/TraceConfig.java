@@ -35,13 +35,16 @@ public class TraceConfig implements IDefaultConfig {
     private static final String TAG = "Matrix.TraceConfig";
     public static final int STACK_STYLE_SIMPLE = 0;
     public static final int STACK_STYLE_WHOLE = 1;
-    public boolean defualtIdleHandlerEnable;//是否开启idlehandler延迟检测
     public IDynamicConfig dynamicConfig;    //动态配置
     public boolean defaultFpsEnable;        //是否开启fps
     public boolean defaultMethodTraceEnable;//是否开启超时函数检测 isEvilMethodTraceEnable
     public boolean defaultStartupEnable;    //是否开启启动检测
     public boolean defaultAppMethodBeatEnable = true;//是否开启method埋点
     public boolean defaultAnrEnable;        //是否开启Anr检测
+    public boolean defaultIdleHandlerTraceEnable;//是否开启idlehandler延迟检测
+    public int idleHandlerLagThreshold = Constants.DEFAULT_IDLE_HANDLER_LAG;
+    public int touchEventLagThreshold = Constants.DEFAULT_TOUCH_EVENT_LAG;
+    public boolean defaultTouchEventTraceEnable;
     public boolean isDebug;
     public boolean isDevEnv;
     public boolean defaultSignalAnrEnable;//是否开启signalanr检测
@@ -78,7 +81,7 @@ public class TraceConfig implements IDefaultConfig {
 
     @Override
     public boolean isAppMethodBeatEnable() {
-        return defaultAppMethodBeatEnable;
+        return defaultMethodTraceEnable || defaultStartupEnable;
     }
 
     @Override
@@ -121,8 +124,12 @@ public class TraceConfig implements IDefaultConfig {
     }
 
     @Override
-    public boolean isIdleHandlerEnable() {
-        return defualtIdleHandlerEnable;
+    public boolean isIdleHandlerTraceEnable() {
+        return defaultIdleHandlerTraceEnable;
+    }
+
+    public boolean isTouchEventTraceEnable() {
+        return defaultTouchEventTraceEnable;
     }
 
     @Override
@@ -178,6 +185,13 @@ public class TraceConfig implements IDefaultConfig {
         return splashActivitiesSet;
     }
 
+    public int getIdleHandlerLagThreshold() {
+        return idleHandlerLagThreshold;
+    }
+
+    public int getTouchEventLagThreshold() {
+        return touchEventLagThreshold;
+    }
 
     public int getEvilThresholdMs() {
         return null == dynamicConfig
@@ -304,7 +318,22 @@ public class TraceConfig implements IDefaultConfig {
         }
 
         public Builder enableIdleHandlerTrace(boolean enable) {
-            config.defualtIdleHandlerEnable = enable;
+            config.defaultIdleHandlerTraceEnable = enable;
+            return this;
+        }
+
+        public Builder setIdleHandlerThreshold(int threshold) {
+            config.idleHandlerLagThreshold = threshold;
+            return this;
+        }
+
+        public Builder enableTouchEventTrace(boolean enable) {
+            config.defaultTouchEventTraceEnable = enable;
+            return this;
+        }
+
+        public Builder setTouchEventThreshold(int threshold) {
+            config.touchEventLagThreshold = threshold;
             return this;
         }
 

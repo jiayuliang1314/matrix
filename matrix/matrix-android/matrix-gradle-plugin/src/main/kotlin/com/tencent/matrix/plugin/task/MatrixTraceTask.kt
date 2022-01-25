@@ -26,6 +26,7 @@ import com.tencent.matrix.plugin.trace.MatrixTrace
 import com.tencent.matrix.trace.extension.MatrixTraceExtension
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileType
 import org.gradle.api.file.RegularFileProperty
@@ -42,6 +43,16 @@ import java.util.concurrent.ExecutionException
 abstract class MatrixTraceTask : DefaultTask() {
     companion object {
         private const val TAG: String = "Matrix.TraceTask"
+
+        fun getTraceClassOut(project: Project, creationConfig: CreationConfig): String {
+
+            val variantDirName = creationConfig.variant.dirName
+            return Joiner.on(File.separatorChar).join(
+                project.buildDir,
+                FD_OUTPUTS,
+                "traceClassOut",
+                variantDirName)
+        }
     }
 
     @get:Incremental
@@ -142,7 +153,9 @@ abstract class MatrixTraceTask : DefaultTask() {
                     traceClassDirectoryOutput = outputDirectory,
                     inputToOutput = ConcurrentHashMap(),
                     legacyReplaceChangedFile = null,
-                    legacyReplaceFile = null)
+                    legacyReplaceFile = null,
+                    uniqueOutputName = false
+            )
 
         } catch (e: ExecutionException) {
             e.printStackTrace()
@@ -151,8 +164,7 @@ abstract class MatrixTraceTask : DefaultTask() {
         Log.i(TAG, " Insert matrix trace instrumentations cost time: %sms.", cost)
     }
 
-    //step2
-    fun wired(task: DexArchiveBuilderTask) {
+    fun wired(creationConfig: CreationConfig, task: DexArchiveBuilderTask) {
 
         Log.i(TAG, "Wiring ${this.name} to task '${task.name}'.")
 
@@ -160,6 +172,14 @@ abstract class MatrixTraceTask : DefaultTask() {
 
         // Wire minify task outputs to trace task inputs.
         classInputs.setFrom(task.mixedScopeClasses.files)
+
+        val traceClassOut = getTraceClassOut(project, creationConfig)
+
+        val outputs = task.mixedScopeClasses.files.map {
+            File(traceClassOut, MatrixTrace.appendSuffix(it, "traced"))
+        }
+
+        classOutputs.from(outputs)
 
         // Wire trace task outputs to dex task inputs.
         task.mixedScopeClasses.setFrom(classOutputs)
@@ -185,11 +205,7 @@ abstract class MatrixTraceTask : DefaultTask() {
                     "mapping",
                     variantDirName)
 
-            val traceClassOut = Joiner.on(File.separatorChar).join(
-                    project.buildDir,
-                    FD_OUTPUTS,
-                    "traceClassOut",
-                    variantDirName)
+            val traceClassOut = getTraceClassOut(project, creationConfig)
 
             // Input properties
             val baseMethodMapFile = File(extension.baseMethodMapFile)
@@ -206,16 +222,6 @@ abstract class MatrixTraceTask : DefaultTask() {
             }
             task.mappingDir.set(mappingOut)
             task.traceClassOutputDirectory.set(traceClassOut)
-
-            task.classOutputs.from(project.files(Callable<Collection<File>> {
-                val outputDirectory = File(task.traceClassOutputDirectory.get())
-                val collection = ArrayList<File>()
-                outputDirectory.walkTopDown().filter { it.isFile }.forEach {
-                    collection.add(it)
-                }
-
-                return@Callable collection
-            }))
 
             // Output properties
             task.ignoreMethodMapFileOutput.set(File("$mappingOut/ignoreMethodMapping.txt"))

@@ -19,6 +19,7 @@ package sample.tencent.matrix;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.batterycanary.BatteryMonitorPlugin;
@@ -137,8 +138,13 @@ public class MatrixApplication extends Application {
         SignalAnrTracer signalAnrTracer = new SignalAnrTracer(this, anrFilePath, printTraceFile);
         signalAnrTracer.setSignalAnrDetectedListener(new SignalAnrTracer.SignalAnrDetectedListener() {
             @Override
-            public void onAnrDetected(String stackTrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState) {
+            public void onAnrDetected(String stackTrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState, String cgroup) {
                 // got an ANR
+            }
+
+            @Override
+            public void onNativeBacktraceDetected(String backtrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState) {
+
             }
         });
         signalAnrTracer.onStartTrace();
@@ -152,11 +158,10 @@ public class MatrixApplication extends Application {
 //        ResourceConfig resourceConfig = new ResourceConfig.Builder()
 //                .dynamicConfig(dynamicConfig)
 //                .setAutoDumpHprofMode(mode)
-//                .setManualDumpTargetActivity(ManualDumpActivity.class.getName())//如果是manual的话，要设置一个activity
+//                .setManualDumpTargetActivity(ManualDumpActivity.class.getName())
+//                .setManufacture(Build.MANUFACTURER)
 //                .build();
-////            Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'void android.graphics.drawable.Drawable.setAlpha(int)' on a null object reference
-////            at androidx.swiperefreshlayout.widget.SwipeRefreshLayout.setColorViewAlpha(SwipeRefreshLayout.java:234)
-////            ResourcePlugin.activityLeakFixer(this);//会引起fatal问题
+//        ResourcePlugin.activityLeakFixer(this);
 //
 //        return new ResourcePlugin(resourceConfig);
 //    }
