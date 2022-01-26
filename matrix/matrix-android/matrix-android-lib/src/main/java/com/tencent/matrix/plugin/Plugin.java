@@ -34,13 +34,13 @@ import org.json.JSONObject;
  */
 //Plugin 抽象插件实现
 public abstract class Plugin implements IPlugin, IssuePublisher.OnIssueDetectListener, IAppForeground {
-    //状态
+    private static final String TAG = "Matrix.Plugin";
+
     public static final int PLUGIN_CREATE = 0x00;
     public static final int PLUGIN_INITED = 0x01;
     public static final int PLUGIN_STARTED = 0x02;
     public static final int PLUGIN_STOPPED = 0x04;
     public static final int PLUGIN_DESTROYED = 0x08;
-    private static final String TAG = "Matrix.Plugin";
     //监听器
     private PluginListener pluginListener;
     //Application

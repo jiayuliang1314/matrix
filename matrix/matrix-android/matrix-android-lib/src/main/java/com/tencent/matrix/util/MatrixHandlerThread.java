@@ -56,6 +56,7 @@ public class MatrixHandlerThread {
 
     //获取默认的HandlerThread
     public static HandlerThread getDefaultHandlerThread() {
+
         synchronized (MatrixHandlerThread.class) {
             if (null == defaultHandlerThread) {
                 defaultHandlerThread = new HandlerThread(MATRIX_THREAD_NAME);
