@@ -69,8 +69,6 @@ public class SignalAnrTracer extends Tracer {
     private static final long FOREGROUND_MSG_THRESHOLD = -2000;
     //后台的时候，消息超时10s的时候，说明卡住了
     private static final long BACKGROUND_MSG_THRESHOLD = -10000;
-    //是否hasInstance
-    public static boolean hasInstance = false;
     //是否是前台状态
     private static boolean currentForeground = false;
     //anr trace 文件路径
@@ -85,6 +83,8 @@ public class SignalAnrTracer extends Tracer {
     private static Application sApplication;
     //是否初始化了
     private static boolean hasInit = false;
+    //是否hasInstance
+    public static boolean hasInstance = false;
     //anr发生时间，负值，代表过去的哪个时间
     private static long anrMessageWhen = 0L;
     //anr发生时，主线程处理的消息
@@ -100,7 +100,23 @@ public class SignalAnrTracer extends Tracer {
         System.loadLibrary("trace-canary");
     }
 
-    //region 构造函数
+    @Override
+    protected void onAlive() {
+        super.onAlive();
+        if (!hasInit) {
+            nativeInitSignalAnrDetective(sAnrTraceFilePath, sPrintTraceFilePath);
+            AppForegroundUtil.INSTANCE.init();
+            hasInit = true;
+        }
+
+    }
+
+    @Override
+    protected void onDead() {
+        super.onDead();
+        nativeFreeSignalAnrDetective();
+    }
+
     public SignalAnrTracer(TraceConfig traceConfig) {
         hasInstance = true;
         sAnrTraceFilePath = traceConfig.anrTraceFilePath;
@@ -118,7 +134,10 @@ public class SignalAnrTracer extends Tracer {
         sPrintTraceFilePath = printTraceFilePath;
         sApplication = application;
     }
-    //endregion
+
+    public void setSignalAnrDetectedListener(SignalAnrDetectedListener listener) {
+        sSignalAnrDetectedListener = listener;
+    }
 
     public static String readCgroup() {
         StringBuilder ret = new StringBuilder();
@@ -349,8 +368,6 @@ public class SignalAnrTracer extends Tracer {
         return false;
     }
 
-    //    step 5
-    //ok
     public static void printTrace() {
         if (!hasInstance) {
             MatrixLog.e(TAG, "SignalAnrTracer has not been initialize");
@@ -368,31 +385,6 @@ public class SignalAnrTracer extends Tracer {
     private static native void nativeFreeSignalAnrDetective();
 
     private static native void nativePrintTrace();
-
-    //step 1
-    @Override
-    protected void onAlive() {
-        super.onAlive();
-        if (!hasInit) {
-            //调用native方法启动监听
-            nativeInitSignalAnrDetective(sAnrTraceFilePath, sPrintTraceFilePath);
-            //主要用来判断是否是前台，这个方法没啥用
-            AppForegroundUtil.INSTANCE.init();
-            hasInit = true;
-        }
-    }
-
-    @Override
-    protected void onDead() {
-        super.onDead();
-        //free anr检测
-        //    step 7
-        nativeFreeSignalAnrDetective();
-    }
-
-    public void setSignalAnrDetectedListener(SignalAnrDetectedListener listener) {
-        sSignalAnrDetectedListener = listener;
-    }
 
     public interface SignalAnrDetectedListener {
         void onAnrDetected(String stackTrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState, String cpuset);

@@ -20,7 +20,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
-
 import androidx.annotation.RequiresApi;
 
 import com.tencent.matrix.trace.config.IssueFixConfig;
@@ -35,25 +34,33 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by caichongyang on 2017/5/26.
- *
- * todo
  **/
 public class ActivityThreadHacker {
-    //region 参数
     private static final String TAG = "Matrix.ActivityThreadHacker";
-    private static final HashSet<IApplicationCreateListener> listeners = new HashSet<>();
-    //标记0开始index，第一个方法
+    private static long sApplicationCreateBeginTime = 0L;
+    private static long sApplicationCreateEndTime = 0L;
     public static AppMethodBeat.IndexRecord sLastLaunchActivityMethodIndex = new AppMethodBeat.IndexRecord();
-    //ApplicationCreateBeginMethodIndex application创建方法index
     public static AppMethodBeat.IndexRecord sApplicationCreateBeginMethodIndex = new AppMethodBeat.IndexRecord();
-    public static int sApplicationCreateScene = Integer.MIN_VALUE;//记录第一个启动的是Activity 或 Service 或 Receiver
-    private static long sApplicationCreateBeginTime = 0L;       //记录时间戳，作为应用启用的开始时间
-    private static long sApplicationCreateEndTime = 0L;         //应用启动结束时间
-    private static boolean sIsCreatedByLaunchActivity = false;  //是否app启动先创建的activity
-    //endregion
+    public static int sApplicationCreateScene = Integer.MIN_VALUE;
+    private static final HashSet<IApplicationCreateListener> listeners = new HashSet<>();
+    private static boolean sIsCreatedByLaunchActivity = false;
 
-    //记录时间戳
-//    记录了第一个方法开始执行时的时间戳后，Matrix 还会通过反射的方式，接管 ActivityThread 的 Handler 的 Callback：
+    public static void addListener(IApplicationCreateListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public static void removeListener(IApplicationCreateListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
+    public interface IApplicationCreateListener {
+        void onApplicationCreateEnd();
+    }
+
     public static void hackSysHandlerCallback() {
         try {
             // 记录时间戳，作为应用启用的开始时间
@@ -78,30 +85,10 @@ public class ActivityThreadHacker {
                 //设置为新的HackCallback
                 callbackField.set(handler, callback);
             }
+
             MatrixLog.i(TAG, "hook system handler completed. start:%s SDK_INT:%s", sApplicationCreateBeginTime, Build.VERSION.SDK_INT);
         } catch (Exception e) {
             MatrixLog.e(TAG, "hook system handler err! %s", e.getCause().toString());
-        }
-    }
-
-    //region ok
-    public static boolean isCreatedByLaunchActivity() {
-        return sIsCreatedByLaunchActivity;
-    }
-
-    public interface IApplicationCreateListener {
-        void onApplicationCreateEnd();
-    }
-
-    public static void addListener(IApplicationCreateListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
-    public static void removeListener(IApplicationCreateListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
         }
     }
 
@@ -113,8 +100,10 @@ public class ActivityThreadHacker {
     public static long getEggBrokenTime() {//蛋打碎
         return ActivityThreadHacker.sApplicationCreateBeginTime;
     }
-    //endregion
 
+    public static boolean isCreatedByLaunchActivity() {
+        return sIsCreatedByLaunchActivity;
+    }
 
 //    这样就能知道第一个 Activity 或 Service 或 Receiver 启动的具体时间了，
 //    这个时间戳可以作为 Application 启动的结束时间：
@@ -124,16 +113,16 @@ public class ActivityThreadHacker {
         private static final int RELAUNCH_ACTIVITY = 126;
         private static final int RECEIVER = 113;
         private static final int EXECUTE_TRANSACTION = 159; // for Android 9.0
+        private static boolean isCreated = false;
+        private static int hasPrint = Integer.MAX_VALUE;
+
+        private final Handler.Callback mOriginalCallback;
+
         private static final int SERIVCE_ARGS = 115;
         private static final int STOP_SERVICE = 116;
         private static final int STOP_ACTIVITY_SHOW = 103;
         private static final int STOP_ACTIVITY_HIDE = 104;
         private static final int SLEEPING = 137;
-
-        private static boolean isCreated = false;
-        private static int hasPrint = Integer.MAX_VALUE;
-        private final Handler.Callback mOriginalCallback;
-        private Method method = null;
 
         HackCallback(Handler.Callback callback) {
             this.mOriginalCallback = callback;
@@ -167,7 +156,6 @@ public class ActivityThreadHacker {
                 // 如果是第一个启动的 Activity 或 Service 或 Receiver，则以该时间戳作为 Application 启动的结束时间
                 if (isLaunchActivity || msg.what == CREATE_SERVICE
                         || msg.what == RECEIVER) { // todo for provider
-                    //
                     ActivityThreadHacker.sApplicationCreateEndTime = SystemClock.uptimeMillis();
                     ActivityThreadHacker.sApplicationCreateScene = msg.what;
                     isCreated = true;
@@ -184,7 +172,7 @@ public class ActivityThreadHacker {
         }
 
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-        private void fix() {//todo ？
+        private void fix() {
             try {
                 Class cls = Class.forName("android.app.QueuedWork");
                 Field field = cls.getDeclaredField("sPendingWorkFinishers");
@@ -208,9 +196,12 @@ public class ActivityThreadHacker {
                 MatrixLog.e(TAG, "Fix SP ANR Exception = " + e.getMessage());
                 e.printStackTrace();
             }
+
         }
 
-        private boolean isLaunchActivity(Message msg) {//todo ？
+        private Method method = null;
+
+        private boolean isLaunchActivity(Message msg) {
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) {
                 if (msg.what == EXECUTE_TRANSACTION && msg.obj != null) {
                     try {
@@ -233,4 +224,6 @@ public class ActivityThreadHacker {
             }
         }
     }
+
+
 }

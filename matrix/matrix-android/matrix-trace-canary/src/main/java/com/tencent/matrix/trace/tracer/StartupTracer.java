@@ -34,7 +34,6 @@ import com.tencent.matrix.trace.hacker.ActivityThreadHacker;
 import com.tencent.matrix.trace.items.MethodItem;
 import com.tencent.matrix.trace.listeners.IAppMethodBeatListener;
 import com.tencent.matrix.trace.util.TraceDataUtils;
-import com.tencent.matrix.trace.util.Utils;
 import com.tencent.matrix.util.DeviceUtil;
 import com.tencent.matrix.util.MatrixHandlerThread;
 import com.tencent.matrix.util.MatrixLog;
@@ -78,20 +77,16 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
     //region 参数
     private static final String TAG = "Matrix.StartupTracer";
     private final TraceConfig config;
-    private final boolean isStartupEnable;
-    private final Set<String> splashActivities; //splashactivity
-    private final long coldStartupThresholdMs;  //冷启动限制，10s
-    private final long warmStartupThresholdMs;  //热启动限制，4s
-    private final boolean isHasActivity;        //true
-    private final HashMap<String, Long> createdTimeMap = new HashMap<>();//保存了activity onCreate-》可见的逻辑
-    private final boolean isShouldRecordCreateTime = true;//一直是true，记录时间
-    private long firstScreenCost = 0;//首屏启动耗时
-    private long coldCost = 0;//冷启动时间
+    private long firstScreenCost = 0;
+    private long coldCost = 0;
     private int activeActivityCount;
     private boolean isWarmStartUp;
     private boolean hasShowSplashActivity;
-    private long lastCreateActivity = 0L;
-    //endregion
+    private boolean isStartupEnable;
+    private Set<String> splashActivities;
+    private long coldStartupThresholdMs;
+    private long warmStartupThresholdMs;
+    private boolean isHasActivity;
 
     //region 简单方法
     public StartupTracer(TraceConfig config) {
@@ -102,25 +97,6 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
         this.warmStartupThresholdMs = config.getWarmStartupThresholdMs();
         this.isHasActivity = config.isHasActivity();//todo 需要设置getSplashActivities
         ActivityThreadHacker.addListener(this);
-    }
-
-    //ActivityThreadHacker里有个HackCallback，接管了mCallback
-    private static void checkActivityThread_mCallback() {
-        try {
-            Class<?> forName = Class.forName("android.app.ActivityThread");
-            Field field = forName.getDeclaredField("sCurrentActivityThread");
-            field.setAccessible(true);
-            Object activityThreadValue = field.get(forName);
-            Field mH = forName.getDeclaredField("mH");
-            mH.setAccessible(true);
-            Object handler = mH.get(activityThreadValue);
-            Class<?> handlerClass = handler.getClass().getSuperclass();
-            Field callbackField = handlerClass.getDeclaredField("mCallback");
-            callbackField.setAccessible(true);
-            Handler.Callback currentCallback = (Handler.Callback) callbackField.get(handler);
-            MatrixLog.i(TAG, "callback %s", currentCallback);
-        } catch (Exception e) {
-        }
     }
 
     @Override
@@ -153,16 +129,6 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
         }
     }
 
-    @Override
-    public void onForeground(boolean isForeground) {
-        super.onForeground(isForeground);
-        if (!isForeground) {
-            checkActivityThread_mCallback();
-        }
-    }
-    //endregion
-
-    //region step2 onActivityFocused
     @Override
     public void onActivityFocused(Activity activity) {
         //sApplicationCreateScene记录了第一个启动的是Activity 或 Service 或 Receiver
@@ -233,16 +199,17 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
                 }
                 analyse(ActivityThreadHacker.getApplicationCost(), firstScreenCost, coldCost, false);
             }
+
         } else if (isWarmStartUp()) {
             isWarmStartUp = false;
             long warmCost = uptimeMillis() - lastCreateActivity;
-
             MatrixLog.i(TAG, "#WarmStartup# activity:%s, warmCost:%d, now:%d, lastCreateActivity:%d", activityName, warmCost, uptimeMillis(), lastCreateActivity);
 
             if (warmCost > 0) {
                 analyse(0, 0, warmCost, true);
             }
         }
+
     }
 
     private boolean isColdStartup() {
@@ -267,61 +234,8 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
         }
 
         MatrixHandlerThread.getDefaultHandler().post(new AnalyseTask(data, applicationCost, firstScreenCost, allCost, isWarmStartUp, ActivityThreadHacker.sApplicationCreateScene));
-    }
-    //endregion
-
-    //region step1
-    // onCreate,onStart,onResume都不是真正visible的时间点，真正的visible时间点是onWindowFocusChanged()函数被执行时。
-    // ActivityLifecycleCallbacks onActivityCreated首先被调用
-    @Override
-    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-        MatrixLog.i(TAG, "onActivityCreated before activeActivityCount:%d, coldCost:%d " + activity.getLocalClassName(), activeActivityCount, coldCost);
-        if (activeActivityCount == 0 && coldCost > 0) {//这个情况说明是热启动
-            lastCreateActivity = uptimeMillis();
-            MatrixLog.i(TAG, "lastCreateActivity:%d, activity:%s", lastCreateActivity, activity.getClass().getName());
-            isWarmStartUp = true;
-        }
-        activeActivityCount++;
-        //一直是true，记录时间
-        if (isShouldRecordCreateTime) {
-            createdTimeMap.put(activity.getClass().getName() + "@" + activity.hashCode(), uptimeMillis());
-        }
-        MatrixLog.i(TAG, "onActivityCreated after activeActivityCount:%d, coldCost:%d " + activity.getLocalClassName(), activeActivityCount, coldCost);
-    }
-
-    @Override
-    public void onActivityDestroyed(Activity activity) {
-        MatrixLog.i(TAG, "onActivityDestroyed before activeActivityCount:%d " + activity.getLocalClassName(), activeActivityCount);
-        activeActivityCount--;
-        MatrixLog.i(TAG, "onActivityDestroyed after activeActivityCount:%d " + activity.getLocalClassName(), activeActivityCount);
-    }
-
-    @Override
-    public void onActivityStarted(Activity activity) {
 
     }
-
-    @Override
-    public void onActivityResumed(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivityPaused(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivityStopped(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
-    }
-    //endregion
-
 
     private class AnalyseTask implements Runnable {
 
@@ -452,4 +366,81 @@ public class StartupTracer extends Tracer implements IAppMethodBeatListener, Act
             }
         }
     }
+
+    private long lastCreateActivity = 0L;
+    private HashMap<String, Long> createdTimeMap = new HashMap<>();
+    private boolean isShouldRecordCreateTime = true;
+
+    @Override
+    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+        MatrixLog.i(TAG, "activeActivityCount:%d, coldCost:%d", activeActivityCount, coldCost);
+        if (activeActivityCount == 0 && coldCost > 0) {
+            lastCreateActivity = uptimeMillis();
+            MatrixLog.i(TAG, "lastCreateActivity:%d, activity:%s", lastCreateActivity, activity.getClass().getName());
+            isWarmStartUp = true;
+        }
+        activeActivityCount++;
+        if (isShouldRecordCreateTime) {
+            createdTimeMap.put(activity.getClass().getName() + "@" + activity.hashCode(), uptimeMillis());
+        }
+    }
+
+    @Override
+    public void onActivityDestroyed(Activity activity) {
+        MatrixLog.i(TAG, "activeActivityCount:%d", activeActivityCount);
+        activeActivityCount--;
+    }
+
+    @Override
+    public void onActivityStarted(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityPaused(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+    }
+
+    @Override
+    public void onForeground(boolean isForeground) {
+        super.onForeground(isForeground);
+        if (!isForeground) {
+            checkActivityThread_mCallback();
+        }
+    }
+
+    private static void checkActivityThread_mCallback() {
+        try {
+            Class<?> forName = Class.forName("android.app.ActivityThread");
+            Field field = forName.getDeclaredField("sCurrentActivityThread");
+            field.setAccessible(true);
+            Object activityThreadValue = field.get(forName);
+            Field mH = forName.getDeclaredField("mH");
+            mH.setAccessible(true);
+            Object handler = mH.get(activityThreadValue);
+            Class<?> handlerClass = handler.getClass().getSuperclass();
+            Field callbackField = handlerClass.getDeclaredField("mCallback");
+            callbackField.setAccessible(true);
+            Handler.Callback currentCallback = (Handler.Callback) callbackField.get(handler);
+            MatrixLog.i(TAG, "callback %s", currentCallback);
+
+        } catch (Exception e) {
+        }
+    }
+
 }

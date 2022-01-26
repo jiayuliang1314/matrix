@@ -27,14 +27,55 @@ import java.util.concurrent.Executor;
 /**
  * Created by caichongyang on 2017/5/26.
  **/
-//ok
 public class IDoFrameListener {
 
-    private final static LinkedList<FrameReplay> sPool = new LinkedList<>();//一个静态缓存，1000帧信息
-    private final List<FrameReplay> list = new LinkedList<>();  //临时缓存，存300帧信息
-    public long time;                                           //用于计算这个IDoFrameListener所花的时间，用于开发log信息
-    private Executor executor;          //线程池
-    private int intervalFrame = 0;      //300，代表300个帧，一起处理
+    private Executor executor;
+    public long time;
+    private int intervalFrame = 0;
+
+    private final static LinkedList<FrameReplay> sPool = new LinkedList<>();
+
+    public static final class FrameReplay {
+        public String focusedActivity;
+        public long startNs;
+        public long endNs;
+        public int dropFrame;
+        public boolean isVsyncFrame;
+        public long intendedFrameTimeNs;
+        public long inputCostNs;
+        public long animationCostNs;
+        public long traversalCostNs;
+
+        public void recycle() {
+            if (sPool.size() <= 1000) {
+                this.focusedActivity = "";
+                this.startNs = 0;
+                this.endNs = 0;
+                this.dropFrame = 0;
+                this.isVsyncFrame = false;
+                this.intendedFrameTimeNs = 0;
+                this.inputCostNs = 0;
+                this.animationCostNs = 0;
+                this.traversalCostNs = 0;
+                synchronized (sPool) {
+                    sPool.add(this);
+                }
+            }
+        }
+
+        public static FrameReplay create() {
+            FrameReplay replay;
+            synchronized (sPool) {
+                replay = sPool.poll();
+            }
+            if (replay == null) {
+                return new FrameReplay();
+            }
+            return replay;
+        }
+    }
+
+    private final List<FrameReplay> list = new LinkedList<>();
 
     public IDoFrameListener() {
         intervalFrame = getIntervalFrameReplay();
@@ -107,6 +148,7 @@ public class IDoFrameListener {
 
     }
 
+
     public Executor getExecutor() {
         return executor;
     }
@@ -115,46 +157,5 @@ public class IDoFrameListener {
         return 0;
     }
 
-    public static final class FrameReplay {//(由于未决出胜负而进行的)重赛; (录像、录音等的)重放，重演，重播; 重演的事物; 重复出现的事物;
-        public String focusedActivity;  //activity
-        public long startNs;
-        public long endNs;
-        public int dropFrame;           //掉了多少帧
-        public boolean isVsyncFrame;    //是否是vsync帧
-        public long intendedFrameTimeNs;//vsync帧开始时间，校对时间
-        public long inputCostNs;        //input时间
-        public long animationCostNs;    //animation时间
-        public long traversalCostNs;    //绘制时间
 
-        public static FrameReplay create() {//创建
-            FrameReplay replay;
-            //从缓存池里区
-            synchronized (sPool) {
-                replay = sPool.poll();
-            }
-            //如果没有，则新建个
-            if (replay == null) {
-                return new FrameReplay();
-            }
-            return replay;
-        }
-
-        public void recycle() {
-            //回收到sPool里
-            if (sPool.size() <= 1000) {
-                this.focusedActivity = "";
-                this.startNs = 0;
-                this.endNs = 0;
-                this.dropFrame = 0;
-                this.isVsyncFrame = false;
-                this.intendedFrameTimeNs = 0;
-                this.inputCostNs = 0;
-                this.animationCostNs = 0;
-                this.traversalCostNs = 0;
-                synchronized (sPool) {
-                    sPool.add(this);
-                }
-            }
-        }
-    }
 }

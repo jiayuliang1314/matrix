@@ -39,19 +39,34 @@ import java.util.HashSet;
  * 里添加Runnable，即UIThreadMonitor，当UIThreadMonitor的run被调用了说明这个消息是vsync消息
  */
 public class UIThreadMonitor implements BeatLifecycle, Runnable {
-    //region 参数
+
+    private static final String TAG = "Matrix.UIThreadMonitor";
+    private static final String ADD_CALLBACK = "addCallbackLocked";
+    private volatile boolean isAlive = false;
+    private long[] dispatchTimeMs = new long[4];
+    private final HashSet<LooperObserver> observers = new HashSet<>();
+    private volatile long token = 0L;
+    private boolean isVsyncFrame = false;
+    // The time of the oldest input event
+    private static final int OLDEST_INPUT_EVENT = 3;
+
+    // The time of the newest input event
+    private static final int NEWEST_INPUT_EVENT = 4;
+
     /**
      * Callback type: Input callback.  Runs first.
      *
      * @hide
      */
     public static final int CALLBACK_INPUT = 0;
+
     /**
      * Callback type: Animation callback.  Runs before traversals.
      *
      * @hide
      */
     public static final int CALLBACK_ANIMATION = 1;
+
     /**
      * Callback type: Commit callback.  Handles post-draw operations for the frame.
      * Runs after traversal completes.
@@ -59,28 +74,15 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
      * @hide
      */
     public static final int CALLBACK_TRAVERSAL = 2;
+
     /**
      * never do queue end code
      */
     public static final int DO_QUEUE_END_ERROR = -100;
-    private static final String TAG = "Matrix.UIThreadMonitor";
-    // Choreographer 中一个内部类的方法，用于添加回调
-    private static final String ADD_CALLBACK = "addCallbackLocked";
-    // The time of the oldest input event，没有用到
-    private static final int OLDEST_INPUT_EVENT = 3;
-    // The time of the newest input event，没用到
-    private static final int NEWEST_INPUT_EVENT = 4;
+
     private static final int CALLBACK_LAST = CALLBACK_TRAVERSAL;
     // 回调类型，分别为输入事件、动画、View 绘制三种
     private final static UIThreadMonitor sInstance = new UIThreadMonitor();
-    private static final int DO_QUEUE_DEFAULT = 0;
-    private static final int DO_QUEUE_BEGIN = 1;
-    private static final int DO_QUEUE_END = 2;
-    private final HashSet<LooperObserver> observers = new HashSet<>();  //用于通知帧状态
-    private final long[] dispatchTimeMs = new long[4];//dispatchTimeMs 0,2位置为开始时间，0为纳秒，2为毫秒，1，3为结束时间
-    private volatile boolean isAlive = false;
-    private volatile long token = 0L;       //消息执行开始时间，也用做token
-    private boolean isVsyncFrame = false;   //frame开始标记
     private TraceConfig config;
     private static boolean useFrameMetrics;
     private Object callbackQueueLock;   //用于同步
@@ -91,14 +93,14 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     private Choreographer choreographer;//Choreographer机制，用于同vsync机制配合，统一动画，输入，绘制时机。
     private Object vsyncReceiver;       //获取了一个getIntendedFrameTimeNs vsync开始的时间
     private long frameIntervalNanos = 16666666;
-    private int[] queueStatus = new int[CALLBACK_LAST + 1];                 //队列状态
-    private boolean[] callbackExist = new boolean[CALLBACK_LAST + 1];       //用于标记callback是否添加
-    private long[] queueCost = new long[CALLBACK_LAST + 1];                 //每个队列花费时间
-    private boolean isInit = false;                                         //是否init
-    private long[] frameInfo = null;//没用到
-    //endregion
+    private int[] queueStatus = new int[CALLBACK_LAST + 1];
+    private boolean[] callbackExist = new boolean[CALLBACK_LAST + 1]; // ABA
+    private long[] queueCost = new long[CALLBACK_LAST + 1];
+    private static final int DO_QUEUE_DEFAULT = 0;
+    private static final int DO_QUEUE_BEGIN = 1;
+    private static final int DO_QUEUE_END = 2;
+    private boolean isInit = false;
 
-    //region ok
     public static UIThreadMonitor getMonitor() {
         return sInstance;
     }
@@ -106,7 +108,6 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
     public boolean isInit() {
         return isInit;
     }
-    //endregion
 
     public void init(TraceConfig config, boolean supportFrameMetrics) {
         this.config = config;
@@ -118,6 +119,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
 
         boolean historyMsgRecorder = config.historyMsgRecorder;
         boolean denseMsgTracer = config.denseMsgTracer;
+
         LooperMonitor.register(new LooperMonitor.LooperDispatchListener(historyMsgRecorder, denseMsgTracer) {
             @Override
             public boolean isValid() {
@@ -164,24 +166,39 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
             }
         }
     }
-    //endregion
 
-    //region onStop isAlive getFrameIntervalNanos addObserver removeObserver getQueueCost
-    @Override
-    public synchronized void onStop() {
-        if (!isInit) {
-            MatrixLog.e(TAG, "[onStart] is never init.");
+    private synchronized void addFrameCallback(int type, Runnable callback, boolean isAddHeader) {
+        if (callbackExist[type]) {
+            MatrixLog.w(TAG, "[addFrameCallback] this type %s callback has exist! isAddHeader:%s", type, isAddHeader);
             return;
         }
-        if (isAlive) {
-            this.isAlive = false;
-            MatrixLog.i(TAG, "[onStop] callbackExist:%s %s", Arrays.toString(callbackExist), Utils.getStack());
-        }
-    }
 
-    @Override
-    public boolean isAlive() {
-        return isAlive;
+        if (!isAlive && type == CALLBACK_INPUT) {
+            MatrixLog.w(TAG, "[addFrameCallback] UIThreadMonitor is not alive!");
+            return;
+        }
+        try {
+            synchronized (callbackQueueLock) {
+                Method method = null;
+                switch (type) {
+                    case CALLBACK_INPUT:
+                        method = addInputQueue;
+                        break;
+                    case CALLBACK_ANIMATION:
+                        method = addAnimationQueue;
+                        break;
+                    case CALLBACK_TRAVERSAL:
+                        method = addTraversalQueue;
+                        break;
+                }
+                if (null != method) {
+                    method.invoke(callbackQueues[type], !isAddHeader ? SystemClock.uptimeMillis() : -1, callback, null);
+                    callbackExist[type] = true;
+                }
+            }
+        } catch (Exception e) {
+            MatrixLog.e(TAG, e.toString());
+        }
     }
 
     public long getFrameIntervalNanos() {
@@ -206,15 +223,6 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         }
     }
 
-    public long getQueueCost(int type, long token) {
-        if (token != this.token) {
-            return -1;
-        }
-        return queueStatus[type] == DO_QUEUE_END ? queueCost[type] : 0;
-    }
-    //endregion
-
-    //region step 4 dispatchBegin
     private void dispatchBegin() {
         token = dispatchTimeMs[0] = System.nanoTime();
         dispatchTimeMs[2] = SystemClock.currentThreadTimeMillis();
@@ -231,6 +239,28 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         if (config.isDevEnv()) {
             MatrixLog.d(TAG, "[dispatchBegin#run] inner cost:%sns", System.nanoTime() - token);
         }
+    }
+
+    private void doFrameBegin(long token) {
+        this.isVsyncFrame = true;
+    }
+
+    private void doFrameEnd(long token) {
+
+        doQueueEnd(CALLBACK_TRAVERSAL);
+
+        for (int i : queueStatus) {
+            if (i != DO_QUEUE_END) {
+                queueCost[i] = DO_QUEUE_END_ERROR;
+                if (config.isDevEnv) {
+                    throw new RuntimeException(String.format("UIThreadMonitor happens type[%s] != DO_QUEUE_END", i));
+                }
+            }
+        }
+        queueStatus = new int[CALLBACK_LAST + 1];
+
+        addFrameCallback(CALLBACK_INPUT, this, true);
+
     }
 
     private void dispatchEnd() {
@@ -279,34 +309,20 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
             MatrixLog.d(TAG, "[dispatchEnd#run] inner cost:%sns", System.nanoTime() - traceBegin);//用于devenv记录时间打log用
         }
     }
-    //endregion
 
-    //region vsync相关的开始doFrameBegin doFrameEnd
-    private void doFrameBegin(long token) {
-        this.isVsyncFrame = true;
+    private void doQueueBegin(int type) {
+        queueStatus[type] = DO_QUEUE_BEGIN;
+        queueCost[type] = System.nanoTime();
     }
 
-    private void doFrameEnd(long token) {
-        doQueueEnd(CALLBACK_TRAVERSAL);
-
-        for (int i : queueStatus) {
-            if (i != DO_QUEUE_END) {
-                queueCost[i] = DO_QUEUE_END_ERROR;
-                if (config.isDevEnv) {
-                    throw new RuntimeException(String.format("UIThreadMonitor happens type[%s] != DO_QUEUE_END", i));
-                }
-            }
+    private void doQueueEnd(int type) {
+        queueStatus[type] = DO_QUEUE_END;
+        queueCost[type] = System.nanoTime() - queueCost[type];
+        synchronized (this) {
+            callbackExist[type] = false;
         }
-        queueStatus = new int[CALLBACK_LAST + 1];
-
-        addFrameCallback(CALLBACK_INPUT, this, true);
     }
-    //endregion
 
-
-    //region step 2 onStart,初始化callbackExist，queueStatus，queueCost三个值，然后调用addFrameCallback CALLBACK_INPUT
-//    归根结底就是向Choreograpger注册了一个回调（即UIThreadMonitor自身），这样下次Vsync信号来到时，
-//    就会触发这个callback（即会执行UIThreadMonitor的 run方法 *****很重要*****，执行这个run即表明是vsync帧）。
     @Override
     public synchronized void onStart() {
         if (!isInit) {
@@ -326,46 +342,7 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
             }
         }
     }
-    //endregion
 
-    //region step 3 addFrameCallback run
-    //    addFrameCallback方法将一个Runnable（自己）插到了INPUT类型的CallbackQueue的头部。
-    //    CallbackQueue是一个单链表组织起来的队列，里面按照时间从小到大进行组织。
-    private synchronized void addFrameCallback(int type, Runnable callback, boolean isAddHeader) {
-        if (callbackExist[type]) {
-            MatrixLog.w(TAG, "[addFrameCallback] this type %s callback has exist! isAddHeader:%s", type, isAddHeader);
-            return;
-        }
-
-        if (!isAlive && type == CALLBACK_INPUT) {
-            MatrixLog.w(TAG, "[addFrameCallback] UIThreadMonitor is not alive!");
-            return;
-        }
-        try {
-            synchronized (callbackQueueLock) {
-                Method method = null;
-                switch (type) {
-                    case CALLBACK_INPUT:
-                        method = addInputQueue;
-                        break;
-                    case CALLBACK_ANIMATION:
-                        method = addAnimationQueue;
-                        break;
-                    case CALLBACK_TRAVERSAL:
-                        method = addTraversalQueue;
-                        break;
-                }
-                if (null != method) {
-                    method.invoke(callbackQueues[type], !isAddHeader ? SystemClock.uptimeMillis() : -1, callback, null);
-                    callbackExist[type] = true;
-                }
-            }
-        } catch (Exception e) {
-            MatrixLog.e(TAG, e.toString());
-        }
-    }
-
-    //执行run方法，代表这个消息是vsync frame消息
     @Override
     public void run() {
         final long start = System.nanoTime();
@@ -399,19 +376,23 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         }
     }
 
-    private void doQueueBegin(int type) {
-        queueStatus[type] = DO_QUEUE_BEGIN;//设置queueStatus[type]状态为begin
-        queueCost[type] = System.nanoTime();//记录初始值时间
-    }
 
-    private void doQueueEnd(int type) {
-        queueStatus[type] = DO_QUEUE_END;//设置queueStatus[type]状态为end
-        queueCost[type] = System.nanoTime() - queueCost[type];//记录消耗的时间
-        synchronized (this) {
-            callbackExist[type] = false;//重置状态
+    @Override
+    public synchronized void onStop() {
+        if (!isInit) {
+            MatrixLog.e(TAG, "[onStart] is never init.");
+            return;
+        }
+        if (isAlive) {
+            this.isAlive = false;
+            MatrixLog.i(TAG, "[onStop] callbackExist:%s %s", Arrays.toString(callbackExist), Utils.getStack());
         }
     }
-    //endregion
+
+    @Override
+    public boolean isAlive() {
+        return isAlive;
+    }
 
     //vsync开始的时间,垂直信号时间
     private long getIntendedFrameTimeNs(long defaultValue) {
@@ -423,6 +404,15 @@ public class UIThreadMonitor implements BeatLifecycle, Runnable {
         }
         return defaultValue;
     }
+
+    public long getQueueCost(int type, long token) {
+        if (token != this.token) {
+            return -1;
+        }
+        return queueStatus[type] == DO_QUEUE_END ? queueCost[type] : 0;
+    }
+
+    private long[] frameInfo = null;
 
     public long getInputEventCost() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
