@@ -31,14 +31,8 @@ public class Log {
     public static final int LOG_LEVEL_INFO = 2;
     public static final int LOG_LEVEL_WARN = 3;
     public static final int LOG_LEVEL_ERROR = 4;
-    private final static String[][] LOG_LEVELS = {
-            {"V", "VERBOSE", "0"},
-            {"D", "DEBUG", "1"},
-            {"I", "INFO", "2"},
-            {"W", "WARN", "3"},
-            {"E", "ERROR", "4"},
-    };
-    private static final LogImp debugLog = new LogImp() {
+
+    private static LogImp debugLog = new LogImp() {
 
         private int level = LOG_LEVEL_INFO;
 
@@ -100,6 +94,7 @@ public class Log {
             this.level = logLevel;
         }
     };
+
     private static LogImp logImp = debugLog;
     private static int level = LOG_LEVEL_INFO;
 
@@ -113,6 +108,14 @@ public class Log {
     public static LogImp getImpl() {
         return logImp;
     }
+
+    private final static String[][] LOG_LEVELS = {
+            {"V",   "VERBOSE",  "0"},
+            {"D",   "DEBUG",    "1"},
+            {"I",   "INFO",     "2"},
+            {"W",   "WARN",     "3"},
+            {"E",   "ERROR",    "4"},
+    };
 
     public static void setLogLevel(String logLevel) {
 
