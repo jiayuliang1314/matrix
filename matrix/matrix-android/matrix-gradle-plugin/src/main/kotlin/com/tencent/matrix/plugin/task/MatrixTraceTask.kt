@@ -222,6 +222,7 @@ abstract class MatrixTraceTask : DefaultTask() {
             }
             task.mappingDir.set(mappingOut)
             task.traceClassOutputDirectory.set(traceClassOut)
+            task.skipCheckClass.set(extension.isSkipCheckClass)
 
             // Output properties
             task.ignoreMethodMapFileOutput.set(File("$mappingOut/ignoreMethodMapping.txt"))
