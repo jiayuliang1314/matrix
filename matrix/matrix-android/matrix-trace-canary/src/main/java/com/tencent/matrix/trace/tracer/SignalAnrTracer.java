@@ -254,9 +254,14 @@ public class SignalAnrTracer extends Tracer {
 
             IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
             DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
-            issueOfTraceCanary.setDetail(Constants.Type.SIGNAL_ANR.toString());
+            if (isSigQuit) {
+                issueOfTraceCanary.setDetail(Constants.Type.SIGNAL_ANR.toString());
+                issueOfTraceCanary.setThreadStack(stackTrace);
+            } else {
+                issueOfTraceCanary.setDetail(Constants.Type.SIGNAL_ANR_NATIVE_BACKTRACE.toString());
+                issueOfTraceCanary.setThreadStack(nativeBacktraceStackTrace);
+            }
             issueOfTraceCanary.setScene(scene);
-            issueOfTraceCanary.setThreadStack(stackTrace);
             issueOfTraceCanary.setProcessForeground(currentForeground);
             issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
             issue.setIssueOfTraceCanary(issueOfTraceCanary);
