@@ -7,6 +7,7 @@ import androidx.annotation.Keep;
 import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.Matrix;
 import com.tencent.matrix.report.Issue;
+import com.tencent.matrix.report.IssueOfTraceCanary;
 import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
@@ -87,6 +88,28 @@ public class TouchEventLagTracer extends Tracer {
                     Issue issue = new Issue();
                     issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
                     issue.setContent(jsonObject);
+
+
+                    IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+                    DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+                    issueOfTraceCanary.setDetail(Constants.Type.LAG_TOUCH.toString());
+                    issueOfTraceCanary.setScene(scene);
+                    issueOfTraceCanary.setThreadStack(stackTrace);
+                    issueOfTraceCanary.setProcessForeground(currentForeground);
+                    issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                    issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
+
+//                    IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
+//                    DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
+//                    issueOfTraceCanary.setDetail(Constants.Type.LAG.toString());
+//                    issueOfTraceCanary.setScene(scene);
+//                    issueOfTraceCanary.setThreadStack(dumpStack);
+//                    issueOfTraceCanary.setProcessForeground(isForeground);
+//                    issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+//                    issue.setIssueOfTraceCanary(issueOfTraceCanary);
+
+
                     plugin.onDetectIssue(issue);
 
                 } catch (Throwable t) {
