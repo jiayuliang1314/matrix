@@ -1,14 +1,14 @@
 -injars /Users/admin/.m2/repository/com/tencent/matrix/matrix-commons/2.0.5-SNAPSHOT/matrix-commons-2.0.5-SNAPSHOT.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/51a0420fb11337d6ab6d6b4c2b4681e6/matrix-battery-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/c30b64d4098cd8095a8e586164c51824/matrix-trace-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/331c90458d44ed1555d3de1f727d613e/matrix-trace-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/3d8687a1465639688209772a7748edc2/matrix-io-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/bf35765005a5c445e4d041c010f3bd32/matrix-sqlite-lint-android-sdk-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/8c0a9bdc9bf80d1c02d617e3b1069c66/matrix-hooks-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a67048e074023101d118610ad76285f9/matrix-jectl-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/cedd0536fe2b656bb535e194db19ceb2/matrix-traffic-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/7b940c851b5da25afc8b78a9e8ce3017/matrix-android-commons-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a55fcc9a2c6052aff8a309dce1747357/matrix-android-commons-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/02c2114e69362a8a43f3b633aab3d3ee/matrix-fd-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/96625a3b1360dc0af9a2f57cea0985f0/matrix-backtrace-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/10149ca17550c0da499be214e1e5eaa0/matrix-backtrace-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/0faf04dd9b9a0489dd3c04071d4c0218/matrix-android-lib-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/7b9dd408d1d9671797ec4c2ff2b26e47/preference-1.1.1/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/jars/classes.jar(**.class)
@@ -503,7 +503,7 @@
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/c30b64d4098cd8095a8e586164c51824/matrix-trace-canary-2.0.5-SNAPSHOT/res/layout/float_frame_view.xml:200
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/331c90458d44ed1555d3de1f727d613e/matrix-trace-canary-2.0.5-SNAPSHOT/res/layout/float_frame_view.xml:200
 -keep class com.tencent.matrix.trace.view.FloatFrameView$LineChartView {
     <init>(...);
 }

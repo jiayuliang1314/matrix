@@ -16,6 +16,7 @@
 
 package com.tencent.matrix.trace.tracer;
 
+import android.os.Looper;
 import android.os.Process;
 
 import com.tencent.matrix.AppActiveMatrixDelegate;
@@ -198,11 +199,15 @@ public class EvilMethodTracer extends Tracer {
                 issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);//todo
                 issue.setContent(jsonObject);
 
+                StackTraceElement[] stackTrace = Looper.getMainLooper().getThread().getStackTrace();
+                String dumpStack = Utils.getWholeStack(stackTrace);
+
                 IssueOfTraceCanary issueOfTraceCanary = new IssueOfTraceCanary();
                 DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
                 issueOfTraceCanary.setDetail(Constants.Type.NORMAL.toString());
                 issueOfTraceCanary.setCost(stackCost);
                 issueOfTraceCanary.setUsage(usage);
+                issueOfTraceCanary.setThreadStack(dumpStack);
                 issueOfTraceCanary.setScene(scene);
                 issueOfTraceCanary.setStack(reportBuilder.toString());
                 issueOfTraceCanary.setStackKey(stackKey);

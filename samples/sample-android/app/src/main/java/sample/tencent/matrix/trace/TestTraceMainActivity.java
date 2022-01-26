@@ -151,7 +151,7 @@ public class TestTraceMainActivity extends Activity implements IAppForeground {
 
     public void test_kadun3(View view) {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -1,0 +1,98 @@
+2022-01-26 20:26:29.902 2741-2841/sample.tencent.matrix D/TestPluginListener: TraceCanary :IssueOfTraceCanary{stack='0,1048574,1,2004
+    1,13551,1,2004,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun (Landroid.view.View;)V
+    2,13552,1,1003,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun1 (Landroid.view.View;)V
+    3,13553,1,6,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun2 (Landroid.view.View;)V
+    ', memoryBean=null, usage='null', dropLevelBean=null, cpu_app=0.0, scene='sample.tencent.matrix.trace.TestTraceMainActivity', stackKey='13551 sample.tencent.matrix.trace.TestTraceMainActivity test_kadun (Landroid.view.View;)V', mem=3510513664, first_activity_create=0, is_warm_start_up=false, tag='Trace_EvilMethod', dropSumBean=null, process='sample.tencent.matrix', cost=2004, processNice=0, application_create=0, fps=0.0, processPriority=0, application_create_scene=0, processTimerSlack=0, threadStack='java.lang.Thread.sleep(Native Method)
+    java.lang.Thread.sleep(Thread.java:373)
+    java.lang.Thread.sleep(Thread.java:314)
+    sample.tencent.matrix.trace.TestTraceMainActivity.test_kadun2(TestTraceMainActivity.java:145)
+    sample.tencent.matrix.trace.TestTraceMainActivity.test_kadun1(TestTraceMainActivity.java:140)
+    sample.tencent.matrix.trace.TestTraceMainActivity.test_kadun(TestTraceMainActivity.java:132)
+    java.lang.reflect.Method.invoke(Native Method)
+    android.view.View$DeclaredOnClickListener.onClick(View.java:6079)
+    android.view.View.performClick(View.java:7352)
+    android.widget.TextView.performClick(TextView.java:14230)
+    android.view.View.performClickInternal(View.java:7318)
+    android.view.View.access$3200(View.java:846)
+    android.view.View$PerformClick.run(View.java:27800)
+    android.os.Handler.handleCallback(Handler.java:873)
+    android.os.Handler.dispatchMessage(Handler.java:99)
+    android.os.Looper.loop(Looper.java:214)
+    android.app.ActivityThread.main(ActivityThread.java:7050)
+    java.lang.reflect.Method.invoke(Native Method)
+    com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:494)
+    com.android.internal.os.ZygoteInit.main(ZygoteInit.java:964)
+    ', startup_duration=0, machine='MIDDLE', mem_free=1001188, subType=0, isProcessForeground=true, time=1643199989890, detail='LAG', key='null'}
+
+
+2022-01-26 20:26:32.902 2741-2841/sample.tencent.matrix D/TestPluginListener: TraceCanary :IssueOfTraceCanary{stack='0,1048574,1,5005
+    1,13551,1,5005,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun (Landroid.view.View;)V
+    2,13552,1,4004,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun1 (Landroid.view.View;)V
+    3,13553,1,3007,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun2 (Landroid.view.View;)V
+    4,13554,1,2003,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun3 (Landroid.view.View;)V
+    ', memoryBean=com.tencent.matrix.d.e@2a5e04, usage='null', dropLevelBean=null, cpu_app=0.0, scene='sample.tencent.matrix.trace.TestTraceMainActivity', stackKey='13553 sample.tencent.matrix.trace.TestTraceMainActivity test_kadun2 (Landroid.view.View;)V', mem=3510513664, first_activity_create=0, is_warm_start_up=false, tag='Trace_EvilMethod', dropSumBean=null, process='sample.tencent.matrix', cost=5005, processNice=-10, application_create=0, fps=0.0, processPriority=10, application_create_scene=0, processTimerSlack=0, threadStack='java.lang.Thread.sleep(Native Method)
+    java.lang.Thread.sleep(Thread.java:373)
+    java.lang.Thread.sleep(Thread.java:314)
+    sample.tencent.matrix.trace.TestTraceMainActivity.test_kadun3(TestTraceMainActivity.java:154)
+    sample.tencent.matrix.trace.TestTraceMainActivity.test_kadun2(TestTraceMainActivity.java:149)
+    sample.tencent.matrix.trace.TestTraceMainActivity.test_kadun1(TestTraceMainActivity.java:140)
+    sample.tencent.matrix.trace.TestTraceMainActivity.test_kadun(TestTraceMainActivity.java:132)
+    java.lang.reflect.Method.invoke(Native Method)
+    android.view.View$DeclaredOnClickListener.onClick(View.java:6079)
+    android.view.View.performClick(View.java:7352)
+    android.widget.TextView.performClick(TextView.java:14230)
+    android.view.View.performClickInternal(View.java:7318)
+    android.view.View.access$3200(View.java:846)
+    android.view.View$PerformClick.run(View.java:27800)
+    android.os.Handler.handleCallback(Handler.java:873)
+    android.os.Handler.dispatchMessage(Handler.java:99)
+    android.os.Looper.loop(Looper.java:214)
+    android.app.ActivityThread.main(ActivityThread.java:7050)
+    java.lang.reflect.Method.invoke(Native Method)
+    com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:494)
+    com.android.internal.os.ZygoteInit.main(ZygoteInit.java:964)
+    ', startup_duration=0, machine='MIDDLE', mem_free=1002932, subType=0, isProcessForeground=true, time=1643199992894, detail='ANR', key='6388907601575941'}
+
+
+2022-01-26 20:26:33.853 2741-2841/sample.tencent.matrix D/TestPluginListener: TraceCanary :IssueOfTraceCanary{stack='0,1048574,1,6004
+    1,13551,1,6002,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun (Landroid.view.View;)V
+    2,13552,1,5001,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun1 (Landroid.view.View;)V
+    3,13553,1,4004,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun2 (Landroid.view.View;)V
+    4,13554,1,3000,sample.tencent.matrix.trace.TestTraceMainActivity test_kadun3 (Landroid.view.View;)V
+    ', memoryBean=null, usage='0.02%', dropLevelBean=null, cpu_app=0.0, scene='sample.tencent.matrix.trace.TestTraceMainActivity', stackKey='13553 sample.tencent.matrix.trace.TestTraceMainActivity test_kadun2 (Landroid.view.View;)V', mem=3510513664, first_activity_create=0, is_warm_start_up=false, tag='Trace_EvilMethod', dropSumBean=null, process='sample.tencent.matrix', cost=6004, processNice=0, application_create=0, fps=0.0, processPriority=0, application_create_scene=0, processTimerSlack=0, threadStack='libcore.io.Linux.getuid(Native Method)
+    libcore.io.ForwardingOs.getuid(ForwardingOs.java:111)
+    android.system.Os.getuid(Os.java:246)
+    android.os.Process.myUid(Process.java:724)
+    android.os.UserHandle.myUserId(UserHandle.java:382)
+    android.provider.Settings$NameValueCache.getStringForUser(Settings.java:2053)
+    android.provider.Settings$Secure.getStringForUser(Settings.java:7607)
+    android.provider.Settings$Secure.getIntForUser(Settings.java:7788)
+    android.provider.Settings$Secure.getInt(Settings.java:7779)
+    android.widget.TextView.<init>(TextView.java:1958)
+    android.widget.TextView.<init>(TextView.java:1129)
+    android.widget.TextView.<init>(TextView.java:1125)
+    java.lang.reflect.Constructor.newInstance0(Native Method)
+    java.lang.reflect.Constructor.newInstance(Constructor.java:343)
+    android.view.LayoutInflater.createView(LayoutInflater.java:647)
+    com.android.internal.policy.PhoneLayoutInflater.onCreateView(PhoneLayoutInflater.java:58)
+    android.view.LayoutInflater.onCreateView(LayoutInflater.java:720)
+    android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:788)
+    android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:730)
+    android.view.LayoutInflater.rInflate(LayoutInflater.java:863)
+    android.view.LayoutInflater.rInflateChildren(LayoutInflater.java:824)
+    android.view.LayoutInflater.inflate(LayoutInflater.java:515)
+    android.view.LayoutInflater.inflate(LayoutInflater.java:423)
+    android.view.LayoutInflater.inflate(LayoutInflater.java:374)
+    android.widget.Toast.makeText(Toast.java:607)
+    android.widget.Toast.makeText(Toast.java:557)
+    sample.tencent.matrix.b.a.b(TestPluginListener.java:89)
+    sample.tencent.matrix.b.a.a(TestPluginListener.java:43)
+    sample.tencent.matrix.b.a$1.run(TestPluginListener.java:75)
+    android.os.Handler.handleCallback(Handler.java:873)
+    android.os.Handler.dispatchMessage(Handler.java:99)
+    android.os.Looper.loop(Looper.java:214)
+    android.app.ActivityThread.main(ActivityThread.java:7050)
+    java.lang.reflect.Method.invoke(Native Method)
+    com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:494)
+    com.android.internal.os.ZygoteInit.main(ZygoteInit.java:964)
+    ', startup_duration=0, machine='MIDDLE', mem_free=1001488, subType=0, isProcessForeground=false, time=1643199993850, detail='NORMAL', key='null'}

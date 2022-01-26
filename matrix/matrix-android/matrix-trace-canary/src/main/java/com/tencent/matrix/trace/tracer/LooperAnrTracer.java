@@ -76,6 +76,7 @@ public class LooperAnrTracer extends Tracer {
         super.onDead();
         if (isAnrTraceEnable) {
             UIThreadMonitor.getMonitor().removeObserver(this);
+            lagTask.getBeginRecord().release();
             anrTask.getBeginRecord().release();
             anrHandler.removeCallbacksAndMessages(null);
             lagHandler.removeCallbacksAndMessages(null);
@@ -86,6 +87,7 @@ public class LooperAnrTracer extends Tracer {
     public void dispatchBegin(long beginNs, long cpuBeginMs, long token) {
         super.dispatchBegin(beginNs, cpuBeginMs, token);
         // 插入方法结点，如果出现了 ANR，就从该结点开始收集方法执行记录
+        lagTask.beginRecord = AppMethodBeat.getInstance().maskIndex("LagTracer#dispatchBegin");
         anrTask.beginRecord = AppMethodBeat.getInstance().maskIndex("AnrTracer#dispatchBegin");
         anrTask.token = token;
 
@@ -109,6 +111,7 @@ public class LooperAnrTracer extends Tracer {
                     token, cost,
                     cpuEndMs - cpuBeginMs, Utils.calculateCpuUsage(cpuEndMs - cpuBeginMs, cost));
         }
+        lagTask.getBeginRecord().release();
         anrTask.getBeginRecord().release();
         anrHandler.removeCallbacks(anrTask);
         lagHandler.removeCallbacks(lagTask);
@@ -145,9 +148,15 @@ public class LooperAnrTracer extends Tracer {
 //    }
 
     class LagHandleTask implements Runnable {
+        AppMethodBeat.IndexRecord beginRecord;
+
+        public AppMethodBeat.IndexRecord getBeginRecord() {
+            return beginRecord;
+        }
 
         @Override
         public void run() {
+            long curTime = SystemClock.uptimeMillis();
             String scene = AppActiveMatrixDelegate.INSTANCE.getVisibleScene();
             boolean isForeground = isForeground();
             try {
@@ -158,6 +167,49 @@ public class LooperAnrTracer extends Tracer {
 
                 StackTraceElement[] stackTrace = Looper.getMainLooper().getThread().getStackTrace();
                 String dumpStack = Utils.getWholeStack(stackTrace);
+
+                long[] data = AppMethodBeat.getInstance().copyData(beginRecord);
+                beginRecord.release();
+
+
+                LinkedList<MethodItem> stack = new LinkedList();
+                if (data.length > 0) {
+                    //Matrix默认最多上传30个堆栈。如果堆栈调用超过30条，需要裁剪堆栈。裁剪策略如下：
+                    //从后往前遍历先序遍历结果，如果堆栈大小大于30，则将执行时间小于5*整体遍历次数的节点剔除掉
+                    //最多整体遍历60次，每次整体遍历，比较时间增加5ms
+                    //如果遍历了60次，堆栈大小还是大于30，将后面多余的删除掉
+                    TraceDataUtils.structuredDataToStack(data, stack, true, curTime);
+                    TraceDataUtils.trimStack(stack, Constants.TARGET_EVIL_METHOD_STACK, new TraceDataUtils.IStructuredDataFilter() {
+                        @Override
+                        public boolean isFilter(long during, int filterCount) {
+                            return during < filterCount * Constants.TIME_UPDATE_CYCLE_MS;//TIME_UPDATE_CYCLE_MS 5
+                        }
+
+                        @Override
+                        public int getFilterMaxCount() {//60
+                            return Constants.FILTER_STACK_MAX_COUNT;
+                        }
+
+                        @Override
+                        public void fallback(List<MethodItem> stack, int size) {
+                            MatrixLog.w(TAG, "[fallback] size:%s targetSize:%s stack:%s", size, Constants.TARGET_EVIL_METHOD_STACK, stack);
+                            Iterator iterator = stack.listIterator(Math.min(size, Constants.TARGET_EVIL_METHOD_STACK));//TARGET_EVIL_METHOD_STACK 30
+                            while (iterator.hasNext()) {
+                                iterator.next();
+                                iterator.remove();
+                            }
+                        }
+                    });
+                }
+
+                StringBuilder reportBuilder = new StringBuilder();
+                StringBuilder logcatBuilder = new StringBuilder();
+                //因为是anr所以最小是5s
+                long stackCost = Math.max(Constants.DEFAULT_NORMAL_LAG, TraceDataUtils.stackToString(stack, reportBuilder, logcatBuilder));
+
+                // stackKey，找出超过帧消息时间30%的方法的id并用 | 连接起来
+                String stackKey = TraceDataUtils.getTreeKey(stack, stackCost);
+
 
                 JSONObject jsonObject = new JSONObject();
                 jsonObject = DeviceUtil.getDeviceInfo(jsonObject, Matrix.with().getApplication());
@@ -178,6 +230,11 @@ public class LooperAnrTracer extends Tracer {
                 issueOfTraceCanary.setThreadStack(dumpStack);
                 issueOfTraceCanary.setProcessForeground(isForeground);
                 issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+
+                issueOfTraceCanary.setCost(stackCost);
+                issueOfTraceCanary.setStackKey(stackKey);
+                issueOfTraceCanary.setStack(reportBuilder.toString());
+
                 issue.setIssueOfTraceCanary(issueOfTraceCanary);
                 plugin.onDetectIssue(issue);
                 MatrixLog.e(TAG, "happens lag : %s, scene : %s ", dumpStack, scene);
