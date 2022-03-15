@@ -89,7 +89,7 @@ public class ThreadPriorityTracer extends Tracer {
             DeviceUtil.getDeviceInfo(issueOfTraceCanary, Matrix.with().getApplication());
             issueOfTraceCanary.setDetail(Constants.Type.PRIORITY_MODIFIED.toString());
             issueOfTraceCanary.setThreadStack(stackTrace);
-//            issueOfTraceCanary.setProcessPriority(priority);
+            issueOfTraceCanary.setProcessPriority(priorityAfter);
             issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
             issue.setIssueOfTraceCanary(issueOfTraceCanary);
 
