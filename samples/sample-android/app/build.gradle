@@ -64,8 +64,8 @@ android {
         }
         debug {
             debuggable true
-            minifyEnabled true      // 混淆打开
-            shrinkResources true   // 将无用的类资源过滤，Gradle2.2版本后设置为false
+            minifyEnabled false      // 混淆打开
+            shrinkResources false   // 将无用的类资源过滤，Gradle2.2版本后设置为false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.debug
         }
@@ -176,7 +176,7 @@ matrix {
         variant.name == "devDebug"
     }
     trace {
-        enable = true
+        enable = false
         baseMethodMapFile = "${project.projectDir}/matrixTrace/methodMapping.txt"
         blackListFile = "${project.projectDir}/matrixTrace/blackMethodList.txt"
         //默认transform: transformClassesWithDexBuilder, transformClassesWithDex

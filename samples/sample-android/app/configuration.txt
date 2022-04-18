@@ -1,65 +1,68 @@
 -injars /Users/admin/.m2/repository/com/tencent/matrix/matrix-commons/2.0.5-SNAPSHOT/matrix-commons-2.0.5-SNAPSHOT.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/51a0420fb11337d6ab6d6b4c2b4681e6/matrix-battery-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/331c90458d44ed1555d3de1f727d613e/matrix-trace-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/3d8687a1465639688209772a7748edc2/matrix-io-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/bf35765005a5c445e4d041c010f3bd32/matrix-sqlite-lint-android-sdk-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/8c0a9bdc9bf80d1c02d617e3b1069c66/matrix-hooks-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a67048e074023101d118610ad76285f9/matrix-jectl-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/cedd0536fe2b656bb535e194db19ceb2/matrix-traffic-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a55fcc9a2c6052aff8a309dce1747357/matrix-android-commons-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/02c2114e69362a8a43f3b633aab3d3ee/matrix-fd-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/10149ca17550c0da499be214e1e5eaa0/matrix-backtrace-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/0faf04dd9b9a0489dd3c04071d4c0218/matrix-android-lib-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/7b9dd408d1d9671797ec4c2ff2b26e47/preference-1.1.1/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/275483bd149d283f48be27a751226f31/jetified-StrongToolsRecyclerView-3.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/0a983a2956be73277e8edbbcc0e071f3/recyclerview-1.1.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/9359d1eff84361c8ac1a4429f797d200/constraintlayout-1.1.3/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/16ae05677c85cf6208a7797a18f0624e/lifecycle-extensions-2.2.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/319fac64b366da0a1c0fd4bc761d854b/appcompat-resources-1.1.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/aff5cda196ab7e56fe9b6bff15c11629/legacy-support-core-ui-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a701ebab6fd2f2c494c86a21b1ec892e/drawerlayout-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/924671f57b0c62db23220c16afd0842d/fragment-1.2.4/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/cbc0d58f9f1723958f2aeb131e20a8e0/viewpager-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/37ac80cdf3d34cf2ffa33c493c713d69/coordinatorlayout-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/50dacbb319184127b74085def28f71c9/slidingpanelayout-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a2ed7c83da520d61a8c737a37b01b5ee/customview-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/15412bc0d92f6dbed848d1fdc7e610d1/legacy-support-core-utils-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/8943fb4d9df1cf94950b9eea2b1138cd/transition-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/601b14d4eef5786526f4e89fc97fe6e6/vectordrawable-animated-1.1.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/ecb844867a42163ff0ddf3bde00e3933/vectordrawable-1.1.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/d09fc7eff584085186a43ae312c0f6b7/loader-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/058d98bd21a16575086e784e2ab07a20/activity-1.1.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/2d140fddd191cad322c7574bcd1ac641/swiperefreshlayout-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/b5fdb0165f780fd6354d6c0bb689125b/asynclayoutinflater-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/ee00a632a22d21ec4ae37fb8027db69e/core-1.1.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/1de49ba529491f8888e44be4a3c42e50/lifecycle-process-2.2.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/615310085b0b8f344feb6e0793d37e47/lifecycle-service-2.2.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/2389e87f48d67dd434d5fa6283028754/databinding-adapters-3.5.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/4c6642e2ca75888a4b96c5ef2150886e/databinding-runtime-3.5.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/000d2c5a0fc91128c225ac6040a9a114/lifecycle-runtime-2.2.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/280815cb23727631d47813605a26e5cb/cardview-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/5a4c9f824248e1fef5f58387950bb943/jetified-eventbus-3.2.0.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/786b6f19bb468dc0ea3a0a8c134d1e42/matrix-battery-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/83da2b8602d75a51d5b2618c4a201e2f/matrix-trace-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/03ae0c047acac894af456f2d1e29d404/matrix-io-canary-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/dd9e762e1f7b4a80db01b7886d92a72e/matrix-sqlite-lint-android-sdk-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/4004b1cdcd692efad7f4bc953289dbe3/matrix-hooks-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/c8463bd25ca5eb3ce6487028e54d4f5c/matrix-jectl-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/b8f2758d195a0bb4f4180ed276045870/matrix-traffic-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/64ea953d637dbfa806904a7413758dd2/matrix-android-commons-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/ea3526aa0067904978c49195141c89ff/matrix-fd-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/270074082326ccdb5967b8815746e426/matrix-backtrace-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/59d5e02ff981ea2908aa61bf0b0020e8/matrix-android-lib-2.0.5-SNAPSHOT/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/e63ff1cb60105734dc28398a27c726f7/preference-1.1.1/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/f2eb2363352ec4fc2cee1f5359660d80/jetified-StrongToolsRecyclerView-3.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/392f08b18b62be636567ee3693ec6dbe/recyclerview-1.1.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/27145b1bedcb9501cdf09f5a0eb8ae7d/constraintlayout-1.1.3/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/3943265de424278a948aadb5897076b2/lifecycle-extensions-2.2.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/af74b91e1cd67df41f9b34d239a0d208/appcompat-resources-1.1.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/e4c86562e6b1cfc950a4667380237c07/legacy-support-core-ui-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a4d6020daab17b5b39bb2f5ba95a2d7c/drawerlayout-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/55dd1d1dbfd2b08fe1d039ce055e1d14/fragment-1.2.4/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/5693469df372b49e78b5d791c77dbe28/viewpager-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/ac3256798ae971bb7afa7e4e78e9143c/coordinatorlayout-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/fba28434230a7ac943b9828bcf04b2d7/slidingpanelayout-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/f2e43297c2b9031dac90634db55ae4e4/customview-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/e7f366424f71b7de0585b8ade3476f90/legacy-support-core-utils-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/76f64ac2016d3b0589db83f1f8aa3f22/transition-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/d058ef40710e16d0369bcafca476471d/vectordrawable-animated-1.1.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/49104cf4cfc56dfbf18debfa5e2d4eea/vectordrawable-1.1.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/f1b456e1f48a9b2da2f924361d927072/loader-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/46b9ac6165afdb9d5fefa82ea7a475d0/activity-1.1.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/6aa797a971a0803870afbc73a910d1da/swiperefreshlayout-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a1dafbe3f99f1a26efa5ab13a4960bdc/asynclayoutinflater-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/2c82b3cbfdba57dc0707e9df06a86a98/core-1.1.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/1bd4cb95b0f4f79e5c19140a75536565/lifecycle-process-2.2.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/7defc834bbaef884b40b6d693a72c28c/lifecycle-service-2.2.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/02a88293cc91aa0429cf281b76d0a920/databinding-adapters-3.5.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/bf2aac2ad5c1503b319a58d8b8f54938/databinding-runtime-3.5.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/d079966b9ec50412e601f7c5700484f3/lifecycle-runtime-2.2.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/421a5fa82c06fe50c9b6358fa307c3ee/cardview-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/304387c8d0944106d9a29b9cec5f6ab7/jetified-eventbus-3.2.0.jar(**.class)
 -injars /Users/admin/.m2/repository/commons-io/commons-io/2.6/commons-io-2.6.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/4c1007483f8a07a0734975e0413f7867/cursoradapter-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/c2fbf247dad57df2a31686410bfea39b/lifecycle-livedata-2.2.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/015a76b8401f3a7c271af19cac21849f/lifecycle-viewmodel-savedstate-2.2.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/d1423ebe08620e383c1d1d07155b3489/lifecycle-livedata-core-2.2.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/ab74f2f11622c9e7b0598c83cf059663/savedstate-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/0068cabf3b1727489887b4e28dfd2442/cursoradapter-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/c5aea4574764b2cc47b15a90f657e9b3/lifecycle-livedata-2.2.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/c56129ca40a351dcfb1d8475e08b3467/lifecycle-viewmodel-savedstate-2.2.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/d91db6fa31bf7c32ee698133fb79304f/lifecycle-livedata-core-2.2.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a2f227c6172fecfd895306c18bf04491/savedstate-1.0.0/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/modules-2/files-2.1/androidx.lifecycle/lifecycle-common/2.2.0/4ef09a745007778eef83b92f8f23987a8ea59496/lifecycle-common-2.2.0.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/e63640791a41173680d3f6316a71985e/core-runtime-2.1.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/a9e9506726e0d2b3fbaa672b5a69a2af/core-runtime-2.1.0/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/modules-2/files-2.1/androidx.arch.core/core-common/2.1.0/b3152fc64428c9354344bd89848ecddc09b6f07e/core-common-2.1.0.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/96b7a87a927258f04e55a3b0868a2c42/lifecycle-viewmodel-2.2.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/99b19b0c932fc5f9e2a06ee592983d84/versionedparcelable-1.1.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/55361586a12c85ecb041af1e9d0663a3/lifecycle-viewmodel-2.2.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/62baa0132cf3ba9b69e150119026f6cc/versionedparcelable-1.1.0/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/modules-2/files-2.1/androidx.collection/collection/1.1.0/1f27220b47669781457de0d600849a5de0e89909/collection-1.1.0.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/059b892c9586d819be9e7874414b8c01/interpolator-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/adec1dc29f4bc287ef56f68edbe1bf26/documentfile-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/e4830c207a7d9ddf03d051d3030f2aeb/localbroadcastmanager-1.0.0/jars/classes.jar(**.class)
--injars /Users/admin/.gradle/caches/transforms-2/files-2.1/8b7bca5f7f3ed2c410d6ad0db017086d/print-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/9b4c982fb0c71acd682cc32075e72f82/interpolator-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/0510025588390365a1911c73408272f3/documentfile-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/8d87272bfae85ae1a9a9c23ffbd77cf4/localbroadcastmanager-1.0.0/jars/classes.jar(**.class)
+-injars /Users/admin/.gradle/caches/transforms-2/files-2.1/993e8703184f0f23778e7fd4726f97ee/print-1.0.0/jars/classes.jar(**.class)
 -injars /Users/admin/.gradle/caches/modules-2/files-2.1/androidx.annotation/annotation/1.1.0/e3a6fb2f40e3a3842e6b7472628ba4ce416ea4c8/annotation-1.1.0.jar(**.class)
+-injars /Users/admin/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.6.20/6cedc143badbb4f1c6b7f5a340b04edff1743208/kotlin-stdlib-1.6.20.jar(**.class)
 -injars /Users/admin/.gradle/caches/modules-2/files-2.1/androidx.constraintlayout/constraintlayout-solver/1.1.3/54abe9ffb22cc9019b0b6fcc10f185cc4e67b34e/constraintlayout-solver-1.1.3.jar(**.class)
 -injars /Users/admin/.gradle/caches/modules-2/files-2.1/androidx.databinding/databinding-common/3.5.0/ad17a14009fa4322bf1f90fd8ca631992e5d667f/databinding-common-3.5.0.jar(**.class)
+-injars /Users/admin/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.6.20/27b4562b6713d70f458c6d7ea39aadacb8e6a92b/kotlin-stdlib-common-1.6.20.jar(**.class)
+-injars /Users/admin/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar(**.class)
 -injars /Users/admin/StudioProjects/matrix/samples/sample-android/app/build/intermediates/javac/devDebug/classes(**.class)
 -injars /Users/admin/StudioProjects/matrix/samples/sample-android/app/build/intermediates/merged_java_res/devDebug/out.jar(!**.class)
 -outjars /Users/admin/StudioProjects/matrix/samples/sample-android/app/build/intermediates/transforms/proguard/dev/debug/0.jar
@@ -288,62 +291,62 @@
     <init>();
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_alert_dialog_title_material.xml:57
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_alert_dialog_material.xml:52
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_alert_dialog_button_bar_material.xml:43
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_alert_dialog_title_material.xml:57
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_alert_dialog_material.xml:52
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_alert_dialog_button_bar_material.xml:43
 -keep class android.widget.Space {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_select_dialog_material.xml:23
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_select_dialog_material.xml:23
 -keep class androidx.appcompat.app.AlertController$RecycleListView {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_action_menu_item_layout.xml:17
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_action_menu_item_layout.xml:17
 -keep class androidx.appcompat.view.menu.ActionMenuItemView {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_expanded_menu_layout.xml:17
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_expanded_menu_layout.xml:17
 -keep class androidx.appcompat.view.menu.ExpandedMenuView {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_popup_menu_item_layout.xml:17
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_list_menu_item_layout.xml:17
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_cascading_menu_item_layout.xml:20
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_popup_menu_item_layout.xml:17
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_list_menu_item_layout.xml:17
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_cascading_menu_item_layout.xml:20
 -keep class androidx.appcompat.view.menu.ListMenuItemView {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_screen_toolbar.xml:27
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_screen_toolbar.xml:27
 -keep class androidx.appcompat.widget.ActionBarContainer {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_screen_toolbar.xml:43
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_action_mode_bar.xml:19
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_screen_toolbar.xml:43
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_action_mode_bar.xml:19
 -keep class androidx.appcompat.widget.ActionBarContextView {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_screen_toolbar.xml:17
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_screen_toolbar.xml:17
 -keep class androidx.appcompat.widget.ActionBarOverlayLayout {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_action_menu_layout.xml:17
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_action_menu_layout.xml:17
 -keep class androidx.appcompat.widget.ActionMenuView {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_activity_chooser_view.xml:19
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_activity_chooser_view.xml:19
 -keep class androidx.appcompat.widget.ActivityChooserView$InnerLayout {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_alert_dialog_material.xml:18
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_alert_dialog_material.xml:18
 -keep class androidx.appcompat.widget.AlertDialogLayout {
     <init>(...);
 }
@@ -359,56 +362,56 @@
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_alert_dialog_button_bar_material.xml:26
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_alert_dialog_button_bar_material.xml:26
 -keep class androidx.appcompat.widget.ButtonBarLayout {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_screen_content_include.xml:19
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_screen_content_include.xml:19
 -keep class androidx.appcompat.widget.ContentFrameLayout {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_alert_dialog_title_material.xml:45
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_alert_dialog_title_material.xml:45
 -keep class androidx.appcompat.widget.DialogTitle {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_screen_simple_overlay_action_mode.xml:23
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_screen_simple_overlay_action_mode.xml:23
 -keep class androidx.appcompat.widget.FitWindowsFrameLayout {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_screen_simple.xml:17
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_dialog_title_material.xml:22
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_screen_simple.xml:17
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_dialog_title_material.xml:22
 -keep class androidx.appcompat.widget.FitWindowsLinearLayout {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_search_view.xml:75
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_search_view.xml:75
 -keep class androidx.appcompat.widget.SearchView$SearchAutoComplete {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/7b9dd408d1d9671797ec4c2ff2b26e47/preference-1.1.1/res/layout/preference_widget_switch_compat.xml:20
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/e63ff1cb60105734dc28398a27c726f7/preference-1.1.1/res/layout/preference_widget_switch_compat.xml:20
 -keep class androidx.appcompat.widget.SwitchCompat {
     <init>(...);
 }
 
 # Referenced at /Users/admin/StudioProjects/matrix/samples/sample-android/app/src/main/res/layout/matrix_kanzhun_main_fragment.xml:32
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_screen_toolbar.xml:36
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_screen_toolbar.xml:36
 -keep class androidx.appcompat.widget.Toolbar {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_screen_simple_overlay_action_mode.xml:32
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_screen_simple.xml:25
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_screen_simple_overlay_action_mode.xml:32
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_screen_simple.xml:25
 -keep class androidx.appcompat.widget.ViewStubCompat {
     <init>(...);
 }
 
 # Referenced at /Users/admin/StudioProjects/matrix/samples/sample-android/app/src/main/res/layout/matrix_kanzhun_main_fragment.xml:13
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/res/layout/design_bottom_sheet_dialog.xml:26
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/res/layout/design_bottom_sheet_dialog.xml:26
 -keep class androidx.coordinatorlayout.widget.CoordinatorLayout {
     <init>(...);
 }
@@ -416,26 +419,26 @@
 # Referenced at /Users/admin/StudioProjects/matrix/samples/sample-android/app/src/main/res/layout/matrix_kanzhun_startup_infos.xml:3
 # Referenced at /Users/admin/StudioProjects/matrix/samples/sample-android/app/src/main/res/layout/matrix_kanzhun_settings.xml:3
 # Referenced at /Users/admin/StudioProjects/matrix/samples/sample-android/app/src/main/res/layout/matrix_kanzhun_infos.xml:3
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/8302b867d213652510f1c012f723b4a5/appcompat-1.1.0/res/layout/abc_alert_dialog_material.xml:41
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/f0ecbe987c01f3bfcdeb15b169d9b054/appcompat-1.1.0/res/layout/abc_alert_dialog_material.xml:41
 -keep class androidx.core.widget.NestedScrollView {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/7b9dd408d1d9671797ec4c2ff2b26e47/preference-1.1.1/res/layout/preference_widget_seekbar_material.xml:77
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/7b9dd408d1d9671797ec4c2ff2b26e47/preference-1.1.1/res/layout/preference_widget_seekbar.xml:70
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/e63ff1cb60105734dc28398a27c726f7/preference-1.1.1/res/layout/preference_widget_seekbar_material.xml:77
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/e63ff1cb60105734dc28398a27c726f7/preference-1.1.1/res/layout/preference_widget_seekbar.xml:70
 -keep class androidx.preference.UnPressableLinearLayout {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/7b9dd408d1d9671797ec4c2ff2b26e47/preference-1.1.1/res/layout/preference_dropdown.xml:39
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/7b9dd408d1d9671797ec4c2ff2b26e47/preference-1.1.1/res/layout/preference.xml:32
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/7b9dd408d1d9671797ec4c2ff2b26e47/preference-1.1.1/res/layout/image_frame.xml:33
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/e63ff1cb60105734dc28398a27c726f7/preference-1.1.1/res/layout/preference_dropdown.xml:39
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/e63ff1cb60105734dc28398a27c726f7/preference-1.1.1/res/layout/preference.xml:32
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/e63ff1cb60105734dc28398a27c726f7/preference-1.1.1/res/layout/image_frame.xml:33
 -keep class androidx.preference.internal.PreferenceImageView {
     <init>(...);
 }
 
 # Referenced at /Users/admin/StudioProjects/matrix/samples/sample-android/app/src/main/res/layout/screenrecorder_custom_dialog.xml:29
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/7b9dd408d1d9671797ec4c2ff2b26e47/preference-1.1.1/res/layout/preference_recyclerview.xml:18
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/e63ff1cb60105734dc28398a27c726f7/preference-1.1.1/res/layout/preference_recyclerview.xml:18
 # Referenced at /Users/admin/StudioProjects/matrix/samples/sample-android/app/src/main/res/layout/matrix_kanzhun_startup_infos.xml:167
 # Referenced at /Users/admin/StudioProjects/matrix/samples/sample-android/app/src/main/res/layout/matrix_kanzhun_issue_fragment.xml:45
 # Referenced at /Users/admin/StudioProjects/matrix/samples/sample-android/app/src/main/res/layout/matrix_kanzhun_infos.xml:116
@@ -466,34 +469,34 @@
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/res/layout/design_bottom_navigation_item.xml:27
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/res/layout/design_bottom_navigation_item.xml:27
 -keep class com.google.android.material.internal.BaselineLayout {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/res/layout/design_text_input_password_icon.xml:18
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/res/layout/design_text_input_password_icon.xml:18
 -keep class com.google.android.material.internal.CheckableImageButton {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/res/layout/design_navigation_item.xml:17
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/res/layout/design_navigation_item.xml:17
 -keep class com.google.android.material.internal.NavigationMenuItemView {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/res/layout/design_navigation_menu.xml:17
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/res/layout/design_navigation_menu.xml:17
 -keep class com.google.android.material.internal.NavigationMenuView {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/res/layout/mtrl_layout_snackbar.xml:18
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/res/layout/design_layout_snackbar.xml:18
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/res/layout/mtrl_layout_snackbar.xml:18
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/res/layout/design_layout_snackbar.xml:18
 -keep class com.google.android.material.snackbar.Snackbar$SnackbarLayout {
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/res/layout/mtrl_layout_snackbar_include.xml:18
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9f6f3dbdba22d0a6cb1214e7446e0fb3/material-1.0.0/res/layout/design_layout_snackbar_include.xml:18
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/res/layout/mtrl_layout_snackbar_include.xml:18
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/9edf19da7350eb912affad42505c503e/material-1.0.0/res/layout/design_layout_snackbar_include.xml:18
 -keep class com.google.android.material.snackbar.SnackbarContentLayout {
     <init>(...);
 }
@@ -503,7 +506,7 @@
     <init>(...);
 }
 
-# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/331c90458d44ed1555d3de1f727d613e/matrix-trace-canary-2.0.5-SNAPSHOT/res/layout/float_frame_view.xml:200
+# Referenced at /Users/admin/.gradle/caches/transforms-2/files-2.1/83da2b8602d75a51d5b2618c4a201e2f/matrix-trace-canary-2.0.5-SNAPSHOT/res/layout/float_frame_view.xml:200
 -keep class com.tencent.matrix.trace.view.FloatFrameView$LineChartView {
     <init>(...);
 }
