@@ -376,6 +376,14 @@ static void nativeInitSignalAnrDetective(JNIEnv *env, jclass, jstring anrTracePa
     sAnrDumper.emplace(anrTracePathChar, printTracePathChar);
 }
 
+static void nativeChangeAnrPath(JNIEnv *env, jclass, jstring anrTracePath, jstring printTracePath) {
+    const char* anrTracePathChar = env->GetStringUTFChars(anrTracePath, nullptr);
+    const char* printTracePathChar = env->GetStringUTFChars(printTracePath, nullptr);
+    anrTracePathString = std::string(anrTracePathChar);
+    printTracePathString = std::string(printTracePathChar);
+    sAnrDumper->changeFile(anrTracePathChar, printTracePathChar);
+}
+
 //Free step 6 Signal Anr Detective 重置，释放
 static void nativeFreeSignalAnrDetective(JNIEnv *env, jclass) {
     //重置，释放
@@ -419,6 +427,7 @@ static inline constexpr std::size_t NELEM(const T(&)[sz]) { return sz; }//todo
 //JNINativeMethod 数组 anr相关的
 static const JNINativeMethod ANR_METHODS[] = {
         {"nativeInitSignalAnrDetective", "(Ljava/lang/String;Ljava/lang/String;)V", (void *) nativeInitSignalAnrDetective},
+        {"nativeChangeAnrPath", "(Ljava/lang/String;Ljava/lang/String;)V", (void *) nativeChangeAnrPath},
         {"nativeFreeSignalAnrDetective", "()V",                                     (void *) nativeFreeSignalAnrDetective},
         {"nativePrintTrace",             "()V",                                     (void *) nativePrintTrace},
 };

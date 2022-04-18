@@ -64,6 +64,11 @@ AnrDumper::AnrDumper(const char* anrTraceFile, const char* printTraceFile) {
     pthread_sigmask(SIG_UNBLOCK, &sigSet , &old_sigSet);
 }
 
+void AnrDumper::changeFile(const char* anrTraceFile, const char* printTraceFile) {
+    mAnrTraceFile = anrTraceFile;
+    mPrintTraceFile = printTraceFile;
+}
+
     //step 3.1
     //得到SignalCatcherThreadId，todo 没看明白
     static int getSignalCatcherThreadId() {

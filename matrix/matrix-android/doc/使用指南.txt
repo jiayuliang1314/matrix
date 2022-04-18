@@ -1,0 +1,8 @@
+1.怎么运行demo
+好想要修改为jdk11
+1.1 修改完，在右侧Gradle -> Run Configurations -> matrix-android [publishToMavenLocal]
+        VERSION_NAME_PREFIX=2.0.5
+    单独的任务，可以添加，例如，matrix-android:matrix-trace-canary [publishToMavenLocal]
+1.2 运行sample-android
+        mavenLocal()
+        MATRIX_VERSION = "2.0.5-SNAPSHOT"

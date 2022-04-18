@@ -33,6 +33,7 @@ class AnrDumper : public SignalHandler {
  public:
     AnrDumper(const char* anrTraceFile, const char* printTraceFile);
     virtual ~AnrDumper();
+    void changeFile(const char* anrTraceFile, const char* printTraceFile);
 
  private:
     void handleSignal(int sig, const siginfo_t *info, void *uc) final;

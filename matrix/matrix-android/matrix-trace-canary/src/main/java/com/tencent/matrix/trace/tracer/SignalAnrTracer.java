@@ -36,6 +36,7 @@ import com.tencent.matrix.trace.TracePlugin;
 import com.tencent.matrix.trace.config.SharePluginInfo;
 import com.tencent.matrix.trace.config.TraceConfig;
 import com.tencent.matrix.trace.constants.Constants;
+import com.tencent.matrix.trace.util.AnrTraceDirectoryProvider;
 import com.tencent.matrix.trace.util.AppForegroundUtil;
 import com.tencent.matrix.trace.util.Utils;
 import com.tencent.matrix.util.DeviceUtil;
@@ -50,6 +51,8 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.List;
+
+import kotlin.jvm.functions.Function0;
 
 public class SignalAnrTracer extends Tracer {
     //region 参数
@@ -94,6 +97,7 @@ public class SignalAnrTracer extends Tracer {
     private static String nativeBacktraceStackTrace = "";
     private static long lastReportedTimeStamp = 0;
     private static long onAnrDumpedTimeStamp = 0;
+    //endregion
 
     static {
         //加载trace-canary lib
@@ -117,10 +121,22 @@ public class SignalAnrTracer extends Tracer {
         nativeFreeSignalAnrDetective();
     }
 
+    private static AnrTraceDirectoryProvider anrTraceDirectoryProvider;
+
     public SignalAnrTracer(TraceConfig traceConfig) {
         hasInstance = true;
-        sAnrTraceFilePath = traceConfig.anrTraceFilePath;
-        sPrintTraceFilePath = traceConfig.printTraceFilePath;
+        sAnrTraceFilePath = getAnrTraceDirectoryProvider().newHeapDumpFile("anr").getAbsolutePath();//traceConfig.anrTraceFilePath;
+        sPrintTraceFilePath = getAnrTraceDirectoryProvider().newHeapDumpFile("user").getAbsolutePath();
+        MatrixLog.i(TAG, "SignalAnrTracer sAnrTraceFilePath " + sAnrTraceFilePath);
+        MatrixLog.i(TAG, "SignalAnrTracer sPrintTraceFilePath " + sPrintTraceFilePath);
+    }
+
+    public static void prepareFilePath(){
+        sAnrTraceFilePath = getAnrTraceDirectoryProvider().newHeapDumpFile("anr").getAbsolutePath();//traceConfig.anrTraceFilePath;
+        sPrintTraceFilePath = getAnrTraceDirectoryProvider().newHeapDumpFile("user").getAbsolutePath();
+        MatrixLog.i(TAG, "prepareFilePath sAnrTraceFilePath " + sAnrTraceFilePath);
+        MatrixLog.i(TAG, "prepareFilePath sPrintTraceFilePath " + sPrintTraceFilePath);
+        nativeChangeAnrPath(sAnrTraceFilePath,sPrintTraceFilePath);
     }
 
     public SignalAnrTracer(Application application) {
@@ -173,6 +189,7 @@ public class SignalAnrTracer extends Tracer {
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Keep
     private synchronized static void onANRDumped() {
+        prepareFilePath();
         onAnrDumpedTimeStamp = System.currentTimeMillis();
         MatrixLog.i(TAG, "onANRDumped");
         stackTrace = Utils.getMainThreadJavaStackTrace();
@@ -186,8 +203,10 @@ public class SignalAnrTracer extends Tracer {
 
     @Keep
     private static void onANRDumpTrace() {
+        MatrixLog.e(TAG, "onANRDumpTrace begin " + sAnrTraceFilePath);
         try {
             MatrixUtil.printFileByLine(TAG, sAnrTraceFilePath);
+            //todo 上传
         } catch (Throwable t) {
             MatrixLog.e(TAG, "onANRDumpTrace error: %s", t.getMessage());
         }
@@ -197,8 +216,10 @@ public class SignalAnrTracer extends Tracer {
     //    step 6
     @Keep
     private static void onPrintTrace() {
+        MatrixLog.e(TAG, "onPrintTrace begin " + sPrintTraceFilePath);
         try {
             MatrixUtil.printFileByLine(TAG, sPrintTraceFilePath);
+            //这里不用上传，用户自己打的
         } catch (Throwable t) {
             MatrixLog.e(TAG, "onPrintTrace error: %s", t.getMessage());
         }
@@ -207,6 +228,7 @@ public class SignalAnrTracer extends Tracer {
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Keep
     private static void onNativeBacktraceDumped() {
+        prepareFilePath();
         MatrixLog.i(TAG, "happens onNativeBacktraceDumped");
         if (System.currentTimeMillis() - lastReportedTimeStamp < ANR_DUMP_MAX_TIME) {
             MatrixLog.i(TAG, "report SIGQUIT recently, just return");
@@ -247,6 +269,7 @@ public class SignalAnrTracer extends Tracer {
             }
             jsonObject.put(SharePluginInfo.ISSUE_SCENE, scene);
             jsonObject.put(SharePluginInfo.ISSUE_PROCESS_FOREGROUND, currentForeground);
+            jsonObject.put(SharePluginInfo.ANR_FILE_NAME, sAnrTraceFilePath);
 
             Issue issue = new Issue();
             issue.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
@@ -387,9 +410,28 @@ public class SignalAnrTracer extends Tracer {
 
     private static native void nativeInitSignalAnrDetective(String anrPrintTraceFilePath, String printTraceFilePath);
 
+    private static native void nativeChangeAnrPath(String anrPrintTraceFilePath, String printTraceFilePath);
+
     private static native void nativeFreeSignalAnrDetective();
 
     private static native void nativePrintTrace();
+
+    public static AnrTraceDirectoryProvider getAnrTraceDirectoryProvider() {
+        if (anrTraceDirectoryProvider == null) {
+            anrTraceDirectoryProvider = new AnrTraceDirectoryProvider(Matrix.with().getApplication(), new Function0<Integer>() {
+                @Override
+                public Integer invoke() {
+                    return 5;
+                }
+            }, new Function0<Boolean>() {
+                @Override
+                public Boolean invoke() {
+                    return false;
+                }
+            });
+        }
+        return anrTraceDirectoryProvider;
+    }
 
     public interface SignalAnrDetectedListener {
         void onAnrDetected(String stackTrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState, String cpuset);

@@ -63,4 +63,6 @@ public class SharePluginInfo {
     public static final String STAGE_APPLICATION_CREATE_SCENE = "application_create_scene"; //应用创建的第一个组件
     public static final String STAGE_FIRST_ACTIVITY_CREATE = "first_activity_create";       //第一个activity启动时间
     public static final String STAGE_STARTUP_DURATION = "startup_duration";                 //启动时间，冷或者热
+    public static final String ANR_FILE_NAME = "anr_file_name";                 //启动时间，冷或者热
+
 }

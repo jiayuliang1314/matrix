@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 apply from: rootProject.file('gradle/WeChatNativeDepend.gradle')
 
@@ -69,6 +70,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation project(':matrix-android-lib')
     implementation project(':matrix-android-commons')
+//    implementation "androidx.core:core-ktx:+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${gradle.KOTLIN_VERSION}"
 }
 
 version = rootProject.ext.VERSION_NAME
@@ -84,4 +87,7 @@ if (rootProject.file('gradle/WeChatPublish.gradle').exists()) {
             artifactId = POM_ARTIFACT_ID
         }
     }
+}
+repositories {
+    mavenCentral()
 }
