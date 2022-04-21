@@ -56,7 +56,7 @@ import kotlin.jvm.functions.Function0;
 
 public class SignalAnrTracer extends Tracer {
     //region 参数
-    private static final String TAG = "SignalAnrTracer";
+    private static final String TAG = "Matirx.SignalAnrTracer";
     //检测anr线程名字
     //监控到SIGQUIT后，我们在20秒内（20秒是ANR dump的timeout时间）不断轮询自己是否有NOT_RESPONDING flag
     //一旦发现有这个flag，那么马上就可以认定发生了一次ANR。

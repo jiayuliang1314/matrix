@@ -143,7 +143,9 @@ void AnrDumper::changeFile(const char* anrTraceFile, const char* printTraceFile)
     }
 
 static void *anrCallback(void* arg) {
+    ALOGV("native anrCallback");
     anrDumpCallback();
+    ALOGV("native anrCallback mAnrTraceFile %s %d",mAnrTraceFile,strlen(mAnrTraceFile));
     if (strlen(mAnrTraceFile) > 0) {
         hookAnrTraceWrite(false);
     }
@@ -165,6 +167,7 @@ static void *anrCallback(void* arg) {
     }
 
 void* AnrDumper::nativeBacktraceCallback(void* arg) {
+    ALOGV("native nativeBacktraceCallback");
     nativeBacktraceDumpCallback();
     restoreNativeBacktraceHandlersLocked();
     sigval val;
@@ -184,11 +187,13 @@ void* AnrDumper::nativeBacktraceCallback(void* arg) {
 }
 
 void AnrDumper::handleSignal(int sig, const siginfo_t *info, void *uc) {
+    ALOGV("native handleSignal");
     int fromPid1 = info->_si_pad[3];
     int fromPid2 = info->_si_pad[4];
     int myPid = getpid();
     bool fromMySelf = fromPid1 == myPid || fromPid2 == myPid;
     if (sig == SIGQUIT) {
+        ALOGV("native handleSignal sig is SIGQUIT");
         pthread_t thd;
         if (!fromMySelf) {
             pthread_create(&thd, nullptr, anrCallback, nullptr);
@@ -201,7 +206,9 @@ void AnrDumper::handleSignal(int sig, const siginfo_t *info, void *uc) {
 
 
 void AnrDumper::handleDebuggerSignal(int sig, const siginfo_t *info, void *uc) {
+    ALOGV("native handleDebuggerSignal");
     if (sig == BIONIC_SIGNAL_DEBUGGER) {
+        ALOGV("native handleDebuggerSignal is BIONIC_SIGNAL_DEBUGGER 35");
         int fromPid1 = info->_si_pad[3];
         int fromPid2 = info->_si_pad[4];
         int myPid = getpid();

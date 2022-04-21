@@ -17,6 +17,7 @@
 package com.tencent.matrix.plugin;
 
 import android.app.Application;
+import android.os.Debug;
 
 import com.tencent.matrix.AppActiveMatrixDelegate;
 import com.tencent.matrix.listeners.IAppForeground;
@@ -64,6 +65,9 @@ public abstract class Plugin implements IPlugin, IssuePublisher.OnIssueDetectLis
     //上报问题
     @Override
     public void onDetectIssue(Issue issue) {
+        if (Debug.isDebuggerConnected()) {
+            return;
+        }
         if (issue.getTag() == null) {
             // set default tag
             issue.setTag(getTag());

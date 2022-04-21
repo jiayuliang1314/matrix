@@ -49,10 +49,10 @@ internal class AnrTraceDirectoryProvider constructor(
     }
     val files = ArrayList<File>()
 
-    val externalFiles = externalStorageDirectory().listFiles(filter)
-    if (externalFiles != null) {
-      files.addAll(externalFiles)
-    }
+//    val externalFiles = externalStorageDirectory().listFiles(filter)
+//    if (externalFiles != null) {
+//      files.addAll(externalFiles)
+//    }
 
     val appFiles = appStorageDirectory().listFiles(filter)
     if (appFiles != null) {
@@ -68,34 +68,34 @@ internal class AnrTraceDirectoryProvider constructor(
   fun newHeapDumpFile(label: String?): File? {
     cleanupOldHeapDumps()
 
-    var storageDirectory = externalStorageDirectory()
-    if (!directoryWritableAfterMkdirs(storageDirectory)) {
-      if (!hasStoragePermission()) {
-        if (requestExternalStoragePermission()) {
-//          SharkLog.d { "WRITE_EXTERNAL_STORAGE permission not granted, requesting" }
-          requestWritePermissionNotification()
-        } else {
-//          SharkLog.d { "WRITE_EXTERNAL_STORAGE permission not granted, ignoring" }
-        }
-      } else {
-        val state = Environment.getExternalStorageState()
-        if (Environment.MEDIA_MOUNTED != state) {
-//          SharkLog.d { "External storage not mounted, state: $state" }
-        } else {
-//          SharkLog.d {
-//            "Could not create heap dump directory in external storage: [${storageDirectory.absolutePath}]"
-//          }
-        }
-      }
+//    var storageDirectory = externalStorageDirectory()
+//    if (!directoryWritableAfterMkdirs(storageDirectory)) {
+//      if (!hasStoragePermission()) {
+//        if (requestExternalStoragePermission()) {
+////          SharkLog.d { "WRITE_EXTERNAL_STORAGE permission not granted, requesting" }
+//          requestWritePermissionNotification()
+//        } else {
+////          SharkLog.d { "WRITE_EXTERNAL_STORAGE permission not granted, ignoring" }
+//        }
+//      } else {
+//        val state = Environment.getExternalStorageState()
+//        if (Environment.MEDIA_MOUNTED != state) {
+////          SharkLog.d { "External storage not mounted, state: $state" }
+//        } else {
+////          SharkLog.d {
+////            "Could not create heap dump directory in external storage: [${storageDirectory.absolutePath}]"
+////          }
+//        }
+//      }
       // Fallback to app storage.
-      storageDirectory = appStorageDirectory()
+     var storageDirectory = appStorageDirectory()
       if (!directoryWritableAfterMkdirs(storageDirectory)) {
 //        SharkLog.d {
 //          "Could not create heap dump directory in app storage: [${storageDirectory.absolutePath}]"
 //        }
         return null
       }
-    }
+//    }
 
 //    val fileName = SimpleDateFormat("${label}-yyyy-MM-dd_HH-mm-ss_SSS'.trace'", Locale.US).format(Date())
     val fileName = "${label}-" + SimpleDateFormat("yyyy-MM-dd_HH-mm-ss_SSS'.txt'", Locale.US).format(Date())
@@ -151,7 +151,7 @@ internal class AnrTraceDirectoryProvider constructor(
   }
 
   private fun appStorageDirectory(): File {
-    val appFilesDirectory = context.cacheDir
+    val appFilesDirectory = context.externalCacheDir
     return File(appFilesDirectory, "anrtrace")
   }
 

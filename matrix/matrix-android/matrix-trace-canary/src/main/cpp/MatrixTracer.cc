@@ -131,6 +131,7 @@ int my_prctl(int option, unsigned long arg2, unsigned long arg3,
  * step 4.2.1
  */
 void writeAnr(const std::string &content, const std::string &filePath) {
+    ALOGV("native writeAnr");
     //unhook write
     unHookAnrTraceWrite();
     std::string to;
@@ -177,6 +178,7 @@ int my_open(const char *pathname, int flags, mode_t mode) {
 ssize_t (*original_write)(int fd, const void *const __pass_object_size0 buf, size_t count);
 
 ssize_t my_write(int fd, const void *const buf, size_t count) {
+    ALOGV("native my_write");
     //如果标记为isTraceWrite为true，在signalCatcher线程第一个write调用即为打印trace的地方
     if (isTraceWrite && gettid() == signalCatcherTid) {
         isTraceWrite = false;
@@ -190,6 +192,7 @@ ssize_t my_write(int fd, const void *const buf, size_t count) {
             }
             if (!targetFilePath.empty()) {
                 char *content = (char *) buf;
+
                 writeAnr(content, targetFilePath);
                 if (!fromMyPrintTrace) {
                     anrDumpTraceCallback();
@@ -299,6 +302,7 @@ int getApiLevel() {
  * AnrDumper.cc 里handleSignal里调用anrCallback方法，或者调用siUserCallback，然后调用这个hookAnrTraceWrite回调
  */
 void hookAnrTraceWrite(bool isSiUser) {
+    ALOGV("native hookAnrTraceWrite");
     int apiLevel = getApiLevel();
     if (apiLevel < 19) {
         return;
@@ -342,6 +346,7 @@ void hookAnrTraceWrite(bool isSiUser) {
         void *libart_info = xhook_elf_open("libart.so");
         xhook_got_hook_symbol(libart_info, "write", (void *) my_write, (void **) (&original_write));
     }
+    ALOGV("native hookAnrTraceWrite success");
 }
 
 //unhook
