@@ -102,7 +102,7 @@ public class EvilMethodTracer extends Tracer {
                 long[] queueCosts = new long[3];
                 System.arraycopy(queueTypeCosts, 0, queueCosts, 0, 3);
                 String scene = AppActiveMatrixDelegate.INSTANCE.getVisibleScene();
-                MatrixHandlerThread.getDefaultHandler().post(new AnalyseTask(isForeground(), scene, data, queueCosts, cpuEndMs - cpuBeginMs, dispatchCost, endNs / Constants.TIME_MILLIS_TO_NANO));
+                MatrixHandlerThread.getDefaultHandler().post(new AnalyseTask(token, isForeground(), scene, data, queueCosts, cpuEndMs - cpuBeginMs, dispatchCost, endNs / Constants.TIME_MILLIS_TO_NANO));
             }
         } finally {
             indexRecord.release();
@@ -126,8 +126,10 @@ public class EvilMethodTracer extends Tracer {
         long endMs;
         String scene;
         boolean isForeground;
+        long token;
 
-        AnalyseTask(boolean isForeground, String scene, long[] data, long[] queueCost, long cpuCost, long cost, long endMs) {
+        AnalyseTask(long token, boolean isForeground, String scene, long[] data, long[] queueCost, long cpuCost, long cost, long endMs) {
+            this.token = token;
             this.isForeground = isForeground;
             this.scene = scene;
             this.cost = cost;
@@ -211,7 +213,8 @@ public class EvilMethodTracer extends Tracer {
                 issueOfTraceCanary.setScene(scene);
                 issueOfTraceCanary.setStack(reportBuilder.toString());
                 issueOfTraceCanary.setStackKey(stackKey);
-                issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD.toString());
+                issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
+                issueOfTraceCanary.setTime(token / Constants.TIME_MILLIS_TO_NANO);
                 issue.setIssueOfTraceCanary(issueOfTraceCanary);
 
                 plugin.onDetectIssue(issue);

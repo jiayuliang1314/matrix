@@ -90,6 +90,7 @@ public class LooperAnrTracer extends Tracer {
         lagTask.beginRecord = AppMethodBeat.getInstance().maskIndex("LagTracer#dispatchBegin");
         anrTask.beginRecord = AppMethodBeat.getInstance().maskIndex("AnrTracer#dispatchBegin");
         anrTask.token = token;
+        lagTask.token = token;
 
         if (traceConfig.isDevEnv()) {
             MatrixLog.v(TAG, "* [dispatchBegin] token:%s index:%s", token, anrTask.beginRecord.index);
@@ -148,6 +149,7 @@ public class LooperAnrTracer extends Tracer {
 //    }
 
     class LagHandleTask implements Runnable {
+        long token;
         AppMethodBeat.IndexRecord beginRecord;
 
         public AppMethodBeat.IndexRecord getBeginRecord() {
@@ -234,7 +236,7 @@ public class LooperAnrTracer extends Tracer {
                 issueOfTraceCanary.setCost(stackCost);
                 issueOfTraceCanary.setStackKey(stackKey);
                 issueOfTraceCanary.setStack(reportBuilder.toString());
-
+                issueOfTraceCanary.setTime(token / Constants.TIME_MILLIS_TO_NANO);
                 issue.setIssueOfTraceCanary(issueOfTraceCanary);
                 plugin.onDetectIssue(issue);
                 MatrixLog.e(TAG, "happens lag : %s, scene : %s ", dumpStack, scene);
@@ -401,6 +403,7 @@ public class LooperAnrTracer extends Tracer {
                 memoryBean.setVm_size(memoryInfo[2]);
                 issueOfTraceCanary.setMemoryBean(memoryBean);
                 issueOfTraceCanary.setKey(token + "");
+                issueOfTraceCanary.setTime(token / Constants.TIME_MILLIS_TO_NANO);
                 issueOfTraceCanary.setTag(SharePluginInfo.TAG_PLUGIN_EVIL_METHOD);
                 issue.setIssueOfTraceCanary(issueOfTraceCanary);
 

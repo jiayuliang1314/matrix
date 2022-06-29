@@ -98,7 +98,10 @@ public abstract class Plugin implements IPlugin, IssuePublisher.OnIssueDetectLis
 //                content.put(Issue.ISSUE_REPORT_PROCESS, MatrixUtil.getProcessName(application));
 //                content.put(Issue.ISSUE_REPORT_TIME, System.currentTimeMillis());
                 issueOfTraceCanary.setProcess(MatrixUtil.getProcessName(application));
-                issueOfTraceCanary.setTime(System.currentTimeMillis());
+                if (issueOfTraceCanary.getTime() == 0L) {
+                    issueOfTraceCanary.setTime(System.currentTimeMillis());
+                }
+                issueOfTraceCanary.setSignatureBeforeUploadToApm();
             }
         } catch (JSONException e) {
             MatrixLog.e(TAG, "json error", e);

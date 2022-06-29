@@ -2,23 +2,24 @@ package com.tencent.matrix.report;
 
 public class IssueOfTraceCanary {
     //公共参数
-    private String tag;				//上报的类型，三种：Trace_FPS,Trace_EvilMethod,Trace_StartUp，代表帧率监控，慢函数监控，启动监控
-    private String scene;			//场景页面
-    private long time;				//发生时间
-
+    private String tag;                //上报的类型，三种：Trace_FPS,Trace_EvilMethod,Trace_StartUp，代表帧率监控，慢函数监控，启动监控
+    private String scene;            //场景页面
+    private long time;                //发生时间
+    private String signature;       //特征值
 
     //慢函数监控
-    private String detail;			//类型有以下种类，监控以下种类NORMAL, ANR, STARTUP, LAG, LAG_IDLE_HANDLER, LAG_TOUCH ，SIGNAL_ANR, SIGNAL_ANR_NATIVE_BACKTRACE
-    private long cost;				//时间
-    private String stack;			//卡顿堆栈
-    private String stackKey;		//导致卡顿的函数
-    private String threadStack;		//主线程堆栈
+    private String detail;            //类型有以下种类，监控以下种类NORMAL, ANR, STARTUP, LAG, LAG_IDLE_HANDLER, LAG_TOUCH ，SIGNAL_ANR, SIGNAL_ANR_NATIVE_BACKTRACE
+    private long cost;                //时间
+    private String stack;            //卡顿堆栈
+    private String stackKey;        //导致卡顿的函数
+    private String threadStack;        //主线程堆栈
 
     //慢函数监控其他一些参数
     private boolean isProcessForeground;//应用是否处于前台
-    private int subType;				//STARTUP启动超时的时候，2代表热启动超时，1代表冷启动超时，只有STARTUP的上报有
-    private String key;					//ANR的发生时间，只有ANR的上报有
-    private long processTimerSlack;		//进程timerslack，只有TIMERSLACK_MODIFIED的上报有，暂时没用到
+    private int subType;                //STARTUP启动超时的时候，2代表热启动超时，1代表冷启动超时，只有STARTUP的上报有
+    private String key;                    //ANR的发生时间，只有ANR的上报有
+    private long processTimerSlack;        //进程timerslack，只有TIMERSLACK_MODIFIED的上报有，暂时没用到
+    private String anr_file_name;       //SIGNAL_ANR的
 
     //帧率监控
     private double fps;                   //帧率监控
@@ -26,22 +27,22 @@ public class IssueOfTraceCanary {
     private DropLevelBean dropSumBean;    //掉帧每个level的掉帧数量
 
     //启动监控
-    private long application_create;	 //应用创建时间
+    private long application_create;     //应用创建时间
     private int application_create_scene;//应用创建场景
-    private long first_activity_create;	 //flash activity启动耗时
-    private long startup_duration;		 //启动时间
-    private boolean is_warm_start_up;	 //是否是热启动
+    private long first_activity_create;     //flash activity启动耗时
+    private long startup_duration;         //启动时间
+    private boolean is_warm_start_up;     //是否是热启动
 
     //其他参数
-    private String machine;				//内存容量，8G以上的BEST，6G到8G HIGH，4G到6G MIDDLE，2G到4G的4核以上MIDDLE，2G到4G的4核以下LOW，2G以下BAD，取不到值的UN_KNOW
-    private double cpu_app;			    //cpu_app 应用时间占cpu时间比率
-    private long mem;				    //内存大小
-    private long mem_free;				//空闲内存大小
-    private String usage;			    //cpu占用比率
-    private MemoryBean memoryBean;	    //内存情况
-    private String process;				//进程
-    private int processNice;			//进程nice
-    private int processPriority;		//进程优先级
+    private String machine;                //内存容量，8G以上的BEST，6G到8G HIGH，4G到6G MIDDLE，2G到4G的4核以上MIDDLE，2G到4G的4核以下LOW，2G以下BAD，取不到值的UN_KNOW
+    private double cpu_app;                //cpu_app 应用时间占cpu时间比率
+    private long mem;                    //内存大小
+    private long mem_free;                //空闲内存大小
+    private String usage;                //cpu占用比率
+    private MemoryBean memoryBean;        //内存情况
+    private String process;                //进程
+    private int processNice;            //进程nice
+    private int processPriority;        //进程优先级
 
     @Override
     public String toString() {
@@ -75,7 +76,36 @@ public class IssueOfTraceCanary {
                 ", time=" + time +
                 ", detail='" + detail + '\'' +
                 ", key='" + key + '\'' +
+                ", signature='" + signature + '\'' +
                 '}';
+    }
+
+    public void setSignatureBeforeUploadToApm() {
+        signature = getAggregateKey(detail, stackKey, threadStack);
+    }
+
+    public String getAggregateKey(String type, String stackKey, String threadStack) {
+        if (stackKey != null && !stackKey.isEmpty() && !"1048574".equals(stackKey)) {
+            if (stackKey.contains(" ")) {//新方法，以方法全限定名来聚合
+                String funKey = (stackKey.substring(stackKey.indexOf(" ") + 1)).hashCode() + "_new_fun_hashcode";
+                return funKey;
+            } else {//旧方法，用方法id聚合
+                return stackKey;
+            }
+        } else if (threadStack != null && !threadStack.isEmpty()) {//主线程堆栈hashCode
+            if (type != null) {
+                if (type.equals("SIGNAL_ANR_NATIVE_BACKTRACE") || type.equals("LAG_TOUCH") || type.equals("SIGNAL_ANR")) {
+                    //SIGNAL_ANR_NATIVE_BACKTRACE LAG_TOUCH SIGNAL_ANR用堆栈hash聚合
+                    String funKey = threadStack.hashCode() + "_main_thread_hashCode";
+                    return funKey;
+                }
+            }
+        } else if ("1048574".equals(stackKey)) {
+            return stackKey;
+        } else {
+            return "";//忽略
+        }
+        return "";//忽略
     }
 
     public long getProcessTimerSlack() {
@@ -365,4 +395,13 @@ public class IssueOfTraceCanary {
 //    public void setNative_heap(long native_heap) {
 //        this.native_heap = native_heap;
 //    }
+
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
 }
